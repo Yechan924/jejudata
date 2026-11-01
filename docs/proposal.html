@@ -45,10 +45,10 @@ code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; backgrou
 <b>문제</b> — 2026년 제주는 내국인 관광객 감소·외국인 급증, 특정 관광지 쏠림, 버스 준공영제 효율 논란이 동시에 진행 중이다. 그러나 "어디에 누가 몰리는가", "어느 노선·시간대가 비어 있는가"를 도민·공무원이 직접 숫자로 확인하려면 전문가의 SQL·시각화 작업이 필요하다.<br>
 <b>해법</b> — 질문 한 줄을 입력하면 AI Agent가 ① 적절한 분석 도구를 고르고 ② 와이파이·버스·날씨 데이터를 집계해 ③ 지도·차트와 함께 쉬운 말로 결론·근거·한계를 돌려준다.<br>
 <b>핵심 발상</b> — 유동인구·카드 데이터는 센터 밖 반출이 불가능하지만, <b>공공 와이파이 AP별 이용 현황(4-05)에는 국적·방문유형(관광/거주/업무)·AP 좌표</b>가 있어 반출 가능 데이터만으로 "관광객·외국인이 몰리는 장소"를 읽는 <b>혼잡 센서</b>로 쓸 수 있다. 여기에 티머니 버스 승하차(3-02/3-04)를 결합해 혼잡 관광지의 대중교통 수요와 비효율 노선·시간대까지 한 흐름으로 진단한다.<br>
-<b>현재 상태</b> — 분석 도구 10개, LLM 도구호출 플래너 + 규칙 기반 오프라인 모드, 반출 게이트, Streamlit UI, CLI, 테스트 16개가 구현되어 명세서 구조의 합성 데이터로 전 기능이 동작한다.
+<b>현재 상태</b> — 분석 도구 12개(예측·월간 브리핑 포함), LLM 도구호출 플래너 + 규칙 기반 오프라인 모드, 센터 반출 정책 기준 게이트, LLM 전송 내용 미리보기와 답변 숫자 검증, Streamlit UI, CLI, 테스트 26개가 구현되어 명세서 구조의 합성 데이터로 전 기능이 동작한다.
 </div>
 <table class="kpi"><tr><th>분석 도구</th><th>지원 LLM</th><th>데이터셋</th><th>질문→답변</th><th>외부망 없이</th></tr>
-<tr><td>10개</td><td>Claude / GPT / Ollama / 없음</td><td>9종(반출 가능)</td><td>0.1~1초(집계) + LLM 5~15초</td><td>동작(규칙 모드)</td></tr></table>
+<tr><td>12개</td><td>Claude / GPT / Ollama / 없음</td><td>9종(반출 가능)</td><td>0.1~1초(집계) + LLM 5~15초</td><td>동작(규칙 모드)</td></tr></table>
 
 <h2>1. 구현 목표</h2>
 <h3>1.1 분석 주제</h3>
@@ -63,7 +63,7 @@ code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; backgrou
 <tr><td>비전문가가 질문만으로 결과를 얻는다</td><td>예시 질문 12종을 UI 버튼 클릭만으로 실행, 결론·근거·해석·한계 4단 답변</td></tr>
 <tr><td>모든 수치가 추적 가능하다</td><td>도구 호출 인자·계산 방법·SQL·반출 게이트 로그를 답변과 함께 저장(JSON/HTML)</td></tr>
 <tr><td>센터 PC와 외부 어디서든 재현된다</td><td>CLI 배치 실행 + pytest, DuckDB 없으면 sqlite 폴백, LLM 없으면 규칙 모드</td></tr>
-<tr><td>개인정보가 밖으로 나가지 않는다</td><td>LLM은 집계표(최대 40행)만 수신, 식별자 컬럼 차단, 5명 미만 셀 마스킹</td></tr></table>
+<tr><td>개인정보가 밖으로 나가지 않는다</td><td>LLM은 집계표(최대 40행)만 수신, 식별자 컬럼 차단, 센터 반출 정책 기준 10 미만 셀 마스킹, 전송 내용 미리보기</td></tr></table>
 
 <h3>1.3 왜 지금 제주에 필요한가</h3>
 <ul>
@@ -88,17 +88,19 @@ code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; backgrou
 <tr><td>④ 노선 효율</td><td>"효율이 낮은 노선은?", "251번 시간대별 이용"</td><td>승객/km/일·승객/정류소, 피크의 15% 미만 저이용 시간대 자동 탐지</td></tr>
 <tr><td>⑤ 교통약자 정류소</td><td>"어르신이 많이 타는 정류소는?"</td><td>경로·장애·어린이 비중 순위, 시간대 프로필(경로 오전 집중 등)</td></tr>
 <tr><td>⑥ 강우 영향</td><td>"비 오면 어디가 한산해지나?"</td><td>가장 가까운 관측소 강수량으로 강우일/비강우일 이용 변화율 순위(평일·주말 분리)</td></tr>
-<tr><td>⑦ 자유 집계</td><td>"월정리 월별 이용자 수"</td><td>LLM이 집계 SQL 작성 → 읽기 전용·집계만 허용 → 게이트 통과 후 표시</td></tr></table>
+<tr><td>⑦ 주말 혼잡 예측</td><td>"이번 주말 어디가 붐빌까?", "연휴에 분산 안내할 곳"</td><td>최근 4회 같은 요일 중앙값 × 추세계수(최근 4주÷이전 4주)로 예상 이용자·혼잡지수와 구간 제시 → 분산 안내 후보</td></tr>
+<tr><td>⑧ 월간 브리핑</td><td>"5월 월간 브리핑", "지난달 어땠어"</td><td>고유 이용자·외국인 비중·관광 비중의 전월 대비, 상위 장소, 저이용 노선, 강우일을 한 장으로 → 관광지표 대응 상황실용</td></tr>
+<tr><td>⑨ 자유 집계</td><td>"월정리 월별 이용자 수"</td><td>LLM이 집계 SQL 작성 → 읽기 전용·집계만 허용 → 게이트 통과 후 표시</td></tr></table>
 <img src="img/congestion.png" style="width:85%;display:block;margin:4px auto">
 <p class="small" style="text-align:center">[그림 1] 기능 ① 출력 예 — 주말 혼잡지수 순위. 1.0은 평소 평일 수준, 2.3은 평일의 2.3배.</p>
 
 <h3>2.3 편의성</h3>
 <ul>
 <li><b>버튼 하나</b>: 사이드바의 예시 질문을 누르면 끝. 자연어 채팅도 가능.</li>
-<li><b>보는 방식 5가지</b>: 🗺️지도(pydeck) · 📊차트(plotly) · 📋근거 표 · 🔍방법·한계 · 🧾실행 로그 탭. 전문 용어는 처음 나올 때 풀어 쓴다.</li>
-<li><b>가져가기</b>: 단일 HTML 리포트 다운로드(표·방법·게이트 로그 포함), CLI JSON 저장.</li>
+<li><b>보는 방식 6가지</b>: 🗺️지도(pydeck) · 📊차트(plotly) · 📋근거 표 · 🔍방법·한계 · 🧾실행 로그 · 📡LLM 전송 내용 탭. 전문 용어는 처음 나올 때 풀어 쓴다.</li>
+<li><b>가져가기</b>: HTML 리포트(PNG 차트 내장·표·방법·게이트 로그), 차트 PNG(반출 정책상 그림파일), CLI JSON·월간 브리핑 저장.</li>
 <li><b>데이터 넣기</b>: CSV를 UI에 드래그하거나 <code>data/raw/</code>에 복사. 한글·영문 헤더, cp949·UTF-8 자동 인식.</li>
-<li><b>안전장치</b>: LLM 장애·외부망 차단 시 자동으로 규칙 기반 모드, 합성 데이터 사용 시 모든 화면에 경고.</li>
+<li><b>안전장치</b>: LLM 장애·외부망 차단 시 자동으로 규칙 기반 모드, 합성 데이터 사용 시 모든 화면에 경고, 퇴실 전 "올린 자료 모두 삭제" 버튼, 출처 표기 문구 상시 표시.</li>
 </ul>
 <h3>2.4 분석 데이터 활용 방안 (센터·도정)</h3>
 <table><tr><th style="width:22%">이용자</th><th>활용 시나리오</th></tr>
@@ -124,8 +126,10 @@ code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; backgrou
 <tr><td>플래너(LLM)</td><td>시스템 프롬프트에 데이터 스키마·도구 설명·답변 형식이 들어 있다. 질문에 맞는 도구를 고르고 최대 6회까지 순차 호출(예: 혼잡 순위 → 1위 프로필 → 주변 정류소). 도구 오류 시 인자를 고쳐 1회 재시도.</td></tr>
 <tr><td>규칙 플래너</td><td>LLM이 없거나 실패하면 키워드·장소명·노선번호·월 표현을 해석해 같은 도구를 호출하고 템플릿으로 답을 조립한다.</td></tr>
 <tr><td>분석 도구</td><td>각 도구는 JSON Schema로 인자를 정의하고, 집계표·사실(facts)·주의(caveats)·차트 스펙·지도 좌표·계산 방법을 함께 반환한다.</td></tr>
-<tr><td>반출 게이트</td><td><code>config/export_rules.yaml</code> 기준으로 LLM·화면·리포트로 나가는 모든 표를 검사한다.</td></tr>
-<tr><td>해설</td><td>LLM은 게이트 통과 집계표와 facts만 보고 4단 구조로 작성한다. 수치 창작 금지, 합성 데이터 경고 강제.</td></tr></table>
+<tr><td>반출 게이트</td><td><code>config/export_rules.yaml</code> 기준(센터 반출 정책 2026.09.01: 단순집계 10 미만 불포함, 시각화 PNG)으로 LLM·화면·리포트로 나가는 모든 표를 검사한다.</td></tr>
+<tr><td>해설</td><td>LLM은 게이트 통과 집계표와 facts만 보고 4단 구조로 작성한다. 수치 창작 금지, 합성 데이터 경고 강제.</td></tr>
+<tr><td>숫자 검증</td><td>해설 속 숫자가 근거표·facts에 없으면 메모를 남기고, 20% 넘게 어긋나면 템플릿 해설로 대체한다(환각 방지의 구조적 보장).</td></tr>
+<tr><td>전송 미리보기</td><td>외부 LLM으로 나간 시스템 프롬프트·질문·집계표·응답 전부를 화면에서 그대로 볼 수 있다. 오프라인 모드는 전송 0건.</td></tr></table>
 
 <h3>3.2 사용 모델</h3>
 <table><tr><th>모드</th><th>모델</th><th>용도·비고</th></tr>
@@ -145,6 +149,8 @@ code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; backgrou
 <tr><td>bus_route_efficiency</td><td>기간, 노선(선택), 정렬</td><td>노선 효율 순위 또는 특정 노선 시간대 프로필·저이용 시간대</td></tr>
 <tr><td>hourly_profile</td><td>정류소명, 기간, 이용자구분</td><td>평일/주말 시간대별 승차</td></tr>
 <tr><td>weather_effect</td><td>대상(와이파이/정류소/노선), 장소, 기간, 강우 기준</td><td>강우일/비강우일 변화율 순위</td></tr>
+<tr><td>congestion_forecast</td><td>대상 날짜, 장소(선택), top_n</td><td>예상 이용자·구간·추세계수·예상 혼잡지수</td></tr>
+<tr><td>monthly_brief</td><td>월(YYYY-MM)</td><td>이용자·외국인·관광 비중 전월 대비, 상위 장소, 저이용 노선, 강우일</td></tr>
 <tr><td>run_sql</td><td>집계 SQL</td><td>읽기 전용·GROUP BY 필수·식별자 금지·500행 상한</td></tr>
 <tr><td>describe_data</td><td>데이터셋 키</td><td>컬럼 명세·적재 상태·출처(실/합성)</td></tr></table>
 <p class="small">외부 API: LLM API(선택)만 사용. 데이터는 전부 로컬 CSV → DuckDB(또는 sqlite) 적재.</p>
@@ -192,7 +198,8 @@ code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; backgrou
 <ul>
 <li>9종 모두 명세서상 "데이터 반출 가능"인 공개 데이터이며, 출처를 README·리포트·답변에 표기한다. 비반출 데이터는 사용하지 않는다.</li>
 <li>user_id·mac_address는 이미 암호화된 값이지만, 서비스는 고유 수 집계에만 쓰고 결과·LLM·리포트 어디에도 노출하지 않는다(게이트가 강제).</li>
-<li>5명 미만 집계 셀은 "&lt;5"로 마스킹해 소집단 식별 가능성을 차단한다.</li>
+<li>센터 반출 정책(2026.09.01 개정)의 단순집계 기준에 맞춰 10 미만 집계 셀은 "&lt;10"으로 마스킹하고, 시각화는 PNG 그림파일로 반출한다. 운영진 답변(2026-10-30)대로 원본·원본 조회 결과는 외부 LLM에 보내지 않는다.</li>
+<li>출처 표기: "본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다."를 화면·리포트·답변에 상시 표시한다.</li>
 <li>외부 데이터 없음. 개발용 합성 데이터는 명세서 구조만 참고해 자체 생성했으며 실제 값과 무관함을 모든 출력에 표시한다.</li>
 </ul>
 
@@ -201,11 +208,11 @@ code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; backgrou
 <h3>5.1 구현 범위</h3>
 <table><tr><th style="width:12%">구분</th><th style="width:48%">내용</th><th>상태</th></tr>
 <tr><td>데이터</td><td>CSV 자동 인식·표준화·적재(DuckDB/sqlite), 합성 데이터 생성기</td><td>완료</td></tr>
-<tr><td>도구</td><td>분석 도구 10개, JSON Schema, facts/caveats/차트/지도 반환</td><td>완료</td></tr>
+<tr><td>도구</td><td>분석 도구 12개(예측·브리핑 포함), JSON Schema, facts/caveats/차트/지도 반환</td><td>완료</td></tr>
 <tr><td>Agent</td><td>LLM 도구호출 루프(3개 공급자), 규칙 플래너, 폴백, 실행 로그</td><td>완료(LLM 모드 실키 검증 예정)</td></tr>
-<tr><td>안전</td><td>반출 게이트, 읽기 전용 SQL, 식별자 차단</td><td>완료</td></tr>
-<tr><td>UI</td><td>Streamlit 채팅 + 5탭 + CSV 업로드 + HTML 리포트</td><td>완료</td></tr>
-<tr><td>재현</td><td>CLI 단일/배치, pytest 16개, README·데이터 명세·매뉴얼</td><td>완료</td></tr>
+<tr><td>안전</td><td>반출 게이트(10 미만·PNG), 읽기 전용 SQL, 식별자 차단, LLM 전송 미리보기, 숫자 검증</td><td>완료</td></tr>
+<tr><td>UI</td><td>Streamlit 채팅 + 6탭 + CSV 업로드·삭제 + HTML/PNG 리포트</td><td>완료</td></tr>
+<tr><td>재현</td><td>CLI 단일/배치/브리핑, pytest 26개, README·데이터 명세·매뉴얼, requirements-lock</td><td>완료</td></tr>
 <tr><td>실데이터</td><td>허브 CSV 적재 후 임계값(15%, 1mm, 1.5km) 보정</td><td>제출 전 수행</td></tr></table>
 <img src="img/route251.png" style="width:80%;display:block;margin:4px auto">
 <p class="small" style="text-align:center">[그림 3] 기능 ④ 출력 예 — 노선 시간대 프로필. 회색 띠가 자동 탐지된 저이용 구간.</p>
@@ -213,23 +220,24 @@ code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; backgrou
 <h3>5.2 기술 환경</h3>
 <table><tr><th style="width:22%">항목</th><th>내용</th></tr>
 <tr><td>언어·런타임</td><td>Python 3.10+ (개발·검증 3.13)</td></tr>
+<tr><td><b>설치 패키지(사전 명시)</b></td><td>pandas, numpy, PyYAML, python-dotenv, requests, matplotlib, duckdb, streamlit, plotly, pydeck, pytest — 11개와 그 의존성(고정 버전 <code>requirements-lock.txt</code>). 선택: Ollama(로컬 LLM, qwen2.5:7b). 그 외 설치 없음.</td></tr>
 <tr><td>데이터</td><td>pandas, numpy, DuckDB(선택; 없으면 sqlite3 내장)</td></tr>
-<tr><td>UI·시각화</td><td>Streamlit, Plotly, pydeck</td></tr>
+<tr><td>UI·시각화</td><td>Streamlit, Plotly, pydeck(화면), matplotlib(PNG 반출)</td></tr>
 <tr><td>LLM 연동</td><td>requests (Anthropic Messages API / OpenAI Chat Completions / Ollama OpenAI 호환)</td></tr>
 <tr><td>설정·테스트</td><td>PyYAML, python-dotenv, pytest</td></tr>
 <tr><td>저장소 구조</td><td><code>jeju_agent/</code>(data, tools, agent, gate, llm, planner_rules, report, cli) · <code>config/</code>(schemas.yaml, export_rules.yaml) · <code>app.py</code> · <code>docs/</code> · <code>tests/</code> · <code>examples/</code></td></tr></table>
 
 <h3>5.3 UI 구성</h3>
 <table><tr><th style="width:22%">영역</th><th>구성</th></tr>
-<tr><td>사이드바</td><td>오프라인 모드 토글, 엔진·LLM 상태, 적재 데이터 표(실/합성·행수·기간), CSV 업로드·다시 읽기, 예시 질문 8개 버튼, 대화 지우기</td></tr>
-<tr><td>본문</td><td>채팅 형식. 답변(결론·근거·해석·한계) → 모드/도구/LLM 호출/소요 메트릭 → 탭: 지도(원 크기=지표), 차트, 근거 표, 방법·한계(계산 방법·인자·게이트 로그), 실행 로그 → HTML 리포트 다운로드</td></tr></table>
+<tr><td>사이드바</td><td>오프라인 모드 토글, 엔진·LLM 상태, 적재 데이터 표(실/합성·행수·기간), CSV 업로드·다시 읽기·올린 자료 삭제, 예시 질문 10개 버튼, 대화 지우기</td></tr>
+<tr><td>본문</td><td>채팅 형식. 답변(결론·근거·해석·한계·출처) → 검증 메모 → 모드/도구/LLM 호출/소요 메트릭 → 탭: 지도(원 크기=지표), 차트, 근거 표, 방법·한계(계산 방법·인자·게이트 로그), 실행 로그(숫자 검증 결과), LLM 전송 내용 → HTML 리포트·PNG 다운로드 → 하단 출처 표기</td></tr></table>
 
 <h3>5.4 센터 실행환경과 외부 서비스 의존성</h3>
 <table><tr><th style="width:30%">센터 운영 PC 최소사양</th><th>본 서비스 요구</th></tr>
 <tr><td>Intel Core i7-8700 / GTX 1060 6GB / RAM 32GB</td><td>
 <ul><li>적재·분석: CPU·메모리만 사용. 합성 80만 행 기준 적재 15초, 질문당 집계 0.1~1초. 실데이터 수백만 행도 DuckDB로 수 초 내.</li>
 <li>LLM: (a) 외부망 가능 → Anthropic/OpenAI API, (b) 외부망 불가 → Ollama qwen2.5:7b 4bit(GTX 1060 6GB 적합), (c) 둘 다 없음 → 규칙 모드.</li>
-<li>설치: <code>run.bat</code> 한 번(가상환경·의존성·합성데이터·UI 자동).</li></ul></td></tr></table>
+<li>설치: <code>install.bat</code>(처음 한 번: 가상환경·위 11개 패키지·합성데이터·테스트) → <code>run.bat</code>. 운영진 답변(2026-10-30)대로 기획서에 명시한 패키지만 설치하며, 센터 데이터 시스템 API 접속 없이 이용자가 CSV를 반입하는 방식이다.</li></ul></td></tr></table>
 <table><tr><th style="width:30%">외부 의존성</th><th>필수 여부 / 대체</th></tr>
 <tr><td>LLM API (Anthropic / OpenAI)</td><td>선택. Ollama 로컬 또는 규칙 모드로 대체. 전송 내용은 게이트 통과 집계표(≤40행)뿐</td></tr>
 <tr><td>지도 타일(pydeck 기본)</td><td>선택. 없으면 Streamlit 기본 지도로 폴백, 표·차트는 영향 없음</td></tr>
@@ -238,9 +246,10 @@ code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; backgrou
 <h2>6. 검증·한계·재현성</h2>
 <h3>6.1 검증 방법</h3>
 <ul>
-<li><b>단위·통합 테스트 16개</b>: 적재, 한글 헤더 표준화, 도구 10종 실행, 게이트 마스킹·식별자 제거, SQL 원본행 차단, 오프라인 Agent 4개 질문 응답.</li>
+<li><b>단위·통합 테스트 26개</b>: 적재, 한글 헤더 표준화, 도구 12종 실행, 게이트 10 미만 마스킹·식별자 제거, 숫자 검증과 환각 답변 대체, 예측값 구간 검사, PNG 생성, SQL 원본행·식별자 차단, 오프라인 Agent 응답·출처 표기.</li>
 <li><b>심은 패턴 회수</b>: 합성 데이터에 성산일출봉 주말 급증, 251번 낮 시간 공차, 읍면사무소 경로 비중, 해변 강우 민감을 심어 두고 Agent가 이를 찾아내는지 확인(모두 회수).</li>
-<li><b>배치 재현</b>: <code>python -m jeju_agent.cli --batch examples/questions.txt</code>로 12개 질문 결과 JSON 저장 → 실데이터 적재 후 동일 명령으로 비교.</li>
+<li><b>배치 재현</b>: <code>python -m jeju_agent.cli --batch examples/questions.txt</code>로 14개 질문 결과 JSON 저장 → 실데이터 적재 후 동일 명령으로 비교.</li>
+<li><b>규정 근거 등급</b>: 반출 정책·운영진 답변·이용약관의 적용 내용을 <code>docs/DATA_SPEC.md</code> §7에 [확인]/[확인 필요] 꼬리표로 적어 두었다.</li>
 </ul>
 <h3>6.2 한계 (답변의 '한계' 항목에 자동 표시)</h3>
 <ul>
@@ -249,12 +258,14 @@ code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; backgrou
 <li>버스 효율은 배차 횟수 없이 <b>승차 수요 기준</b>. 현금 승차 제외.</li>
 <li>강우 효과는 공휴일·행사 미통제 단순 비교(상관).</li>
 <li>규칙 모드는 정해진 질문 패턴만 처리. 복합 질문은 LLM 모드 권장.</li>
+<li>주말 혼잡 예측은 공휴일·행사·날씨 예보를 반영하지 않는 요일 패턴 기반 추정이며 구간과 함께 제시한다.</li>
+<li>명세서의 "반출 가능"이 허브에서의 공개 다운로드를 뜻하는지는 확인 중이다. 불가할 경우 공공데이터포털 대체 또는 센터 1회 방문으로 실데이터를 확보한다.</li>
 </ul>
 <div class="warn">현재 제출본은 <b>명세서 구조의 합성 데이터</b>로 개발·검증되었다. 실데이터 적재 시 컬럼 매핑은 자동이며, 임계값은 config에서 조정한다.</div>
 
 <h2>7. 일정 및 기대효과</h2>
 <table><tr><th style="width:22%">기간</th><th>작업</th></tr>
-<tr><td>~11/8</td><td>허브 실데이터 적재, 매핑·임계값 보정, LLM 모드 실키 검증</td></tr>
+<tr><td>~11/8</td><td>허브 공개 다운로드 가능 여부 확인 → 실데이터 적재, 매핑·임계값 보정, LLM 모드 실키 검증</td></tr>
 <tr><td>~11/14</td><td>시연 영상, 결과 설명자료 확정, 오프라인 wheel 묶음</td></tr>
 <tr><td>~11/19</td><td>최종 ZIP·PDF 제출, 상호평가 준비</td></tr></table>
 <p><b>기대효과</b> — ① 반출 가능 데이터만으로 관광 쏠림·교통 수요를 상시 진단하는 저비용 도구 확보 ② 상담원·공무원·도민이 SQL 없이 근거 있는 수치를 즉시 확보 ③ 동일한 게이트 구조에 카드·유동인구 데이터를 더하면 센터 내부용 고해상도 버전으로 확장 가능.</p>

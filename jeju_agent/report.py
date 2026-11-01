@@ -6,7 +6,8 @@ from datetime import datetime
 from pathlib import Path
 
 from .agent import AgentResult, JejuAgent
-from .config import OUTPUT_DIR
+from .charts import png_data_uri, render_png
+from .config import ATTRIBUTION, OUTPUT_DIR
 from .tools.base import df_to_md
 
 CSS = """
@@ -60,11 +61,16 @@ def build_html(res: AgentResult) -> str:
     for i, r in enumerate(res.results, 1):
         parts.append(f"<h2>근거 {i}. {html.escape(r.title)}</h2>")
         parts.append(f"<p class='meta'>도구 {r.name} · 데이터 {', '.join(r.datasets)} · 인자 {html.escape(str(r.params))}<br>방법: {html.escape(r.method)}<br>반출 게이트: {html.escape(' / '.join(r.gate_log))}</p>")
+        png = render_png(r)
+        if png:
+            parts.append(f"<img src='{png_data_uri(png)}' style='max-width:100%;border:1px solid #eee'>")
         parts.append(_md_table_to_html(df_to_md(r.table, 60)))
         if r.caveats:
             parts.append("<p class='meta'>주의: " + " / ".join(html.escape(c) for c in r.caveats) + "</p>")
+    if res.notes:
+        parts.append("<h2>검증 메모</h2><ul>" + "".join(f"<li>{html.escape(n)}</li>" for n in res.notes) + "</ul>")
     parts.append("<h2>실행 로그</h2><pre>" + html.escape("\n".join(f"{s.tool} {s.args} → {'OK' if s.ok else 'ERR ' + s.error} ({s.seconds}s, {s.rows}행)" for s in res.steps)) + "</pre>")
-    parts.append("<p class='meta'>데이터 출처: 제주특별자치도 · 제주빅데이터센터/제주데이터허브(티머니, 농업기술원 등). 본 리포트의 모든 수치는 집계값이며 개인 식별 정보를 포함하지 않습니다.</p></body></html>")
+    parts.append(f"<p class='meta'>{html.escape(ATTRIBUTION)}<br>데이터 출처: 제주특별자치도 · 제주빅데이터센터/제주데이터허브(티머니, 농업기술원 등). 본 리포트의 모든 수치는 집계값이며 개인 식별 정보를 포함하지 않습니다. 차트는 PNG로 내장되어 있습니다.</p></body></html>")
     return "\n".join(parts)
 
 

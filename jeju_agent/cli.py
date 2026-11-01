@@ -27,6 +27,8 @@ def main(argv=None):
     ap.add_argument("--out", help="결과 JSON 저장 경로")
     ap.add_argument("--status", action="store_true", help="데이터·LLM 상태만 출력")
     ap.add_argument("--show-tables", action="store_true", help="도구 결과 표도 출력")
+    ap.add_argument("--brief", metavar="YYYY-MM", help="월간 브리핑을 HTML 리포트로 저장")
+    ap.add_argument("--png", action="store_true", help="도구 결과 차트를 outputs/charts/ 에 PNG로 저장")
     a = ap.parse_args(argv)
 
     db = JejuDB()
@@ -37,6 +39,13 @@ def main(argv=None):
     if a.status:
         print(f"엔진: {db.engine} / LLM: {llm.provider} {llm.model}")
         print(df_to_md(db.summary()))
+        return 0
+
+    if a.brief:
+        from .report import save_report
+        res = agent.run(f"{a.brief} 월간 브리핑")
+        print(res.answer)
+        print("리포트:", save_report(res, OUTPUT_DIR / f"brief_{a.brief}.html"))
         return 0
 
     questions = []
@@ -57,6 +66,12 @@ def main(argv=None):
         if a.show_tables:
             for r in res.results:
                 print(f"\n--- {r.title} ({r.name})\n{df_to_md(r.table, 20)}")
+        if a.png:
+            from .charts import render_png, save_png
+            for r in res.results:
+                png = render_png(r)
+                if png:
+                    print("  PNG:", save_png(png, OUTPUT_DIR / "charts" / f"{r.name}_{datetime.now():%H%M%S}.png"))
         for s in res.steps:
             print(f"  · {s.tool} {json.dumps(s.args, ensure_ascii=False)} → {'OK' if s.ok else 'ERR ' + s.error} ({s.seconds}s, {s.rows}행) {s.gate}")
         outputs.append(JejuAgent.to_dict(res))

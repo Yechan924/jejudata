@@ -31,11 +31,14 @@
 ## 제출 문서
 - 기획서: [docs/AI_Agent_기획서_제주혼잡이동진단.pdf](docs/AI_Agent_기획서_제주혼잡이동진단.pdf) (원본 `docs/proposal.html`)
 - 결과 설명자료: [docs/RESULT_REPORT.md](docs/RESULT_REPORT.md) · 사용자 매뉴얼: [docs/USER_MANUAL.md](docs/USER_MANUAL.md) · 데이터 활용 명세: [docs/DATA_SPEC.md](docs/DATA_SPEC.md)
-- 샘플 실행 결과: `outputs/samples/` (합성 데이터, 오프라인 모드 12문항)
+- 샘플 실행 결과: `outputs/samples/` (합성 데이터, 오프라인 모드 14문항, 리포트 예시)
 
 ## 설치·실행 (5분)
+Windows(센터 PC): `install.bat`(처음 한 번) → `run.bat`. macOS/Linux: `./install.sh` → `./run.sh`.
+설치되는 패키지는 `requirements.txt`의 11개(pandas, numpy, pyyaml, python-dotenv, requests, matplotlib, duckdb, streamlit, plotly, pydeck, pytest)와 그 의존성이며, 고정 버전은 `requirements-lock.txt`.
+
 ```bash
-# 1) Python 3.10+ 가상환경
+# 수동 설치: Python 3.10+ 가상환경
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
@@ -51,9 +54,10 @@ streamlit run app.py                                    # 웹 UI
 python -m jeju_agent.cli "주말에 가장 붐비는 관광지는?"     # CLI
 python -m jeju_agent.cli --offline --batch examples/questions.txt   # LLM 없이 시연 질문 12개 일괄 실행
 python -m jeju_agent.cli --status                        # 적재 데이터·LLM 상태 확인
-pytest -q                                                # 테스트 16개
+python -m jeju_agent.cli --brief 2025-05                 # 월간 브리핑 HTML 저장
+python -m jeju_agent.cli --offline --png "효율이 낮은 버스 노선은?"   # 차트를 PNG(반출용)로 저장
+pytest -q                                                # 테스트 26개
 ```
-Windows에서는 `run.bat`, macOS/Linux에서는 `run.sh`로 2)~4)를 한 번에 실행할 수 있습니다.
 
 ## 구조
 ```
@@ -66,16 +70,25 @@ Windows에서는 `run.bat`, macOS/Linux에서는 `run.sh`로 2)~4)를 한 번에
 |---|---|
 | `jeju_agent/data/loader.py` | CSV 자동 인식(한글/영문 헤더, 인코딩), DuckDB→sqlite 폴백, 파생 컬럼 |
 | `jeju_agent/data/synthetic.py` | 명세서 스키마 그대로의 개발용 합성 데이터 |
-| `jeju_agent/tools/` | 10개 분석 도구: `congestion_rank`, `place_profile`, `list_places`, `bus_station_rank`, `bus_route_efficiency`, `hourly_profile`, `place_access`, `weather_effect`, `run_sql`, `describe_data` |
+| `jeju_agent/tools/` | 12개 분석 도구: `congestion_rank`, `place_profile`, `list_places`, `bus_station_rank`, `bus_route_efficiency`, `hourly_profile`, `place_access`, `weather_effect`, **`congestion_forecast`(주말 혼잡 예측)**, **`monthly_brief`(월간 브리핑)**, `run_sql`, `describe_data` |
+| `jeju_agent/verify.py` | LLM 답변의 숫자가 근거표에 있는지 검증, 불일치 시 템플릿 해설로 대체 |
+| `jeju_agent/charts.py` | PNG 차트(반출 정책: 그림파일만) — 리포트 내장·다운로드 |
 | `jeju_agent/gate.py` + `config/export_rules.yaml` | 반출 게이트 |
 | `jeju_agent/llm.py` | Anthropic / OpenAI / Ollama 도구호출 (requests만 사용) |
 | `jeju_agent/planner_rules.py` | LLM 없이 질문→도구 계획, 템플릿 답변 |
 | `jeju_agent/agent.py` | 오케스트레이션, 로그, 폴백 |
 | `jeju_agent/report.py` | 단일 HTML 리포트 |
-| `app.py` | Streamlit UI (지도·차트·근거표·방법/한계·로그·리포트 다운로드) |
+| `app.py` | Streamlit UI (지도·차트·근거표·방법/한계·실행 로그·**LLM 전송 내용 미리보기**·리포트/PNG 다운로드·올린 자료 삭제) |
+
+## 신뢰성 장치 (심사 포인트)
+- **LLM 전송 내용 미리보기**: 외부 LLM으로 나간 내용 전부를 탭에서 그대로 볼 수 있다. 원본 행·식별자는 없고 게이트 통과 집계표(≤40행)만 간다. 오프라인 모드는 전송 0건.
+- **숫자 검증**: LLM 해설의 숫자가 근거표·facts에 없으면 메모를 남기고, 20% 넘게 어긋나면 템플릿 해설로 대체한다.
+- **반출 게이트 = 센터 공식 기준**: 제주빅데이터센터 데이터 반출 정책(2026.09.01 개정)의 "단순집계 10 미만 불포함"에 맞춰 10 미만 셀 마스킹, 차트는 PNG로 반출.
+- **출처 표기**: 이용약관 제7조 문구를 화면·리포트·모든 답변에 표시.
+- **규정 근거 등급**: `docs/DATA_SPEC.md` §7에 [확인]/[확인 필요] 꼬리표로 적었다.
 
 ## Agent의 판단·자율 범위
-- **스스로 결정**: 어떤 도구를 몇 번 쓸지(최대 6회), 장소·노선명 해석, 기간 기본값, 오류 시 인자 수정 재시도, LLM 장애 시 오프라인 폴백.
+- **스스로 결정**: 어떤 도구를 몇 번 쓸지(최대 6회), 예측·브리핑처럼 여러 데이터를 묶을지, 장소·노선명 해석, 기간 기본값, 오류 시 인자 수정 재시도, LLM 장애 시 오프라인 폴백.
 - **하지 않음**: 원본 행 열람, 식별자 컬럼 출력, 쓰기 SQL, 도구 결과에 없는 수치 생성(프롬프트로 금지 + 모든 수치가 로그에 남음).
 - 답변은 항상 **한 줄 결론 / 근거 / 해석·제안 / 한계** 4단 구조이며, 합성 데이터 사용 시 경고를 강제합니다.
 

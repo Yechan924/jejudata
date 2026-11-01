@@ -1,0 +1,13 @@
+# 고정 버전 목록 — 센터 PC·심사 환경에서 동일하게 설치하기 위한 참고본.
+# 제출 전 깨끗한 가상환경에서 `pip install -r requirements.txt && pip freeze > requirements-lock.txt` 로 다시 뽑아 교체하세요.
+pandas==2.2.3
+numpy==2.1.3
+PyYAML==6.0.2
+python-dotenv==1.0.1
+requests==2.32.3
+matplotlib==3.9.2
+duckdb==1.1.3
+streamlit==1.40.2
+plotly==5.24.1
+pydeck==0.9.1
+pytest==8.3.4

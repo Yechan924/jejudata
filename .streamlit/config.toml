@@ -1,0 +1,15 @@
+# 센터 PC(run.bat / run.sh)와 Streamlit Community Cloud 데모가 함께 읽는 설정
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
+fileWatcherType = "none"
+maxUploadSize = 200
+
+[theme]
+base = "light"
+primaryColor = "#2f6f8f"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f3f6f8"
+textColor = "#1b1b1b"

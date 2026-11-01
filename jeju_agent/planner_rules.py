@@ -42,6 +42,17 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
     route = next((r for r in ROUTE.findall(question) if any(r == n.split("(")[0] for n in routes)), None)
     if any(k in q for k in ("어떤데이터", "무슨데이터", "데이터목록", "데이터있")):
         return [("describe_data", {})]
+    if any(k in q for k in ("브리핑", "상황요약", "월간", "지난달어땠", "한달정리")):
+        m = MONTH.search(question)
+        return [("monthly_brief", {"month": f"{int(m.group(1)) if m.group(1) else int(data_max[:4])}-{int(m.group(2)):02d}"} if m else {})]
+    if any(k in q for k in ("예상", "예측", "다음주말", "이번주말", "다음토요일", "연휴", "붐빌까", "붐빌것")):
+        args = {"top_n": 10}
+        if place:
+            args["place"] = place
+        dm = re.search(r"(\d{4}-\d{2}-\d{2})", question)
+        if dm:
+            args["target_date"] = dm.group(1)
+        return [("congestion_forecast", args)]
     if rain:
         if bus_q:
             return [("weather_effect", {"target": "bus_station", **({"place": station} if station else {}), **period})]

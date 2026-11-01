@@ -12,8 +12,9 @@
 질문 → 플래너(LLM 도구호출 | 규칙 기반) → 분석 도구 10개(집계만) → 반출 게이트 → 해설(LLM | 템플릿) → UI/리포트
 ```
 - **플래너**: 시스템 프롬프트(스키마·도구·답변 형식) + JSON Schema 도구 10개. 최대 6회 호출, 오류 시 1회 재시도, LLM 장애 시 규칙 모드로 폴백.
-- **도구**: congestion_rank, place_profile, list_places, place_access, bus_station_rank, bus_route_efficiency, hourly_profile, weather_effect, run_sql(읽기 전용 집계), describe_data.
-- **게이트**: 식별자 컬럼 제거, 5명 미만 셀 마스킹, 500행 상한, 원본 행 차단.
+- **도구(12)**: congestion_rank, place_profile, list_places, place_access, bus_station_rank, bus_route_efficiency, hourly_profile, weather_effect, congestion_forecast(주말 혼잡 예측), monthly_brief(월간 브리핑), run_sql(읽기 전용 집계), describe_data.
+- **게이트**: 식별자 컬럼 제거, 10 미만 셀 마스킹(센터 반출 정책 기준), 500행 상한, 원본 행 차단. 차트는 PNG로 반출.
+- **검증**: LLM 답변 숫자를 근거표와 대조(불일치 시 템플릿 대체), LLM 전송 내용 미리보기 탭, 출처 표기 상시.
 - **해설**: 결론 / 근거 / 해석·제안 / 한계 4단. 합성 데이터 사용 시 경고 강제.
 - 코드 위치: `jeju_agent/agent.py`, `tools/`, `gate.py`, `llm.py`, `planner_rules.py`.
 
@@ -26,9 +27,11 @@
 | 노선 효율 | 효율 낮은 노선은? / 251번 시간대 | 승객/km/일, 저이용 시간대 |
 | 교통약자 정류소 | 어르신이 많이 타는 정류소는? | 경로·장애 비중 순위, 시간대 |
 | 강우 영향 | 비 오면 어디가 한산해지나? | 강우일/비강우일 변화율 |
+| 주말 혼잡 예측 | 이번 주말 어디가 붐빌까? | 같은 요일 패턴×추세, 구간 제시 |
+| 월간 브리핑 | 5월 월간 브리핑 | 혼잡·외국인·노선·강우 한 장 |
 | 자유 집계 | 월정리 월별 이용자 | LLM 작성 집계 SQL |
 
-## 4. 실행 결과 (합성 데이터, `examples/questions.txt` 12문항)
+## 4. 실행 결과 (합성 데이터, `examples/questions.txt` 14문항)
 `python -m jeju_agent.cli --offline --batch examples/questions.txt` 실행 시 12문항 모두 정상 응답(도구 오류 0건). 대표 결과:
 - "주말에 가장 붐비는 관광지는?" → 성산일출봉, 주말 평균 혼잡지수 2.26(평일의 2.3배), 주변 정류소 1개 일평균 승차 74명, 피크 11시.
 - "효율이 낮은 버스 노선은?" → 251번 1.56명/km/일, 저이용 시간대 6개(10~15시 집중).
@@ -38,7 +41,7 @@
 차트 예시: `docs/img/congestion.png`, `route251.png`, `rain.png`.
 
 ## 5. 검증 방법·한계
-- pytest 16개(적재·표준화·도구 10종·게이트·SQL 차단·오프라인 Agent) 통과.
+- pytest 26개(적재·표준화·도구 12종·게이트 10 기준·숫자 검증·환각 대체·PNG·SQL 차단·오프라인 Agent) 통과.
 - 모든 답변에 도구 인자·계산 방법·게이트 로그가 붙어 수치를 역추적할 수 있다.
 - 한계: 와이파이=표본(상대 지표), 4-05에 시각 없음, 버스 효율=승차 수요 기준, 강우 효과=단순 비교, 규칙 모드=정형 질문만. **현 제출본은 합성 데이터로 검증**되었으며 실데이터 적재 시 임계값 보정 필요.
 
