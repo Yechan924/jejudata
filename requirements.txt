@@ -1,0 +1,14 @@
+# 필수
+pandas>=2.0
+numpy>=1.24
+pyyaml>=6.0
+python-dotenv>=1.0
+requests>=2.31
+# 권장 (없어도 sqlite로 동작)
+duckdb>=1.0
+# UI
+streamlit>=1.36
+plotly>=5.20
+pydeck>=0.9
+# 테스트
+pytest>=8.0

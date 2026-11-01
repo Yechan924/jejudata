@@ -1,0 +1,157 @@
+"""Agent 오케스트레이터.
+
+흐름: 질문 → (LLM 플래너 | 규칙 플래너) → 도구 호출 → 반출 게이트 → (LLM 해설 | 템플릿 해설) → AgentResult
+LLM은 원본 행을 절대 보지 않는다. 도구가 만든 집계표(게이트 통과본)만 텍스트로 전달된다.
+"""
+from __future__ import annotations
+
+import json
+import time
+import traceback
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from . import schemas
+from .config import LLM_MAX_TOOL_CALLS
+from .data.loader import JejuDB
+from .gate import apply_gate
+from .llm import LLM
+from .planner_rules import plan as rule_plan, template_answer
+from .tools import ToolResult, call_tool, tool_specs
+
+PROMPT_PATH = Path(__file__).parent / "prompts" / "system.md"
+
+
+@dataclass
+class StepLog:
+    tool: str
+    args: dict
+    ok: bool
+    seconds: float
+    rows: int = 0
+    gate: list[str] = field(default_factory=list)
+    error: str = ""
+
+
+@dataclass
+class AgentResult:
+    question: str
+    answer: str
+    results: list[ToolResult]
+    steps: list[StepLog]
+    mode: str                      # "llm:<provider>/<model>" | "offline"
+    llm_calls: int = 0
+    tokens: dict = field(default_factory=dict)
+    elapsed: float = 0.0
+    synthetic: bool = False
+
+
+class JejuAgent:
+    def __init__(self, db: JejuDB | None = None, llm: LLM | None = None):
+        self.db = db or JejuDB()
+        if not self.db.frames:
+            self.db.load_all()
+        self.llm = llm or LLM()
+
+    # ---------- 공통 ----------
+    def _system_prompt(self) -> str:
+        prov = self.db.summary()
+        prov_txt = "\n".join(f"- {r.key}: {r.source}, {r.rows:,}행, {r.period}" for r in prov.itertuples())
+        if self.db.uses_synthetic():
+            prov_txt += "\n⚠️ 'synthetic'은 명세서 구조만 따른 개발용 가짜 데이터입니다. 답변 '한계'에 이 사실을 반드시 적으세요."
+        return PROMPT_PATH.read_text(encoding="utf-8").format(datasets=schemas.describe_for_llm(), provenance=prov_txt)
+
+    def _run_tool(self, name: str, args: dict, steps: list[StepLog]) -> ToolResult | None:
+        t0 = time.time()
+        try:
+            r = call_tool(self.db, name, args)
+            g = apply_gate(r)
+            r.table, r.gate_log = g.table, g.log
+            steps.append(StepLog(name, args, True, round(time.time() - t0, 2), len(r.table), g.log))
+            return r
+        except Exception as e:  # noqa: BLE001
+            steps.append(StepLog(name, args, False, round(time.time() - t0, 2), error=f"{type(e).__name__}: {e}"))
+            return None
+
+    def _names(self):
+        places = sorted(self.db.table("wifi_ap_usage")["ap_place"].dropna().unique().tolist()) if self.db.has("wifi_ap_usage") else []
+        stations = sorted(self.db.table("bus_station_usage")["bus_station_name"].dropna().unique().tolist()) if self.db.has("bus_station_usage") else []
+        routes = sorted(self.db.table("bus_route_usage")["bus_route_name"].dropna().unique().tolist()) if self.db.has("bus_route_usage") else []
+        return places, stations, routes
+
+    def _data_range(self) -> tuple[str, str]:
+        ps = [p for p in self.db.provenance.values() if p.date_min]
+        return (min(p.date_min for p in ps), max(p.date_max for p in ps)) if ps else ("", "")
+
+    # ---------- 오프라인(규칙) 모드 ----------
+    def run_offline(self, question: str) -> AgentResult:
+        t0 = time.time()
+        places, stations, routes = self._names()
+        dmin, dmax = self._data_range()
+        steps: list[StepLog] = []
+        results: list[ToolResult] = []
+        for name, args in rule_plan(question, places, stations, routes, dmin, dmax):
+            if args.get("place") == "__TOP1__":
+                if not results or results[0].table.empty:
+                    continue
+                args = {**args, "place": str(results[0].table.iloc[0].get("ap_place", ""))}
+            r = self._run_tool(name, args, steps)
+            if r is not None:
+                results.append(r)
+        return AgentResult(question, template_answer(question, results, self.db.uses_synthetic()), results, steps, "offline",
+                           elapsed=round(time.time() - t0, 2), synthetic=self.db.uses_synthetic())
+
+    # ---------- LLM 모드 ----------
+    def run(self, question: str, history: list[dict] | None = None) -> AgentResult:
+        if not self.llm.available:
+            return self.run_offline(question)
+        t0 = time.time()
+        steps: list[StepLog] = []
+        results: list[ToolResult] = []
+        messages = list(history or []) + [{"role": "user", "content": question}]
+        system = self._system_prompt()
+        tools = tool_specs()
+        calls, usage = 0, {"input": 0, "output": 0}
+        try:
+            for _ in range(LLM_MAX_TOOL_CALLS + 1):
+                rep = self.llm.chat(system, messages, tools)
+                calls += 1
+                u = rep.usage or {}
+                usage["input"] += u.get("input_tokens", u.get("prompt_tokens", 0)) or 0
+                usage["output"] += u.get("output_tokens", u.get("completion_tokens", 0)) or 0
+                if not rep.tool_calls:
+                    answer = rep.text.strip() or template_answer(question, results, self.db.uses_synthetic())
+                    return AgentResult(question, answer, results, steps, f"llm:{self.llm.provider}/{self.llm.model}", calls, usage,
+                                       round(time.time() - t0, 2), self.db.uses_synthetic())
+                messages.append({"role": "assistant", "content": rep.text, "tool_calls": [{"id": tc.id, "name": tc.name, "args": tc.args} for tc in rep.tool_calls]})
+                for tc in rep.tool_calls:
+                    r = self._run_tool(tc.name, tc.args, steps)
+                    if r is not None:
+                        results.append(r)
+                        content = r.to_llm_text()
+                    else:
+                        content = f"도구 오류: {steps[-1].error}. 인자를 수정해 다시 시도하거나 다른 도구를 쓰세요."
+                    messages.append({"role": "tool", "tool_call_id": tc.id, "content": content})
+            # 도구 호출 한도 초과 → 지금까지 결과로 마무리
+            messages.append({"role": "user", "content": "도구 호출 한도에 도달했습니다. 지금까지의 결과만으로 형식에 맞춰 최종 답변을 작성하세요."})
+            rep = self.llm.chat(system, messages, None)
+            calls += 1
+            return AgentResult(question, rep.text.strip(), results, steps, f"llm:{self.llm.provider}/{self.llm.model}", calls, usage,
+                               round(time.time() - t0, 2), self.db.uses_synthetic())
+        except Exception as e:  # noqa: BLE001  LLM 장애 → 오프라인 폴백
+            steps.append(StepLog("llm", {}, False, 0, error=f"{type(e).__name__}: {e}"))
+            off = self.run_offline(question)
+            off.steps = steps + off.steps
+            off.mode = f"offline(fallback from {self.llm.provider}: {type(e).__name__})"
+            off.llm_calls = calls
+            return off
+
+    # ---------- 직렬화 ----------
+    @staticmethod
+    def to_dict(res: AgentResult) -> dict:
+        return {"question": res.question, "answer": res.answer, "mode": res.mode, "llm_calls": res.llm_calls, "tokens": res.tokens,
+                "elapsed": res.elapsed, "synthetic": res.synthetic,
+                "steps": [s.__dict__ for s in res.steps],
+                "results": [{"tool": r.name, "title": r.title, "params": r.params, "datasets": r.datasets, "method": r.method,
+                             "facts": r.facts, "caveats": r.caveats, "gate": r.gate_log, "rows": len(r.table),
+                             "table": json.loads(r.table.head(200).to_json(orient="records", force_ascii=False))} for r in res.results]}

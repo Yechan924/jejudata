@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>AI Agent 기획서 — 제주 혼잡·이동 진단 Agent</title>
+<style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+body { font-family: "Noto Sans CJK KR", "NanumGothic", sans-serif; font-size: 10.2pt; line-height: 1.55; color: #1b1b1b; }
+h1 { font-size: 20pt; margin: 0 0 4px; color: #1f4e6b; }
+h2 { font-size: 14pt; color: #1f4e6b; border-bottom: 2px solid #1f4e6b; padding-bottom: 3px; margin: 22px 0 10px; }
+h3 { font-size: 11.5pt; color: #2f6f8f; margin: 14px 0 6px; }
+p { margin: 5px 0; }
+table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; font-size: 9.3pt; }
+th, td { border: 1px solid #c9d3da; padding: 4px 6px; vertical-align: top; }
+th { background: #e8f0f5; text-align: left; }
+.cover { text-align: center; padding-top: 150px; }
+.cover .sub { font-size: 13pt; color: #444; margin-top: 10px; }
+.cover .meta { margin-top: 120px; font-size: 11pt; color: #333; line-height: 2; }
+.box { border: 1px solid #c9d3da; background: #f6f9fb; padding: 8px 12px; margin: 8px 0; border-radius: 4px; }
+.warn { border-left: 4px solid #e07b39; background: #fff6ee; padding: 6px 10px; margin: 8px 0; }
+.flow { display: table; width: 100%; margin: 8px 0; }
+.flow .step { display: table-cell; text-align: center; vertical-align: middle; background: #e8f0f5; border: 1px solid #1f4e6b; padding: 8px 4px; font-size: 9pt; width: 15%; }
+.flow .arrow { display: table-cell; text-align: center; vertical-align: middle; font-size: 16pt; color: #1f4e6b; width: 3%; }
+.small { font-size: 8.8pt; color: #555; }
+ul { margin: 4px 0 6px 18px; padding: 0; } li { margin: 2px 0; }
+img { max-width: 100%; }
+tr, .box, .warn, .flow { page-break-inside: avoid; }
+.pb { page-break-before: always; }
+.kpi td { text-align: center; font-size: 10pt; }
+code { font-family: "Noto Sans Mono CJK KR", monospace; font-size: 9pt; background: #f1f1f1; padding: 0 3px; }
+</style></head><body>
+
+<div class="cover">
+  <div style="font-size:11pt;color:#666">제주 AI·빅데이터 활용 AI Agent 개발 챌린지 — AI Agent 기획서</div>
+  <h1 style="font-size:26pt;margin-top:24px">제주 혼잡·이동 진단 Agent</h1>
+  <div class="sub">공공 와이파이와 버스 승하차 데이터로 읽는 관광지 쏠림과 대중교통 수요</div>
+  <div class="meta">
+    팀명: 재주도좋다 &nbsp;|&nbsp; 팀장: yangg<br>
+    제출일: 2026년 11월 &nbsp;|&nbsp; 버전: v0.1<br>
+    활용 데이터: 제주빅데이터센터 데이터 명세서 v12 기준 9종 (와이파이 3, 교통 4, 환경 2 — 모두 반출 가능)
+  </div>
+</div>
+
+<div class="pb"></div>
+<h2>0. 요약</h2>
+<div class="box">
+<b>문제</b> — 2026년 제주는 내국인 관광객 감소·외국인 급증, 특정 관광지 쏠림, 버스 준공영제 효율 논란이 동시에 진행 중이다. 그러나 "어디에 누가 몰리는가", "어느 노선·시간대가 비어 있는가"를 도민·공무원이 직접 숫자로 확인하려면 전문가의 SQL·시각화 작업이 필요하다.<br>
+<b>해법</b> — 질문 한 줄을 입력하면 AI Agent가 ① 적절한 분석 도구를 고르고 ② 와이파이·버스·날씨 데이터를 집계해 ③ 지도·차트와 함께 쉬운 말로 결론·근거·한계를 돌려준다.<br>
+<b>핵심 발상</b> — 유동인구·카드 데이터는 센터 밖 반출이 불가능하지만, <b>공공 와이파이 AP별 이용 현황(4-05)에는 국적·방문유형(관광/거주/업무)·AP 좌표</b>가 있어 반출 가능 데이터만으로 "관광객·외국인이 몰리는 장소"를 읽는 <b>혼잡 센서</b>로 쓸 수 있다. 여기에 티머니 버스 승하차(3-02/3-04)를 결합해 혼잡 관광지의 대중교통 수요와 비효율 노선·시간대까지 한 흐름으로 진단한다.<br>
+<b>현재 상태</b> — 분석 도구 10개, LLM 도구호출 플래너 + 규칙 기반 오프라인 모드, 반출 게이트, Streamlit UI, CLI, 테스트 16개가 구현되어 명세서 구조의 합성 데이터로 전 기능이 동작한다.
+</div>
+<table class="kpi"><tr><th>분석 도구</th><th>지원 LLM</th><th>데이터셋</th><th>질문→답변</th><th>외부망 없이</th></tr>
+<tr><td>10개</td><td>Claude / GPT / Ollama / 없음</td><td>9종(반출 가능)</td><td>0.1~1초(집계) + LLM 5~15초</td><td>동작(규칙 모드)</td></tr></table>
+
+<h2>1. 구현 목표</h2>
+<h3>1.1 분석 주제</h3>
+<p><b>"제주 관광지 혼잡과 대중교통 수요를 반출 가능 데이터만으로 진단하는 AI Agent"</b></p>
+<ul>
+<li><b>관광지 혼잡</b>: 공공 와이파이 AP 접속 고유 이용자를 장소·일 단위로 집계해 혼잡지수(평소 평일 대비 배수), 관광객·외국인 비중, 주말/강우 민감도를 산출한다.</li>
+<li><b>대중교통 수요</b>: 티머니 승하차로 정류소·노선·시간대별 승차 수요, 교통약자(경로·장애·어린이) 비중, 승객/km/일 효율과 저이용 시간대를 산출한다.</li>
+<li><b>결합</b>: 혼잡 관광지 반경 1.5km 정류소의 수요·피크 시간을 묶어 "몰리는 곳으로 가는 버스는 충분한가"를 답한다.</li>
+</ul>
+<h3>1.2 AI를 활용한 데이터 분석 목표</h3>
+<table><tr><th style="width:28%">목표</th><th>측정 방법</th></tr>
+<tr><td>비전문가가 질문만으로 결과를 얻는다</td><td>예시 질문 12종을 UI 버튼 클릭만으로 실행, 결론·근거·해석·한계 4단 답변</td></tr>
+<tr><td>모든 수치가 추적 가능하다</td><td>도구 호출 인자·계산 방법·SQL·반출 게이트 로그를 답변과 함께 저장(JSON/HTML)</td></tr>
+<tr><td>센터 PC와 외부 어디서든 재현된다</td><td>CLI 배치 실행 + pytest, DuckDB 없으면 sqlite 폴백, LLM 없으면 규칙 모드</td></tr>
+<tr><td>개인정보가 밖으로 나가지 않는다</td><td>LLM은 집계표(최대 40행)만 수신, 식별자 컬럼 차단, 5명 미만 셀 마스킹</td></tr></table>
+
+<h3>1.3 왜 지금 제주에 필요한가</h3>
+<ul>
+<li>2026년 9월 내국인 관광객 약 88.5만 명(전년比 −8.1%), 카드 소비 −12.7%, 외국인 25.8만 명(+18.1%) — 도는 8월부터 "관광지표 대응 민생경제 상황실"을 가동 중이다(경향신문 2026.10.21 보도 기준).</li>
+<li>버스 준공영제는 막대한 재정 지원에도 비효율 노선 논란이 이어져 노선·시간대별 수요 근거가 필요하다.</li>
+<li>외국인 관광객 증가와 함께 특정 관광지 쏠림·쓰레기·기초질서 민원이 늘어, "어디에 누가 언제 몰리는가"를 상시 모니터링할 도구가 요구된다.</li>
+</ul>
+
+<h2>2. 서비스 제안</h2>
+<h3>2.1 데이터 활용 개요</h3>
+<div class="flow">
+<div class="step">와이파이 AP별 이용(4-05)<br><span class="small">고유 이용자·국적·방문유형·좌표</span></div><div class="arrow">+</div>
+<div class="step">버스 정류소·노선별 이용(3-04/3-02)<br><span class="small">시간대·이용자구분·승차</span></div><div class="arrow">+</div>
+<div class="step">일일 날씨(5-02)<br><span class="small">강수량·기온</span></div><div class="arrow">→</div>
+<div class="step" style="background:#fff6ee">혼잡지수 · 접근성 · 노선 효율 · 강우 민감도</div>
+</div>
+<h3>2.2 핵심 기능 (구현 완료)</h3>
+<table><tr><th style="width:17%">기능</th><th style="width:38%">사용자 질문 예</th><th>Agent가 하는 일</th></tr>
+<tr><td>① 혼잡 순위</td><td>"주말에 가장 붐비는 관광지는?", "외국인이 많이 가는 곳은?"</td><td>장소별 혼잡지수·관광/외국인 비중 순위 → 지도에 원 크기로 표시 → 1위 장소 주변 정류소까지 자동 연계</td></tr>
+<tr><td>② 장소 프로필</td><td>"성산일출봉은 언제 붐비나?"</td><td>일별 추이, 요일·월별 평균, 가장 붐빈 날, 국적·방문유형 구성, 추세 증감률</td></tr>
+<tr><td>③ 관광지 접근</td><td>"성산일출봉 가는 정류소는 얼마나 붐비나?"</td><td>반경 1.5km 정류소 승차·피크 시간 vs 와이파이 이용자 비교</td></tr>
+<tr><td>④ 노선 효율</td><td>"효율이 낮은 노선은?", "251번 시간대별 이용"</td><td>승객/km/일·승객/정류소, 피크의 15% 미만 저이용 시간대 자동 탐지</td></tr>
+<tr><td>⑤ 교통약자 정류소</td><td>"어르신이 많이 타는 정류소는?"</td><td>경로·장애·어린이 비중 순위, 시간대 프로필(경로 오전 집중 등)</td></tr>
+<tr><td>⑥ 강우 영향</td><td>"비 오면 어디가 한산해지나?"</td><td>가장 가까운 관측소 강수량으로 강우일/비강우일 이용 변화율 순위(평일·주말 분리)</td></tr>
+<tr><td>⑦ 자유 집계</td><td>"월정리 월별 이용자 수"</td><td>LLM이 집계 SQL 작성 → 읽기 전용·집계만 허용 → 게이트 통과 후 표시</td></tr></table>
+<img src="img/congestion.png" style="width:85%;display:block;margin:4px auto">
+<p class="small" style="text-align:center">[그림 1] 기능 ① 출력 예 — 주말 혼잡지수 순위. 1.0은 평소 평일 수준, 2.3은 평일의 2.3배.</p>
+
+<h3>2.3 편의성</h3>
+<ul>
+<li><b>버튼 하나</b>: 사이드바의 예시 질문을 누르면 끝. 자연어 채팅도 가능.</li>
+<li><b>보는 방식 5가지</b>: 🗺️지도(pydeck) · 📊차트(plotly) · 📋근거 표 · 🔍방법·한계 · 🧾실행 로그 탭. 전문 용어는 처음 나올 때 풀어 쓴다.</li>
+<li><b>가져가기</b>: 단일 HTML 리포트 다운로드(표·방법·게이트 로그 포함), CLI JSON 저장.</li>
+<li><b>데이터 넣기</b>: CSV를 UI에 드래그하거나 <code>data/raw/</code>에 복사. 한글·영문 헤더, cp949·UTF-8 자동 인식.</li>
+<li><b>안전장치</b>: LLM 장애·외부망 차단 시 자동으로 규칙 기반 모드, 합성 데이터 사용 시 모든 화면에 경고.</li>
+</ul>
+<h3>2.4 분석 데이터 활용 방안 (센터·도정)</h3>
+<table><tr><th style="width:22%">이용자</th><th>활용 시나리오</th></tr>
+<tr><td>관광 부서</td><td>주말·연휴 혼잡 예상 관광지를 사전에 확인해 분산 안내·주차/셔틀 대응. 외국인 비중 높은 장소에 다국어 안내 우선 배치.</td></tr>
+<tr><td>교통 부서</td><td>저이용 시간대가 많은 노선, 관광지 접근 정류소의 피크 시간을 근거로 배차 조정·증편 검토 자료 생성.</td></tr>
+<tr><td>복지·읍면</td><td>경로 이용 비중이 높은 정류소의 오전 피크를 근거로 저상버스·정류소 편의시설 우선순위 결정.</td></tr>
+<tr><td>도민·소상공인</td><td>"우리 동네 해변은 비 오면 얼마나 줄어드나" 같은 질문으로 영업·행사 계획 참고.</td></tr>
+<tr><td>빅데이터센터</td><td>방문 상담 시 상담원이 현장에서 즉시 집계·리포트 생성. 비반출 데이터(카드·유동인구)를 같은 게이트 구조로 추가해 확장 가능.</td></tr></table>
+
+<div class="pb"></div>
+<h2>3. Agent 개발 구성</h2>
+<h3>3.1 참여자 역할·목표·Workflow</h3>
+<div class="flow">
+<div class="step">사용자<br><span class="small">질문 한 줄</span></div><div class="arrow">→</div>
+<div class="step">플래너<br><span class="small">LLM 도구호출<br>(폴백: 규칙 기반)</span></div><div class="arrow">→</div>
+<div class="step">분석 도구 10개<br><span class="small">pandas / SQL 집계<br>원본 행 접근 없음</span></div><div class="arrow">→</div>
+<div class="step">반출 게이트<br><span class="small">식별자 제거 · &lt;5 마스킹 · 행 상한</span></div><div class="arrow">→</div>
+<div class="step">해설<br><span class="small">LLM 또는 템플릿<br>결론·근거·해석·한계</span></div><div class="arrow">→</div>
+<div class="step">UI / 리포트<br><span class="small">지도·차트·표·로그</span></div>
+</div>
+<table><tr><th style="width:18%">구성 요소</th><th>역할과 목표</th></tr>
+<tr><td>사용자</td><td>질문만 한다. 장소·노선·기간을 정확히 몰라도 된다(부분 일치, 기본 기간 자동).</td></tr>
+<tr><td>플래너(LLM)</td><td>시스템 프롬프트에 데이터 스키마·도구 설명·답변 형식이 들어 있다. 질문에 맞는 도구를 고르고 최대 6회까지 순차 호출(예: 혼잡 순위 → 1위 프로필 → 주변 정류소). 도구 오류 시 인자를 고쳐 1회 재시도.</td></tr>
+<tr><td>규칙 플래너</td><td>LLM이 없거나 실패하면 키워드·장소명·노선번호·월 표현을 해석해 같은 도구를 호출하고 템플릿으로 답을 조립한다.</td></tr>
+<tr><td>분석 도구</td><td>각 도구는 JSON Schema로 인자를 정의하고, 집계표·사실(facts)·주의(caveats)·차트 스펙·지도 좌표·계산 방법을 함께 반환한다.</td></tr>
+<tr><td>반출 게이트</td><td><code>config/export_rules.yaml</code> 기준으로 LLM·화면·리포트로 나가는 모든 표를 검사한다.</td></tr>
+<tr><td>해설</td><td>LLM은 게이트 통과 집계표와 facts만 보고 4단 구조로 작성한다. 수치 창작 금지, 합성 데이터 경고 강제.</td></tr></table>
+
+<h3>3.2 사용 모델</h3>
+<table><tr><th>모드</th><th>모델</th><th>용도·비고</th></tr>
+<tr><td>클라우드(기본)</td><td>Anthropic Claude Sonnet 5.5</td><td>도구호출·한국어 해설 품질 우선. 질문당 2~5회 호출, 집계표 텍스트만 전송</td></tr>
+<tr><td>클라우드(대안)</td><td>OpenAI GPT-4o-mini</td><td>OpenAI 호환 API. 키만 바꾸면 동작</td></tr>
+<tr><td>로컬</td><td>Ollama + qwen2.5:7b (4bit)</td><td>센터 PC GTX 1060 6GB에서 실행 가능. 외부망 없는 환경용</td></tr>
+<tr><td>오프라인</td><td>없음(규칙 기반)</td><td>키·모델 없이 핵심 질문 패턴 처리. 자동 폴백</td></tr></table>
+<p class="small">LLM 호출은 SDK 없이 requests로 직접 구현해 의존성을 최소화했고, Anthropic/OpenAI/Ollama 세 공급자의 도구호출 형식을 하나의 인터페이스로 추상화했다.</p>
+
+<h3>3.3 Tool / API 목록</h3>
+<table><tr><th style="width:20%">도구</th><th style="width:40%">입력</th><th>출력</th></tr>
+<tr><td>congestion_rank</td><td>기간, 주말만, 외국인만, 정렬기준, top_n</td><td>장소별 혼잡지수·이용자·관광/외국인 비중 + 지도 좌표</td></tr>
+<tr><td>place_profile</td><td>장소명, 기간</td><td>일별 추이, 요일·월별 평균, 구성비, 추세</td></tr>
+<tr><td>list_places</td><td>카테고리</td><td>AP 설치 장소 목록</td></tr>
+<tr><td>place_access</td><td>장소명, 반경, 기간</td><td>반경 내 정류소 거리·승차·피크 시간</td></tr>
+<tr><td>bus_station_rank</td><td>기간, 정렬(승차/교통약자/경로/주말비), 시내·시외</td><td>정류소 순위 + 좌표</td></tr>
+<tr><td>bus_route_efficiency</td><td>기간, 노선(선택), 정렬</td><td>노선 효율 순위 또는 특정 노선 시간대 프로필·저이용 시간대</td></tr>
+<tr><td>hourly_profile</td><td>정류소명, 기간, 이용자구분</td><td>평일/주말 시간대별 승차</td></tr>
+<tr><td>weather_effect</td><td>대상(와이파이/정류소/노선), 장소, 기간, 강우 기준</td><td>강우일/비강우일 변화율 순위</td></tr>
+<tr><td>run_sql</td><td>집계 SQL</td><td>읽기 전용·GROUP BY 필수·식별자 금지·500행 상한</td></tr>
+<tr><td>describe_data</td><td>데이터셋 키</td><td>컬럼 명세·적재 상태·출처(실/합성)</td></tr></table>
+<p class="small">외부 API: LLM API(선택)만 사용. 데이터는 전부 로컬 CSV → DuckDB(또는 sqlite) 적재.</p>
+
+<h3>3.4 판단 및 자율 수행 범위</h3>
+<table><tr><th style="width:50%">Agent가 스스로 결정하는 것</th><th>Agent가 하지 않는 것</th></tr>
+<tr><td><ul>
+<li>어떤 도구를 어떤 순서로 몇 번 쓸지(상한 6회)</li>
+<li>"성산"→"성산일출봉", "251"→노선명 같은 이름 해석</li>
+<li>기간 미지정 시 전체 기간 사용과 그 사실 고지</li>
+<li>도구 오류 시 인자 수정 재시도, LLM 장애 시 오프라인 폴백</li>
+<li>해석·제안 문장 작성(도구 facts 범위 내)</li></ul></td>
+<td><ul>
+<li>원본 행 열람, 식별자 컬럼 출력, 쓰기·DDL SQL</li>
+<li>도구 결과에 없는 수치·장소·노선 생성(프롬프트 금지 + 로그 대조 가능)</li>
+<li>외부 데이터 자동 수집·외부 전송(집계표 외)</li>
+<li>정책 결정 — 결과는 "검토 근거"로만 제시</li></ul></td></tr></table>
+
+<div class="pb"></div>
+<h2>4. 데이터 활용 계획</h2>
+<h3>4.1 필수 데이터명·출처·활용 항목</h3>
+<table><tr><th style="width:7%">코드</th><th style="width:22%">데이터명</th><th style="width:17%">제공처</th><th style="width:7%">반출</th><th>활용 컬럼 → 용도</th></tr>
+<tr><td><b>4-05</b></td><td>와이파이 AP별 이용 현황</td><td>제주특별자치도</td><td>가능</td><td>base_date, user_id(고유 수 집계만), ap_place, ap_category, ap_latitude/longitude, nationality, visit_type → 혼잡지수·구성비·지도 <b>(필수)</b></td></tr>
+<tr><td>4-01</td><td>와이파이 AP 현황(고정형)</td><td>제주특별자치도</td><td>가능</td><td>ap_group_name, category, 좌표 → AP 위치 보조</td></tr>
+<tr><td>4-06</td><td>와이파이 일별 이용자 현황</td><td>제주특별자치도</td><td>가능</td><td>user_count, nationality, visit_type → 전체 추세</td></tr>
+<tr><td><b>3-04</b></td><td>버스 정류소별 이용 현황</td><td>제주특별자치도(티머니)</td><td>가능</td><td>base_hour, bus_station_id/name, get_on_off_type, user_category, user_count → 정류소 수요·교통약자·시간대 <b>(필수)</b></td></tr>
+<tr><td>3-02</td><td>버스 노선별 이용 현황</td><td>제주특별자치도(티머니)</td><td>가능</td><td>bus_route_id/name, base_hour, user_category, user_count → 노선 효율·저이용 시간대</td></tr>
+<tr><td>3-01</td><td>버스 노선 정보</td><td>제주특별자치도(티머니)</td><td>가능</td><td>bus_route_length, bus_station_count → 승객/km, 승객/정류소</td></tr>
+<tr><td>3-03</td><td>버스 정류소 정보</td><td>제주특별자치도(티머니)</td><td>가능</td><td>bus_city_type, 좌표 → 관광지 반경 검색, 지도</td></tr>
+<tr><td>5-02</td><td>일일 날씨 정보</td><td>제주특별자치도</td><td>가능</td><td>observatory_code, daily_rainfall → 강우일 판정</td></tr>
+<tr><td>5-01</td><td>날씨 관측소 정보</td><td>제주특별자치도(농업기술원)</td><td>가능</td><td>좌표 → 가장 가까운 관측소 선택</td></tr></table>
+
+<h3>4.2 수집·전처리 방법</h3>
+<ul>
+<li><b>수집</b>: 제주데이터허브 → 제주빅데이터센터 메뉴에서 CSV 다운로드 → <code>data/raw/</code> 복사(또는 UI 업로드). 파일명은 데이터명·코드·영문키 어느 것으로 시작해도 자동 배정(가장 길게 일치하는 데이터셋 우선).</li>
+<li><b>인코딩·헤더</b>: utf-8-sig → cp949 → euc-kr 순 자동 판별. 명세서의 컬럼명(영문)·컬럼명(한글)을 모두 영문 표준명으로 매핑(공백·괄호 무시).</li>
+<li><b>타입</b>: 명세서 INT/BIGINT/DOUBLE과, STRING으로 표기됐지만 숫자인 위경도·user_count를 숫자로 캐스팅. 오류 값은 NaN.</li>
+<li><b>파생</b>: date, ym, weekday, dow(월~일), is_weekend, hour. 노선·정류소 정보는 ID 기준 최신 1행.</li>
+<li><b>지표 정의</b>: 혼잡지수 = 장소·일 고유 user_id ÷ 평일 중앙값 / 교통약자 비중 = (경로+어린이+장애+유공)÷전체 승차 / 노선 효율 = 일평균 승차 ÷ km, 저이용 = 피크의 15% 미만 / 강우 효과 = 강우일(≥1mm) 평균 ÷ 비강우일 평균 − 1.</li>
+</ul>
+<img src="img/rain.png" style="width:80%;display:block;margin:4px auto">
+<p class="small" style="text-align:center">[그림 2] 기능 ⑥ 출력 예 — 강우 민감 장소. 해변·해안 장소가 크게 줄고 실내형 관광지는 영향이 작다는 패턴을 자동으로 드러낸다.</p>
+
+<h3>4.3 이용조건·개인정보</h3>
+<ul>
+<li>9종 모두 명세서상 "데이터 반출 가능"인 공개 데이터이며, 출처를 README·리포트·답변에 표기한다. 비반출 데이터는 사용하지 않는다.</li>
+<li>user_id·mac_address는 이미 암호화된 값이지만, 서비스는 고유 수 집계에만 쓰고 결과·LLM·리포트 어디에도 노출하지 않는다(게이트가 강제).</li>
+<li>5명 미만 집계 셀은 "&lt;5"로 마스킹해 소집단 식별 가능성을 차단한다.</li>
+<li>외부 데이터 없음. 개발용 합성 데이터는 명세서 구조만 참고해 자체 생성했으며 실제 값과 무관함을 모든 출력에 표시한다.</li>
+</ul>
+
+<div class="pb"></div>
+<h2>5. 개발·탑재 계획</h2>
+<h3>5.1 구현 범위</h3>
+<table><tr><th style="width:12%">구분</th><th style="width:48%">내용</th><th>상태</th></tr>
+<tr><td>데이터</td><td>CSV 자동 인식·표준화·적재(DuckDB/sqlite), 합성 데이터 생성기</td><td>완료</td></tr>
+<tr><td>도구</td><td>분석 도구 10개, JSON Schema, facts/caveats/차트/지도 반환</td><td>완료</td></tr>
+<tr><td>Agent</td><td>LLM 도구호출 루프(3개 공급자), 규칙 플래너, 폴백, 실행 로그</td><td>완료(LLM 모드 실키 검증 예정)</td></tr>
+<tr><td>안전</td><td>반출 게이트, 읽기 전용 SQL, 식별자 차단</td><td>완료</td></tr>
+<tr><td>UI</td><td>Streamlit 채팅 + 5탭 + CSV 업로드 + HTML 리포트</td><td>완료</td></tr>
+<tr><td>재현</td><td>CLI 단일/배치, pytest 16개, README·데이터 명세·매뉴얼</td><td>완료</td></tr>
+<tr><td>실데이터</td><td>허브 CSV 적재 후 임계값(15%, 1mm, 1.5km) 보정</td><td>제출 전 수행</td></tr></table>
+<img src="img/route251.png" style="width:80%;display:block;margin:4px auto">
+<p class="small" style="text-align:center">[그림 3] 기능 ④ 출력 예 — 노선 시간대 프로필. 회색 띠가 자동 탐지된 저이용 구간.</p>
+
+<h3>5.2 기술 환경</h3>
+<table><tr><th style="width:22%">항목</th><th>내용</th></tr>
+<tr><td>언어·런타임</td><td>Python 3.10+ (개발·검증 3.13)</td></tr>
+<tr><td>데이터</td><td>pandas, numpy, DuckDB(선택; 없으면 sqlite3 내장)</td></tr>
+<tr><td>UI·시각화</td><td>Streamlit, Plotly, pydeck</td></tr>
+<tr><td>LLM 연동</td><td>requests (Anthropic Messages API / OpenAI Chat Completions / Ollama OpenAI 호환)</td></tr>
+<tr><td>설정·테스트</td><td>PyYAML, python-dotenv, pytest</td></tr>
+<tr><td>저장소 구조</td><td><code>jeju_agent/</code>(data, tools, agent, gate, llm, planner_rules, report, cli) · <code>config/</code>(schemas.yaml, export_rules.yaml) · <code>app.py</code> · <code>docs/</code> · <code>tests/</code> · <code>examples/</code></td></tr></table>
+
+<h3>5.3 UI 구성</h3>
+<table><tr><th style="width:22%">영역</th><th>구성</th></tr>
+<tr><td>사이드바</td><td>오프라인 모드 토글, 엔진·LLM 상태, 적재 데이터 표(실/합성·행수·기간), CSV 업로드·다시 읽기, 예시 질문 8개 버튼, 대화 지우기</td></tr>
+<tr><td>본문</td><td>채팅 형식. 답변(결론·근거·해석·한계) → 모드/도구/LLM 호출/소요 메트릭 → 탭: 지도(원 크기=지표), 차트, 근거 표, 방법·한계(계산 방법·인자·게이트 로그), 실행 로그 → HTML 리포트 다운로드</td></tr></table>
+
+<h3>5.4 센터 실행환경과 외부 서비스 의존성</h3>
+<table><tr><th style="width:30%">센터 운영 PC 최소사양</th><th>본 서비스 요구</th></tr>
+<tr><td>Intel Core i7-8700 / GTX 1060 6GB / RAM 32GB</td><td>
+<ul><li>적재·분석: CPU·메모리만 사용. 합성 80만 행 기준 적재 15초, 질문당 집계 0.1~1초. 실데이터 수백만 행도 DuckDB로 수 초 내.</li>
+<li>LLM: (a) 외부망 가능 → Anthropic/OpenAI API, (b) 외부망 불가 → Ollama qwen2.5:7b 4bit(GTX 1060 6GB 적합), (c) 둘 다 없음 → 규칙 모드.</li>
+<li>설치: <code>run.bat</code> 한 번(가상환경·의존성·합성데이터·UI 자동).</li></ul></td></tr></table>
+<table><tr><th style="width:30%">외부 의존성</th><th>필수 여부 / 대체</th></tr>
+<tr><td>LLM API (Anthropic / OpenAI)</td><td>선택. Ollama 로컬 또는 규칙 모드로 대체. 전송 내용은 게이트 통과 집계표(≤40행)뿐</td></tr>
+<tr><td>지도 타일(pydeck 기본)</td><td>선택. 없으면 Streamlit 기본 지도로 폴백, 표·차트는 영향 없음</td></tr>
+<tr><td>PyPI</td><td>최초 설치 1회. 오프라인 설치용 wheel 묶음 제공 가능</td></tr></table>
+
+<h2>6. 검증·한계·재현성</h2>
+<h3>6.1 검증 방법</h3>
+<ul>
+<li><b>단위·통합 테스트 16개</b>: 적재, 한글 헤더 표준화, 도구 10종 실행, 게이트 마스킹·식별자 제거, SQL 원본행 차단, 오프라인 Agent 4개 질문 응답.</li>
+<li><b>심은 패턴 회수</b>: 합성 데이터에 성산일출봉 주말 급증, 251번 낮 시간 공차, 읍면사무소 경로 비중, 해변 강우 민감을 심어 두고 Agent가 이를 찾아내는지 확인(모두 회수).</li>
+<li><b>배치 재현</b>: <code>python -m jeju_agent.cli --batch examples/questions.txt</code>로 12개 질문 결과 JSON 저장 → 실데이터 적재 후 동일 명령으로 비교.</li>
+</ul>
+<h3>6.2 한계 (답변의 '한계' 항목에 자동 표시)</h3>
+<ul>
+<li>와이파이 이용자는 방문객의 표본이며 AP 수·위치에 따라 편향된다 → 절대 방문객 수가 아닌 <b>상대 지표</b>.</li>
+<li>4-05에는 시각 컬럼이 없어 와이파이 기준 시간대별 혼잡은 불가(시간대는 버스 데이터로 보완).</li>
+<li>버스 효율은 배차 횟수 없이 <b>승차 수요 기준</b>. 현금 승차 제외.</li>
+<li>강우 효과는 공휴일·행사 미통제 단순 비교(상관).</li>
+<li>규칙 모드는 정해진 질문 패턴만 처리. 복합 질문은 LLM 모드 권장.</li>
+</ul>
+<div class="warn">현재 제출본은 <b>명세서 구조의 합성 데이터</b>로 개발·검증되었다. 실데이터 적재 시 컬럼 매핑은 자동이며, 임계값은 config에서 조정한다.</div>
+
+<h2>7. 일정 및 기대효과</h2>
+<table><tr><th style="width:22%">기간</th><th>작업</th></tr>
+<tr><td>~11/8</td><td>허브 실데이터 적재, 매핑·임계값 보정, LLM 모드 실키 검증</td></tr>
+<tr><td>~11/14</td><td>시연 영상, 결과 설명자료 확정, 오프라인 wheel 묶음</td></tr>
+<tr><td>~11/19</td><td>최종 ZIP·PDF 제출, 상호평가 준비</td></tr></table>
+<p><b>기대효과</b> — ① 반출 가능 데이터만으로 관광 쏠림·교통 수요를 상시 진단하는 저비용 도구 확보 ② 상담원·공무원·도민이 SQL 없이 근거 있는 수치를 즉시 확보 ③ 동일한 게이트 구조에 카드·유동인구 데이터를 더하면 센터 내부용 고해상도 버전으로 확장 가능.</p>
+<p class="small">데이터 출처: 제주특별자치도·제주빅데이터센터·제주데이터허브(티머니, 농업기술원 등). 개발 과정에서 생성형 AI(Claude)를 코드·문서 초안 작성에 활용했으며 사람이 검토·수정했다.</p>
+</body></html>

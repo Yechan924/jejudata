@@ -1,0 +1,5 @@
+# 반출 게이트 규칙 — 센터 운영 기준에 맞춰 조정하세요.
+identifier_columns: [user_id, mac_address, user_card_id, driver_id, vhc_id, user_trans_id, manage_no]
+count_columns: [users, user_count, sessions, tourists, foreigners, total, vulnerable, senior, weekend_total]
+min_cell_count: 5      # 이 값 미만의 인원 집계 셀은 "<5"로 마스킹
+max_rows: 500          # 화면/LLM/리포트로 나가는 표의 최대 행 수

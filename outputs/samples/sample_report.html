@@ -1,0 +1,47 @@
+<!doctype html><html lang='ko'><head><meta charset='utf-8'><title>제주 혼잡·이동 진단 리포트</title><style>
+body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;max-width:960px;margin:32px auto;padding:0 20px;color:#1a1a1a;line-height:1.55}
+h1{font-size:1.5rem}h2{font-size:1.15rem;margin-top:1.8rem;border-bottom:1px solid #ddd;padding-bottom:4px}
+table{border-collapse:collapse;font-size:.85rem;margin:8px 0}td,th{border:1px solid #ddd;padding:4px 8px;text-align:right}th{background:#f4f4f4}td:first-child,th:first-child{text-align:left}
+.warn{background:#fff4e5;border-left:4px solid #f0a000;padding:8px 12px}.meta{color:#666;font-size:.85rem}
+pre{background:#f7f7f7;padding:8px;font-size:.8rem;overflow:auto}
+</style></head><body>
+<h1>제주 혼잡·이동 진단 Agent — 분석 리포트</h1>
+<p class='meta'>생성 2026-11-02 03:02 · 모드 offline · 도구 2회 · 소요 1.21s</p>
+<p class='warn'>⚠️ 이 리포트는 개발용 합성 데이터로 생성되었습니다. 실제 제주 데이터가 아닙니다.</p>
+<h2>질문</h2><p>주말에 가장 붐비는 관광지는 어디야?</p><h2>답변</h2><p><b>한 줄 결론</b> — 주말 기준 혼잡지수 1위는 성산일출봉(평균 혼잡지수 2.26, 일평균 106명).</p>
+
+<p><b>근거</b></p>
+<ul>
+<li>주말 기준 혼잡지수 1위는 성산일출봉(평균 혼잡지수 2.26, 일평균 106명)</li>
+<li>상위 10곳 중 관광 비중 최고는 성산일출봉(96%), 외국인 비중 최고는 표선해수욕장(23%)</li>
+<li>(사용 데이터: wifi_ap_usage, 전체 기간)</li>
+<li>성산일출봉 반경 1.5km 내 정류소 1개, 합산 일평균 승차 74명 (와이파이 일평균 이용자 63명)</li>
+<li>가장 가까운 정류소 성산일출봉(0.2km), 피크 11시</li>
+<li>(사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)</li>
+</ul>
+
+<p><b>해석과 제안</b></p>
+<ul>
+<li>위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.</li>
+</ul>
+
+<p><b>한계</b></p>
+<ul>
+<li>와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.</li>
+<li>혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값</li>
+<li>티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 &#x27;승차 수요&#x27; 기준입니다.</li>
+<li>정류소-관광지 거리는 직선거리입니다.</li>
+<li>⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.</li>
+<li>(오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)</li>
+</ul>
+<h2>근거 1. 장소별 혼잡도 순위 (주말)</h2>
+<p class='meta'>도구 congestion_rank · 데이터 wifi_ap_usage · 인자 {&#x27;date_from&#x27;: None, &#x27;date_to&#x27;: None, &#x27;weekend_only&#x27;: True, &#x27;foreign_only&#x27;: False, &#x27;sort_by&#x27;: &#x27;congestion_index&#x27;, &#x27;top_n&#x27;: 10}<br>방법: wifi_ap_usage를 ap_place×date로 고유 user_id 집계 → 평일 중앙값 대비 비율 평균<br>반출 게이트: 게이트 통과</p>
+<table><thead><tr><th>rank</th><th>ap_place</th><th>category</th><th>days</th><th>avg_daily_users</th><th>avg_congestion_index</th><th>peak_congestion_index</th><th>tourist_share</th><th>foreign_share</th><th>lat</th><th>lon</th></tr></thead><tbody><tr><td>1</td><td>성산일출봉</td><td>공영관광지</td><td>52</td><td>106.04</td><td>2.26</td><td>3.91</td><td>0.96</td><td>0.20</td><td>33.46</td><td>126.94</td></tr><tr><td>2</td><td>송악산</td><td>공영관광지</td><td>52</td><td>17.63</td><td>1.60</td><td>3.09</td><td>0.92</td><td>0.20</td><td>33.20</td><td>126.29</td></tr><tr><td>3</td><td>월정리해변</td><td>해수욕장</td><td>52</td><td>34.21</td><td>1.56</td><td>3.09</td><td>0.90</td><td>0.19</td><td>33.56</td><td>126.80</td></tr><tr><td>4</td><td>산방산</td><td>공영관광지</td><td>52</td><td>21.73</td><td>1.55</td><td>3.21</td><td>0.92</td><td>0.21</td><td>33.24</td><td>126.31</td></tr><tr><td>5</td><td>애월한담해안</td><td>해안도로</td><td>52</td><td>31.98</td><td>1.52</td><td>2.71</td><td>0.85</td><td>0.20</td><td>33.46</td><td>126.31</td></tr><tr><td>6</td><td>함덕해수욕장</td><td>해수욕장</td><td>52</td><td>42.60</td><td>1.52</td><td>2.93</td><td>0.86</td><td>0.20</td><td>33.54</td><td>126.67</td></tr><tr><td>7</td><td>곽지해수욕장</td><td>해수욕장</td><td>52</td><td>16.65</td><td>1.51</td><td>2.55</td><td>0.88</td><td>0.20</td><td>33.45</td><td>126.31</td></tr><tr><td>8</td><td>비자림</td><td>공영관광지</td><td>52</td><td>19.08</td><td>1.47</td><td>3.00</td><td>0.92</td><td>0.20</td><td>33.49</td><td>126.81</td></tr><tr><td>9</td><td>협재해수욕장</td><td>해수욕장</td><td>52</td><td>41.04</td><td>1.47</td><td>2.61</td><td>0.88</td><td>0.20</td><td>33.39</td><td>126.24</td></tr><tr><td>10</td><td>표선해수욕장</td><td>해수욕장</td><td>52</td><td>14.65</td><td>1.47</td><td>3.10</td><td>0.84</td><td>0.23</td><td>33.33</td><td>126.84</td></tr></tbody></table>
+<p class='meta'>주의: 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다. / 혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값</p>
+<h2>근거 2. 성산일출봉 주변 대중교통 접근</h2>
+<p class='meta'>도구 place_access · 데이터 wifi_ap_usage, bus_station, bus_station_usage · 인자 {&#x27;place&#x27;: &#x27;성산일출봉&#x27;, &#x27;radius_km&#x27;: 1.5, &#x27;date_from&#x27;: None, &#x27;date_to&#x27;: None}<br>방법: 와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산<br>반출 게이트: 게이트 통과</p>
+<table><thead><tr><th>bus_station_name</th><th>dist_km</th><th>daily_boardings</th><th>peak_hour</th><th>latitude</th><th>longitude</th></tr></thead><tbody><tr><td>성산일출봉</td><td>0.20</td><td>74.10</td><td>11</td><td>33.46</td><td>126.94</td></tr></tbody></table>
+<p class='meta'>주의: 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 &#x27;승차 수요&#x27; 기준입니다. / 정류소-관광지 거리는 직선거리입니다.</p>
+<h2>실행 로그</h2><pre>congestion_rank {&#x27;weekend_only&#x27;: True, &#x27;foreign_only&#x27;: False, &#x27;sort_by&#x27;: &#x27;congestion_index&#x27;, &#x27;top_n&#x27;: 10} → OK (1.05s, 10행)
+place_access {&#x27;place&#x27;: &#x27;성산일출봉&#x27;} → OK (0.11s, 1행)</pre>
+<p class='meta'>데이터 출처: 제주특별자치도 · 제주빅데이터센터/제주데이터허브(티머니, 농업기술원 등). 본 리포트의 모든 수치는 집계값이며 개인 식별 정보를 포함하지 않습니다.</p></body></html>

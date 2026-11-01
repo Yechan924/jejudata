@@ -1,0 +1,28 @@
+"""경로·환경변수 설정. 모든 값은 .env 또는 환경변수로 덮어쓸 수 있다."""
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(ROOT / ".env")
+
+CONFIG_DIR = ROOT / "config"
+DATA_DIR = Path(os.getenv("JEJU_DATA_DIR", ROOT / "data"))
+RAW_DIR = DATA_DIR / "raw"            # 제주데이터허브에서 받은 원본 CSV를 넣는 곳
+SYNTHETIC_DIR = DATA_DIR / "synthetic"  # 명세서 기반 개발용 합성 데이터
+OUTPUT_DIR = Path(os.getenv("JEJU_OUTPUT_DIR", ROOT / "outputs"))
+DB_PATH = Path(os.getenv("JEJU_DB_PATH", DATA_DIR / "jeju.duckdb"))
+
+# LLM
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "auto")  # auto | anthropic | openai | ollama | offline
+LLM_MODEL = os.getenv("LLM_MODEL", "")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+LLM_MAX_TOOL_CALLS = int(os.getenv("LLM_MAX_TOOL_CALLS", "6"))
+LLM_TIMEOUT = int(os.getenv("LLM_TIMEOUT", "60"))
+
+# 반출 게이트
+MIN_CELL_COUNT = int(os.getenv("EXPORT_MIN_CELL_COUNT", "5"))   # 이 미만 집계 셀은 마스킹
+MAX_EXPORT_ROWS = int(os.getenv("EXPORT_MAX_ROWS", "500"))      # LLM/화면으로 나갈 수 있는 최대 행

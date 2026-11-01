@@ -1,0 +1,1516 @@
+bus_route:
+  code: 3-01
+  name: 버스 노선 정보
+  category: 교통
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 버스 노선 정보를 제공합니다. \n  - 본 데이터는 일일 기준으로 누적 업데이트되어 변경이력을 확인할 수 있습니다."
+  columns:
+  - name: serial_number
+    kor: 일련번호
+    type: STRING
+    example: '1'
+    note: base_date 기준 일련번호 (7자리)
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20180701'
+    note: 수집일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2018'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '7'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: bus_route_id
+    kor: 버스 노선 아이디
+    type: STRING
+    example: '10000'
+    note: 버스 노선 아이디 (8자리)
+  - name: bus_route_number
+    kor: 버스 노선 번호
+    type: STRING
+    example: 2-1
+    note: 버스 노선 번호
+  - name: bus_route_name
+    kor: 버스 노선명
+    type: STRING
+    example: 2-1(월평마을~월평마을)
+    note: 버스 노선 한글명
+  - name: start_date
+    kor: 시작일
+    type: STRING
+    example: '20150729'
+    note: 버스 노선 운행 시작일자 (YYYYMMDD)
+  - name: bus_station_count
+    kor: 버스 정류소 수
+    type: INT
+    example: '55'
+    note: 버스 노선에 속하는 정류소 수
+  - name: bus_route_length
+    kor: 버스 노선거리
+    type: INT
+    example: '5763'
+    note: 운행 거리 기준 (m)
+  - name: bus_transferability
+    kor: 환승가능여부
+    type: STRING
+    example: Y
+    note: Y 환승가능, N 환승불가능
+bus_route_usage:
+  code: 3-02
+  name: 버스 노선별 이용 현황
+  category: 교통
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 버스 노선별 이용 현황을 시간단위로 제공합니다. \n  - (주)티머니 수집 데이터로 티머니카드 태그 기반의 이용 현황입니다.\n  - 본 데이터는 일일 기준으로 누적 업데이트 됩니다."
+  columns:
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20180701'
+    note: 수집일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2018'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '7'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: day_of_week
+    kor: 요일
+    type: STRING
+    example: 월
+    note: 월~일요일
+  - name: base_hour
+    kor: 시간대
+    type: STRING
+    example: '1'
+    note: 00 ~ 23
+  - name: bus_route_id
+    kor: 버스 노선 아이디
+    type: STRING
+    example: '21270000'
+    note: 버스 노선 아이디 (8자리)
+  - name: bus_route_name
+    kor: 버스 노선명
+    type: STRING
+    example: 111-2(성산항~제주국제공항)
+    note: 버스 노선 한글명
+  - name: get_on_off_type
+    kor: 승하차유형
+    type: STRING
+    example: 승차
+    note: 승차, 환승
+  - name: user_category
+    kor: 이용자구분
+    type: STRING
+    example: 일반
+    note: 어린이, 청소년, 일반, 경로, 장애 일반/동반, 유공 일반/동반
+  - name: pay_type
+    kor: 결제유형
+    type: STRING
+    example: 카드
+    note: 카드
+  - name: user_count
+    kor: 이용자수
+    type: INT
+    example: '1'
+    note: 버스 카드 이용자 수 (명)
+bus_station:
+  code: 3-03
+  name: 버스 정류소 정보
+  category: 교통
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 버스 정류소 정보를 제공합니다. \n  - 본 데이터는 일일 기준으로 누적 업데이트되어 변경이력을 확인할 수 있습니다."
+  columns:
+  - name: serial_number
+    kor: 일련번호
+    type: STRING
+    example: '1'
+    note: base_date 기준 일련번호 (7자리)
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20180701'
+    note: 수집일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2018'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '7'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: bus_station_id
+    kor: 정류소 아이디
+    type: STRING
+    example: '1'
+    note: 버스 정류소 아이디 (7자리)
+  - name: bus_station_name
+    kor: 정류소명
+    type: STRING
+    example: 제주시청
+    note: 버스 정류소 한글명
+  - name: bus_city_type
+    kor: 시내, 시외 구분
+    type: STRING
+    example: 시내
+    note: 시내, 시외
+  - name: longitude
+    kor: 경도
+    type: STRING
+    example: '126.510032'
+    note: 버스 정류소 경도
+  - name: latitude
+    kor: 위도
+    type: STRING
+    example: '33.499736'
+    note: 버스 정류소 위도
+bus_station_usage:
+  code: 3-04
+  name: 버스 정류소별 이용 현황
+  category: 교통
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 버스 정류소 정보를 제공합니다. \n  - (주)티머니 수집 데이터로 티머니카드 태그 기반의 이용 현황입니다. \n  - 본 데이터는 일일 기준으로 누적 업데이트되어 변경이력을 확인할 수 있습니다."
+  columns:
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20180701'
+    note: 수집일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2018'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '7'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: day_of_week
+    kor: 요일
+    type: STRING
+    example: 목
+    note: 월~일요일
+  - name: base_hour
+    kor: 시간대
+    type: STRING
+    example: '12'
+    note: 00~23시
+  - name: bus_station_id
+    kor: 정류소 아이디
+    type: STRING
+    example: '1'
+    note: 버스 정류소 아이디 (7자리)
+  - name: bus_station_name
+    kor: 정류소명
+    type: STRING
+    example: 국제여객선터미널
+    note: 버스 정류소 한글명
+  - name: get_on_off_type
+    kor: 승하차유형
+    type: STRING
+    example: 승차
+    note: 승차, 환승, 하차
+  - name: user_category
+    kor: 이용자구분
+    type: STRING
+    example: 일반
+    note: 어린이, 청소년, 일반, 경로, 장애 일반/동반, 유공 일반/동반
+  - name: pay_type
+    kor: 결제유형
+    type: STRING
+    example: 카드
+    note: 카드
+  - name: user_count
+    kor: 이용자 수
+    type: INT
+    example: '1'
+    note: 이용자 수 (명)
+bus_passenger:
+  code: 3-05
+  name: 버스 승객별 이용 현황
+  category: 교통
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 버스 승객별 이용 현황을 제공합니다. \n  - 본 데이터는 일일 기준으로 누적 업데이트됩니다"
+  columns:
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20180603'
+    note: 수집일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2018'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '6'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: user_id
+    kor: 사용자 식별자
+    type: STRING
+    example: 5d007eb10c637727a8abda50d3e6fc11768c856093cc6d5aacbad66313a0bc22
+    note: 사용자 식별자
+  - name: route_id
+    kor: 버스 노선 아이디
+    type: STRING
+    example: '30240000'
+    note: 버스 노선 아이디 (8자리)
+  - name: route_name
+    kor: 버스 노선명
+    type: STRING
+    example: 447-2(제주대학교~도평)
+    note: 버스 노선 한글명
+  - name: route_no
+    kor: 버스 노선 번호
+    type: STRING
+    example: 447-2
+    note: 버스 노선 번호
+  - name: geton_datetime
+    kor: 승차일시
+    type: STRING
+    example: '20180630163956'
+    note: 승차일시 (YYYYMMDDHHMMSS)
+  - name: geton_station_id
+    kor: 승차정류소 아이디
+    type: STRING
+    example: '641'
+    note: 승차정류소 아이디 (7자리)
+  - name: geton_stataion_name
+    kor: 승차정류소명
+    type: STRING
+    example: 외도부영1차아파트
+    note: 승차정류소 한글명
+  - name: geton_station_longitude
+    kor: 승차정류소 경도좌표
+    type: STRING
+    example: '126.43083'
+    note: 승차정류소 경도좌표
+  - name: geton_station_latitude
+    kor: 승차정류소 위도좌표
+    type: STRING
+    example: '33.48675'
+    note: 승차정류소 위도좌표
+  - name: getoff_datetime
+    kor: 하차일시
+    type: STRING
+    example: '20180630164350'
+    note: 하차일시 (YYYYMMDDHHMMSS)
+  - name: getoff_station_id
+    kor: 하차 정류소아이디
+    type: STRING
+    example: '52'
+    note: 하차정류소 아이디 (7자리)
+  - name: getoff_station_name
+    kor: 하차 정류소명
+    type: STRING
+    example: 도평
+    note: 하차정류소 한글명
+  - name: getoff_station_longitude
+    kor: 하차정류소 경도좌표
+    type: STRING
+    example: '126.44555'
+    note: 하차정류소 경도좌표
+  - name: getoff_station_latitude
+    kor: 하차정류소 위도좌표
+    type: STRING
+    example: '33.48168'
+    note: 하차정류소 위도좌표
+  - name: user_type
+    kor: 사용자 유형
+    type: STRING
+    example: 청소년
+    note: 어린이, 청소년, 일반, 경로, 장애 일반/동반, 유공 일반/동반
+  - name: user_count
+    kor: 이용자수
+    type: STRING
+    example: '1'
+    note: 이용자 수 (명)
+bus_card_tag:
+  code: 3-06
+  name: 버스 카드 승하차 정보
+  category: 교통
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 버스카드 승하차 정보를 제공합니다. \n  - 본 데이터는 일일 기준으로 누적 업데이트됩니다"
+  columns:
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2018'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '6'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: recode_num
+    kor: 순번
+    type: STRING
+    example: '3'
+    note: 레코드 구분 (10자리)
+  - name: user_card_id
+    kor: 카드번호
+    type: STRING
+    example: '1019160023686330'
+    note: 카드번호 (16자리)
+  - name: base_date
+    kor: 승차일
+    type: STRING
+    example: '20180707'
+    note: 승차일 (YYYYMMDD)
+  - name: user_trans_id
+    kor: 트랜잭션 아이디
+    type: STRING
+    example: '71'
+    note: 트랜잭션 아이디 (3자리)
+  - name: trans_type_cd
+    kor: 교통수단코드
+    type: STRING
+    example: '994'
+    note: 교통수단코드 (3자리)
+  - name: user_transfer_count
+    kor: 환승횟수
+    type: STRING
+    example: '1'
+    note: 환승횟수 (3자리)
+  - name: bus_route_id
+    kor: 버스노선 아이디
+    type: STRING
+    example: '28690000'
+    note: 버스노선 아이디 (8자리)
+  - name: trans_cmp_id
+    kor: 교통사업자 아이디
+    type: STRING
+    example: '149000201'
+    note: 교통사업자 아이디 (9자리)
+  - name: vhc_id
+    kor: 차량 아이디
+    type: STRING
+    example: '149793121'
+    note: 차량 아이디 (9자리)
+  - name: runstart_time
+    kor: 운행출발일시
+    type: STRING
+    example: '20180707053632'
+    note: 운행출발일시 (YYYYMMDDHHMISS)
+  - name: user_geton_datetime
+    kor: 승차거래일시
+    type: STRING
+    example: '20180707105223'
+    note: 승차거래일시 (YYYYMMDDHHMISS)
+  - name: user_geton_station_id
+    kor: 승차정류장 아이디
+    type: STRING
+    example: '1564'
+    note: 승차정류장 아이디 (7자리)
+  - name: user_getoff_datetime
+    kor: 하차거래일시
+    type: STRING
+    example: '20180707105223'
+    note: 하차거래일시 (YYYYMMDDHHMISS)
+  - name: user_getoff_station_id
+    kor: 하차정류장 아이디
+    type: STRING
+    example: '1564'
+    note: 하차정류장 아이디 (7자리)
+  - name: user_category_cd_1
+    kor: 사용자구분1
+    type: STRING
+    example: 일반
+    note: 어린이, 청소년, 일반, 경로, 장애 일반/동반, 유공 일반/동반, 기타
+  - name: user_category_cd_2
+    kor: 사용자구분2
+    type: STRING
+    example: 기타
+    note: 어린이, 청소년, 일반, 경로, 장애 일반/동반, 유공 일반/동반, 기타
+  - name: user_category_cd_3
+    kor: 사용자구분3
+    type: STRING
+    example: 기타
+    note: 어린이, 청소년, 일반, 경로, 장애 일반/동반, 유공 일반/동반, 기타
+  - name: user_count_1
+    kor: 승객수1
+    type: STRING
+    example: '1'
+    note: 승객수1
+  - name: user_count_2
+    kor: 승객수2
+    type: STRING
+    example: '0'
+    note: 승객수2
+  - name: user_count_3
+    kor: 승객수3
+    type: STRING
+    example: '0'
+    note: 승객수3
+  - name: user_geton_fare
+    kor: 승차금액
+    type: STRING
+    example: '0'
+    note: 승차금액 (원)
+  - name: user_getoff_fare
+    kor: 하차금액
+    type: STRING
+    example: '0'
+    note: 하차금액 (원)
+  - name: driver_id
+    kor: 운전자 아이디
+    type: STRING
+    example: '181'
+    note: 운전자 아이디 (6자리)
+  - name: geton_fare_dt
+    kor: 승차정산일자
+    type: STRING
+    example: '20180708'
+    note: 승차정산일자 (YYYYMMDD)
+  - name: getoff_fare_dt
+    kor: 하차정산일자
+    type: STRING
+    example: '20180708'
+    note: 하차정산일자 (YYYYMMDD)
+  - name: user_distance
+    kor: 이용거리
+    type: STRING
+    example: '0'
+    note: 승차~하차 버스 운행 거리
+  - name: penalty_cd
+    kor: 패널티코드
+    type: STRING
+    example: '1'
+    note: 패널티코드
+  - name: penalty_fare
+    kor: 패널티금액
+    type: STRING
+    example: '1000'
+    note: 패널티금액
+road_link:
+  code: 3-07
+  name: 도로 구간 정보
+  category: 교통
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 도로 구간 정보를 제공합니다. \n  - 본 데이터는 일일 기준으로 누적 업데이트됩니다"
+  columns:
+  - name: link_id
+    kor: 링크 아이디
+    type: STRING
+    example: '4080151400'
+    note: 링크 아이디 (10자리)
+  - name: start_node_id
+    kor: 시작노드 아이디
+    type: STRING
+    example: '4080093200'
+    note: 시작노드 아이디 (10자리)
+  - name: end_node_id
+    kor: 종료노드 아이디
+    type: STRING
+    example: '4080093300'
+    note: 종료노드 아이디 (10자리)
+  - name: road_in_use
+    kor: 도로 사용 여부
+    type: STRING
+    example: '1'
+    note: 사용 0, 미사용 1
+  - name: lane_count
+    kor: 차로수
+    type: DOUBLE
+    example: '1'
+    note: 1, 2, 3, 4
+  - name: road_rating
+    kor: 도로등급
+    type: STRING
+    example: '107'
+    note: 103, 105, 106, 107
+  - name: road_name
+    kor: 도로명
+    type: STRING
+    example: 일반국도12호선
+    note: 도로 한글명
+  - name: multi_linked
+    kor: 중용구간 여부
+    type: STRING
+    example: '1'
+    note: 독립구간 0, 중용구간 1
+  - name: connect_code
+    kor: 연결로 코드
+    type: STRING
+    example: '0'
+    note: 연결로 코드 (3자리)
+  - name: maximum_speed_limit
+    kor: 최고속도제한
+    type: STRING
+    example: '50'
+    note: '최소속도 제한 (km) : 000, 20, 30, 40, 50, 60, 70'
+  - name: vehicle_restricted
+    kor: 통과제한차량
+    type: STRING
+    example: '0'
+    note: 0, 3, 60
+  - name: weight_restricted
+    kor: 통과제한하중
+    type: STRING
+    example: '43200'
+    note: '통과제한하중(kg): 0, 18000, 24000, 32000, 32400, 43200, 50000'
+  - name: height_restricted
+    kor: 통과제한높이
+    type: STRING
+    example: '0'
+    note: '통과제한높이(cm): 0, 400, 420, 430, 450'
+  - name: road_type
+    kor: 도로 유형
+    type: STRING
+    example: '3'
+    note: 도로 유형 (3자리)
+road_node:
+  code: 3-08
+  name: 도로 노드 정보
+  category: 교통
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 도로 노드 정보를 제공합니다. \n  - 본 데이터는 일일 기준으로 누적 업데이트됩니다"
+  columns:
+  - name: node_id
+    kor: 노드 아이디
+    type: STRING
+    example: '4080014800'
+    note: 노드 아이디 (10자리)
+  - name: node_name
+    kor: 교차로명칭
+    type: STRING
+    example: 표선
+    note: 교차로 한글명칭
+  - name: latitude
+    kor: 위도
+    type: DOUBLE
+    example: '33.3260317412202'
+    note: 위도
+  - name: longitude
+    kor: 경도
+    type: DOUBLE
+    example: '126.832743354717'
+    note: 경도
+  - name: turn_restricted
+    kor: 회전제한 유무
+    type: STRING
+    example: 없음
+    note: 있음, 없음
+traffic_daily:
+  code: 3-09
+  name: 일일 교통량 정보
+  category: 교통
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 일일 교통량 정보를 제공합니다. \n  - 본 데이터는 일일 기준으로 누적 업데이트됩니다"
+  columns:
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20171101'
+    note: 수집일자
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2017'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '11'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: day_of_week
+    kor: 요일
+    type: STRING
+    example: 수
+    note: 월~일요일
+  - name: link_id
+    kor: 링크 아이디
+    type: STRING
+    example: '4050133900'
+    note: 링크 아이디 (10자리)
+  - name: average_speed
+    kor: 평균 속도
+    type: INT
+    example: '45'
+    note: 평균 속도 (km)
+  - name: average_time
+    kor: 평균 소요 시간
+    type: INT
+    example: '19'
+    note: 평균 소요 시간 (초)
+traffic_hourly:
+  code: 3-10
+  name: 일,시간대별 교통량 정보
+  category: 교통
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 일/시간대별 교통량 정보를 제공합니다. \n  - 본 데이터는 일일 기준으로 누적 업데이트됩니다"
+  columns:
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20180101'
+    note: 수집일자
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2018'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '1'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: day_of_week
+    kor: 요일
+    type: STRING
+    example: 월
+    note: 월~일
+  - name: base_hour
+    kor: 시간대
+    type: STRING
+    example: '6'
+    note: 00~23
+  - name: link_id
+    kor: 링크 아이디
+    type: STRING
+    example: '4050008205'
+    note: 링크 아이디 (10자리)
+  - name: average_speed
+    kor: 평균 속도
+    type: INT
+    example: '34'
+    note: 평균 속도 (km)
+  - name: average_time
+    kor: 평균 소요 시간
+    type: INT
+    example: '71'
+    note: 평균 소요 시간 (초)
+wifi_ap:
+  code: 4-01
+  name: 와이파이 AP 현황(고정형, 최신)
+  category: 통신
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 와이파이(고정형) AP 현황을 제공합니다. \n  - 본 데이터는 2019. 12. 31 기준으로 등록된 자료로 비정기적으로 업데이트 됩니다."
+  columns:
+  - name: base_date
+    kor: 기준일
+    type: varchar
+    example: '20200325'
+    note: 기준일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2016'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '11'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: manage_no
+    kor: 관리번호
+    type: STRING
+    example: 17-B0006
+    note: 관리번호 (8자리)
+  - name: mac_address
+    kor: MAC주소
+    type: STRING
+    example: 71ea40e1a3452cc253fd4343160133c9ab4f12d790cc9f98e1609d2f63e8f585
+    note: 암호화된 MAC주소
+  - name: ap_group_name
+    kor: 장소명칭
+    type: STRING
+    example: 기당미술관
+    note: 장소명칭
+  - name: install_location_detail
+    kor: AP설치위치
+    type: STRING
+    example: 휴게실
+    note: AP 설치위치
+  - name: open_date
+    kor: 개통일
+    type: STRING
+    example: '20170721'
+    note: 개통일자 (YYYYMMDD)
+  - name: category
+    kor: 카테고리
+    type: STRING
+    example: 관광지
+    note: AP위치별 카테고리
+  - name: category_detail
+    kor: 상세카테고리
+    type: STRING
+    example: 공영관광지
+    note: AP위치별 상세 카테고리
+  - name: address_dong
+    kor: 주소
+    type: STRING
+    example: 제주특별자치도 서귀포시 서홍동
+    note: 주소 (동, 리 단위)
+  - name: address_detail
+    kor: 상세주소
+    type: STRING
+    example: 서귀포시 서홍동 621
+    note: 상세주소
+  - name: latitude
+    kor: 위도
+    type: STRING
+    example: '33.244669'
+    note: 위도
+  - name: longitude
+    kor: 경도
+    type: STRING
+    example: '126.551797'
+    note: 경도
+wifi_ap_old:
+  code: 4-02
+  name: 와이파이 AP 현황(고정형, 과거)
+  category: 통신
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 와이파이(고정형) AP 현황을 제공합니다. \n  - 본 데이터는 2019. 12. 31 이전 등록된 자료입니다."
+  columns:
+  - name: base_date
+    kor: 기준일
+    type: varchar
+    example: '20200325'
+    note: 기준일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2016'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '11'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: mac_address
+    kor: MAC주소
+    type: STRING
+    example: 71ea40e1a3452cc253fd4343160133c9ab4f12d790cc9f98e1609d2f63e8f585
+    note: 암호화된 MAC주소
+  - name: ap_install_place
+    kor: 설치장소
+    type: STRING
+    example: 기당미술관
+    note: 장소명칭
+  - name: install_location_detail
+    kor: 설치장소상세
+    type: STRING
+    example: 휴게실
+    note: AP 설치위치
+  - name: open_date
+    kor: 개통일
+    type: STRING
+    example: '20170721'
+    note: 개통일자 (YYYYMMDD)
+  - name: category
+    kor: 카테고리
+    type: STRING
+    example: 관광지
+    note: AP위치별 카테고리
+  - name: address_dong
+    kor: 주소
+    type: STRING
+    example: 서귀포시 서홍동
+    note: 주소 (동, 리 단위)
+  - name: address_detail
+    kor: 상세주소
+    type: STRING
+    example: 서귀포시 서홍동 621
+    note: 상세주소
+  - name: latitude
+    kor: 위도
+    type: STRING
+    example: '33.244669'
+    note: 위도
+  - name: longitude
+    kor: 경도
+    type: STRING
+    example: '126.551797'
+    note: 경도
+wifi_ap_mobile:
+  code: 4-03
+  name: 와이파이 AP 현황(이동형)
+  category: 통신
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 와이파이(이동형) AP 현황을 제공합니다. \n  - 본 데이터는 2018. 4. 22 기준으로 등록된 자료로 비정기적으로 업데이트 됩니다."
+  columns:
+  - name: base_date
+    kor: 기준일
+    type: varchar
+    example: '20180811'
+    note: 기준일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2018'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '8'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: mac_address
+    kor: MAC주소
+    type: STRING
+    example: e7685350408d1fea900d424ff07c5fbad73da3ac1402b5a9dfd48cbbd56e6e03
+    note: 암호화된 MAC주소
+  - name: company_name
+    kor: 회사명
+    type: STRING
+    example: 관광지순환버스
+    note: 장소명칭
+  - name: bus_num
+    kor: 버스번호
+    type: STRING
+    example: 제주79아3904
+    note: AP 설치위치
+  - name: open_date
+    kor: 개통일
+    type: STRING
+    example: '20170820'
+    note: 개통일자 (YYYYMMDD)
+wifi_usage:
+  code: 4-04
+  name: 와이파이 이용 현황
+  category: 통신
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 와이파이 이용 현황을 제공합니다. \n  - age 컬럼은 2017.1.5. 기준으로 이전 데이터는 출생년월, 이후는 연령대로 입력됩니다. \n  - 기간 : 2016. 11. 11 ~ 2020. 09. 30"
+  columns:
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20161111'
+    note: 기준일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2016'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '11'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: user_id
+    kor: 사용자 아이디
+    type: STRING
+    example: b83aa7ff5370d6b94c076780e664b5cc492bc91730c416e17a14fcc5633e250e
+    note: 사용자 아이디
+  - name: mac_address
+    kor: 맥어드레스
+    type: STRING
+    example: 32daa304617c3b60236d576a1c854b0b9e2e05a261fc6ab6fb79b2d8bce2dd1b
+    note: AP 맥 어드레스
+  - name: upload
+    kor: 업로드 패킷량
+    type: BIGINT
+    example: '5251'
+    note: 업로드 패킷량 (byte)
+  - name: download
+    kor: 다운로드 패킷량
+    type: BIGINT
+    example: '5251'
+    note: 다운로드 패킷량 (byte)
+  - name: session_time
+    kor: 서비스 사용시간
+    type: BIGINT
+    example: '5251'
+    note: 서비스 사용시간 (초)
+  - name: nationality
+    kor: 국적
+    type: STRING
+    example: 인도
+    note: 246개 국적
+  - name: province
+    kor: 시도
+    type: STRING
+    example: 서울특별시
+    note: 17개 시도, NULL
+  - name: gender
+    kor: 성별
+    type: STRING
+    example: 남성
+    note: 남성, 여성
+  - name: age
+    kor: 연령
+    type: STRING
+    example: '"1978/11" 또는 30'
+    note: 생년월일 또는 연령대
+  - name: visit_type
+    kor: 방문유형
+    type: STRING
+    example: 업무
+    note: 거주, 업무, 관광, 국제회의 및 인센티브 투어, 기타
+  - name: ap_type
+    kor: AP유형
+    type: STRING
+    example: 고정형
+    note: 고정형, 이동형, 알수없음
+wifi_ap_usage:
+  code: 4-05
+  name: 와이파이 AP별 이용 현황
+  category: 통신
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 와이파이 이용 현황을 제공합니다. \n  - 본 데이터는 2020. 10. 01 ~ 현재까지 일일기준 누적 업데이트 됩니다."
+  columns:
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20161111'
+    note: 기준일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2016'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '11'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: user_id
+    kor: 사용자 아이디
+    type: STRING
+    example: b83aa7ff5370d6b94c076780e664b5cc492bc91730c416e17a14fcc5633e250e
+    note: 사용자 아이디
+  - name: mac_address
+    kor: 맥어드레스
+    type: STRING
+    example: 32daa304617c3b60236d576a1c854b0b9e2e05a261fc6ab6fb79b2d8bce2dd1b
+    note: AP 맥 어드레스
+  - name: upload
+    kor: 업로드 패킷량
+    type: BIGINT
+    example: '5251'
+    note: 업로드 패킷량 (byte)
+  - name: download
+    kor: 다운로드 패킷량
+    type: BIGINT
+    example: '5251'
+    note: 다운로드 패킷량 (byte)
+  - name: session_time
+    kor: 서비스 사용시간
+    type: BIGINT
+    example: '5251'
+    note: 서비스 사용시간 (초)
+  - name: nationality
+    kor: 국적
+    type: STRING
+    example: 인도
+    note: 246개 국적
+  - name: province
+    kor: 시도
+    type: STRING
+    example: 서울특별시
+    note: 17개 시도, NULL
+  - name: gender
+    kor: 성별
+    type: STRING
+    example: 남성
+    note: 남성, 여성
+  - name: age
+    kor: 연령
+    type: STRING
+    example: '30'
+    note: 연령대
+  - name: visit_type
+    kor: 방문유형
+    type: STRING
+    example: 업무
+    note: 거주, 업무, 관광, 국제회의 및 인센티브 투어, 기타
+  - name: ap_type
+    kor: AP유형
+    type: STRING
+    example: 고정형
+    note: 고정형, 이동형, 알수없음
+  - name: ap_category
+    kor: AP카테고리
+    type: STRING
+    example: 사설관광지
+    note: AP 위치 카테고리
+  - name: ap_place
+    kor: AP장소
+    type: STRING
+    example: 일출랜드
+    note: AP 설치 장소
+  - name: ap_place_detail
+    kor: AP상세장소
+    type: STRING
+    example: 일출랜드
+    note: AP 설치 상세 장소
+  - name: ap_latitude
+    kor: AP위도
+    type: STRING
+    example: '33.381492'
+    note: AP 설치 위도
+  - name: ap_longitude
+    kor: AP경도
+    type: STRING
+    example: '126.842099'
+    note: AP 설치 경도
+  - name: ap_address_detail
+    kor: AP주소
+    type: STRING
+    example: 서귀포시 성산읍 삼달리 1010
+    note: AP 위치 주소
+wifi_daily_users:
+  code: 4-06
+  name: 와이파이 일별 이용자 현황
+  category: 통신
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 와이파이 일별 이용자 현황을 제공합니다. \n  - 본 데이터는 2017. 06. 03 ~ 현재까지 일일기준 누적 업데이트 됩니다."
+  columns:
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20170603'
+    note: 기준일자 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2017'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '1'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: day_of_week
+    kor: 요일
+    type: STRING
+    example: 수
+    note: 월~일요일
+  - name: gender
+    kor: 성별
+    type: STRING
+    example: 여성
+    note: 남성, 여성
+  - name: age
+    kor: 연령대
+    type: STRING
+    example: '30'
+    note: 0, 10, 20, 30, 40, 50, 60
+  - name: nationality
+    kor: 국적
+    type: STRING
+    example: 대한민국
+    note: 246개 국적
+  - name: province
+    kor: 시도
+    type: STRING
+    example: 서울특별시
+    note: 17개 시도, NULL
+  - name: visit_type
+    kor: 방문형태
+    type: STRING
+    example: 업무
+    note: 거주, 업무, 관광, 국제회의 및 인센티브 투어, 기타
+  - name: user_count
+    kor: 이용자수
+    type: INT
+    example: '1'
+    note: 이용자수 (명)
+weather_station:
+  code: 5-01
+  name: 날씨 관측소 정보
+  category: 환경
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 날씨 관측소 정보를 제공합니다.\n  - 본 데이터는 농업기술원의 데이터 입니다."
+  columns:
+  - name: observatory_code
+    kor: 관측소코드
+    type: STRING
+    example: '328'
+    note: 관측소 코드 (3자리)
+  - name: observatory_name
+    kor: 관측소명
+    type: STRING
+    example: 중문
+    note: 관측소 한글명
+  - name: start_date
+    kor: 시작일
+    type: STRING
+    example: '20150713'
+    note: 관측 시작일
+  - name: end_date
+    kor: 종료일
+    type: STRING
+    example: '20180706'
+    note: 관측 종료일
+  - name: management_office
+    kor: 관리관서
+    type: STRING
+    example: 제주지방기상청(184)
+    note: 제주지방기상청(184), 기상청 제주지방기상청 관측과
+  - name: longitude
+    kor: 경도
+    type: DOUBLE
+    example: '33.2495'
+    note: 관측소 경도
+  - name: latitude
+    kor: 위도
+    type: DOUBLE
+    example: '126.4061'
+    note: 관측소 위도
+  - name: legal_dongri_code
+    kor: 법정동리코드
+    type: STRING
+    example: '5013011200'
+    note: 관측소 법정동리코드 (10자리)
+  - name: sea_level_altitude
+    kor: 노장해발고도
+    type: DOUBLE
+    example: '63.04'
+    note: 관측소의 해발고도 (m)
+weather_daily:
+  code: 5-02
+  name: 일일 날씨 정보
+  category: 환경
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 일일 날씨 정보를 제공합니다.\n  - 본 데이터는 일일 기준으로 누적 업데이트 됩니다."
+  columns:
+  - name: base_date
+    kor: 날짜
+    type: STRING
+    example: '20140101'
+    note: 측정일자
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2014'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '1'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: observatory_code
+    kor: 관측소 코드
+    type: STRING
+    example: '328'
+    note: 관측소 코드 (3자리)
+  - name: average_temperature
+    kor: 평균 기온
+    type: DOUBLE
+    example: '9.1'
+    note: 평균 기온 (°C)
+  - name: lowest_temperature
+    kor: 최저 기온
+    type: DOUBLE
+    example: '6'
+    note: 최저 기온 (°C)
+  - name: lowest_temperature_time
+    kor: 최저 기온 시각
+    type: STRING
+    example: '2052'
+    note: 최저 기온 시각 (hhmi)
+  - name: highest_temperature
+    kor: 최고 기온
+    type: DOUBLE
+    example: '13.2'
+    note: 최고기온 (°C)
+  - name: highest_temperature_time
+    kor: 최고 기온 시각
+    type: STRING
+    example: '1348'
+    note: 최고 기온 시각 (hhmi)
+  - name: daily_rainfall
+    kor: 일강수량
+    type: DOUBLE
+    example: '0'
+    note: 일강수량 (mm)
+  - name: maximum_wind_speed
+    kor: 최대 순간 풍속
+    type: DOUBLE
+    example: '5.2'
+    note: 최대 순간 풍속 (m/s)
+  - name: maximum_wind_speed_time
+    kor: 최대 순간 풍속 시간
+    type: STRING
+    example: '1246'
+    note: 최대 순간 풍속 시간 (hhmi)
+  - name: average_wind_speed
+    kor: 평균 풍속
+    type: DOUBLE
+    example: '1.6'
+    note: 평균 풍속 (m/s)
+  - name: maximum_wind_speed_direction
+    kor: 최대 순간 풍속 풍향
+    type: DOUBLE
+    example: '316.3'
+    note: 최대 순간 풍속 풍향 (degree)
+wastebag_sales:
+  code: 5-03
+  name: 종량제봉투판매실적
+  category: 환경
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도의 종량제 봉투 판매실적 현황을 제공합니다.\n  - 본 데이터는 2012년 1월 1일부터 일일 기준으로 누적 업데이트 됩니다."
+  columns:
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2012'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '12'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: base_date
+    kor: 판매일자
+    type: STRING
+    example: '20121231'
+    note: 판매일자(YYYYMMDD)
+  - name: city_name
+    kor: 시구분
+    type: STRING
+    example: 제주시
+    note: 제주시, 서귀포시
+  - name: emd_name
+    kor: 읍면동
+    type: STRING
+    example: 건입동
+    note: 행정동
+  - name: wastebag_type
+    kor: 종량제봉투타입
+    type: STRING
+    example: 가연성
+    note: 가연성, 공공용, 불연성, 음식물, 재사용, 특수용
+  - name: wastebag_liter
+    kor: 종량제봉투용량
+    type: BIGINT
+    example: 50L
+    note: 2L, 3L, 5L, 10L, 20L, 30L, 40L, 50L, 100L
+  - name: sale_count
+    kor: 종량제봉투판매건수
+    type: BIGINT
+    example: '80'
+    note: 종량제봉투 판매건수 (건)
+  - name: sale_amount
+    kor: 종량제봉투판매금액
+    type: BIGINT
+    example: '92240'
+    note: 종량제봉투 판매금액 (원)
+bulky_waste:
+  code: 5-04
+  name: 대형폐기물 현황_제주시
+  category: 환경
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 제주시의 대형 폐기물 현황을 제공합니다.\n  - 본 데이터는 2010년 1월 1일부터 일일 기준으로 누적 업데이트 됩니다."
+  columns:
+  - name: base_date
+    kor: 배출일자
+    type: STRING
+    example: '20070703'
+    note: 배출일자 (YYYYMMDD)
+  - name: expected_date
+    kor: 배출예정일
+    type: STRING
+    example: '20070703'
+    note: 배출예정일자 (YYYYMMDD)
+  - name: emd_name
+    kor: 판매지역구분
+    type: STRING
+    example: 삼양1동
+    note: 판매지역(읍면동 기준)
+  - name: request_type
+    kor: 신청구분
+    type: STRING
+    example: 온라인
+    note: 온라인, 현장, 기타
+  - name: pay_type
+    kor: 결제유형
+    type: STRING
+    example: 카드
+    note: 카드, 현금, 기타
+  - name: state
+    kor: 처리상태
+    type: STRING
+    example: 수거완료
+    note: 보류, 수거대기, 수거물없음, 수거불가, 수거완료, 추가결제필요, 취소완료, 취소요망, 환불완료, 환불요청, 결제완료
+  - name: waste_first_type
+    kor: 폐기물구분1
+    type: STRING
+    example: 가전류
+    note: 가구류, 가전류, 기타류
+  - name: waste_second_type
+    kor: 폐기물구분2
+    type: STRING
+    example: 일반
+    note: 목재, 일반, 혼합
+  - name: waste_third_type
+    kor: 폐기물구분3
+    type: STRING
+    example: 텔레비젼
+    note: 폐기물 한글명
+  - name: size
+    kor: 폐기물규격
+    type: STRING
+    example: 12인치이상
+    note: 폐기물 규격
+  - name: fee_amount
+    kor: 수수료
+    type: INT
+    example: '5400'
+    note: 수수료 (원)
+  - name: count
+    kor: 폐기물수량
+    type: INT
+    example: '1'
+    note: 폐기물 수량 (개)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2007'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '7'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+food_waste_jeju:
+  code: 5-05
+  name: 음식물쓰레기 배출현황_제주시
+  category: 환경
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 제주시의 음식물쓰레기 배출현황을 제공합니다.\n  - 본 데이터는 2016년 1월 1일부터 일일 기준으로 누적 업데이트 됩니다."
+  columns:
+  - name: base_date
+    kor: 배출일시
+    type: STRING
+    example: '20160101'
+    note: 배출일시 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2016'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '1'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: waster_grp
+    kor: 배출지명
+    type: STRING
+    example: 화북주공3차
+    note: 배출지 한글명
+  - name: tag_gno
+    kor: 태그관리번호
+    type: STRING
+    example: 7FB07E75000104E0
+    note: 태그 일련번호
+  - name: em_g
+    kor: 배출량
+    type: INT
+    example: '2150'
+    note: 음식물쓰레기 배출량 (g)
+  - name: discount_yn
+    kor: 감면여부
+    type: STRING
+    example: 비감면
+    note: 감면, 비감면
+  - name: em_amt
+    kor: 선불금액
+    type: INT
+    example: '0'
+    note: 선불금액 (원)
+  - name: pay_type
+    kor: 선후불구분
+    type: STRING
+    example: 후불
+    note: 선불, 후불
+  - name: device_no
+    kor: 장비번호
+    type: STRING
+    example: W6X-022-02-1
+    note: 태그 장비번호
+food_waste_seogwipo:
+  code: 5-06
+  name: 음식물쓰레기 배출현황_서귀포
+  category: 환경
+  exportable: true
+  source: 제주빅데이터센터/제주데이터허브
+  description: "- 제주특별자치도 서귀포시의 음식물쓰레기 배출현황을 제공합니다.\n  - 본 데이터는 2016년 1월 1일부터 일일 기준으로 누적 업데이트 됩니다."
+  columns:
+  - name: base_date
+    kor: 배출일시
+    type: STRING
+    example: '20160101'
+    note: 배출일시 (YYYYMMDD)
+  - name: pt_year
+    kor: 년
+    type: STRING
+    example: '2016'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: pt_month
+    kor: 월
+    type: STRING
+    example: '1'
+    note: 파티션 컬럼 (SQL 검색시 검색조건)
+  - name: waster_grp
+    kor: 배출지명
+    type: STRING
+    example: 송산동 삼다제가복지센터
+    note: 배출지 한글명
+  - name: tag_gno
+    kor: 태그관리번호
+    type: STRING
+    example: KKRW6Y1C20000140
+    note: 태그 일련번호
+  - name: em_g
+    kor: 배출량
+    type: STRING
+    example: '1700'
+    note: 음식물쓰레기 배출량 (g)
+  - name: discount_yn
+    kor: 감면여부
+    type: STRING
+    example: 비감면
+    note: 감면, 비감면
+  - name: em_amt
+    kor: 선불금액
+    type: STRING
+    example: '37'
+    note: 선불금액 (원)
+  - name: pay_type
+    kor: 선후불구분
+    type: STRING
+    example: 선불
+    note: 선불, 후불
+  - name: device_no
+    kor: 장비번호
+    type: STRING
+    example: W6Y-140-01-1
+    note: 태그 장비번호

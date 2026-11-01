@@ -1,0 +1,4259 @@
+[
+ {
+  "question": "주말에 가장 붐비는 관광지는 어디야?",
+  "answer": "**한 줄 결론** — 주말 기준 혼잡 1위는 성산일출봉(평균 혼잡지수 2.26, 일평균 106명).\n\n**근거**\n- 주말 기준 혼잡 1위는 성산일출봉(평균 혼잡지수 2.26, 일평균 106명)\n- 상위 10곳 중 관광 비중 최고는 성산일출봉(96%), 외국인 비중 최고는 표선해수욕장(23%)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 성산일출봉 반경 1.5km 내 정류소 1개, 합산 일평균 승차 74명 (와이파이 일평균 이용자 63명)\n- 가장 가까운 정류소 성산일출봉(0.2km), 피크 11시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 1.26,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "congestion_rank",
+    "args": {
+     "weekend_only": true,
+     "foreign_only": false,
+     "sort_by": "congestion_index",
+     "top_n": 10
+    },
+    "ok": true,
+    "seconds": 1.09,
+    "rows": 10,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   },
+   {
+    "tool": "place_access",
+    "args": {
+     "place": "성산일출봉"
+    },
+    "ok": true,
+    "seconds": 0.12,
+    "rows": 1,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "congestion_rank",
+    "title": "장소별 혼잡도 순위 (주말)",
+    "params": {
+     "date_from": null,
+     "date_to": null,
+     "weekend_only": true,
+     "foreign_only": false,
+     "sort_by": "congestion_index",
+     "top_n": 10
+    },
+    "datasets": [
+     "wifi_ap_usage"
+    ],
+    "method": "wifi_ap_usage를 ap_place×date로 고유 user_id 집계 → 평일 중앙값 대비 비율 평균",
+    "facts": [
+     "주말 기준 혼잡 1위는 성산일출봉(평균 혼잡지수 2.26, 일평균 106명)",
+     "상위 10곳 중 관광 비중 최고는 성산일출봉(96%), 외국인 비중 최고는 표선해수욕장(23%)"
+    ],
+    "caveats": [
+     "와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.",
+     "혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값"
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 10,
+    "table": [
+     {
+      "rank": 1,
+      "ap_place": "성산일출봉",
+      "category": "공영관광지",
+      "days": 52,
+      "avg_daily_users": 106.04,
+      "avg_congestion_index": 2.26,
+      "peak_congestion_index": 3.91,
+      "tourist_share": 0.96,
+      "foreign_share": 0.2,
+      "lat": 33.46,
+      "lon": 126.94
+     },
+     {
+      "rank": 2,
+      "ap_place": "송악산",
+      "category": "공영관광지",
+      "days": 52,
+      "avg_daily_users": 17.63,
+      "avg_congestion_index": 1.6,
+      "peak_congestion_index": 3.09,
+      "tourist_share": 0.92,
+      "foreign_share": 0.2,
+      "lat": 33.2,
+      "lon": 126.29
+     },
+     {
+      "rank": 3,
+      "ap_place": "월정리해변",
+      "category": "해수욕장",
+      "days": 52,
+      "avg_daily_users": 34.21,
+      "avg_congestion_index": 1.56,
+      "peak_congestion_index": 3.09,
+      "tourist_share": 0.9,
+      "foreign_share": 0.19,
+      "lat": 33.56,
+      "lon": 126.8
+     },
+     {
+      "rank": 4,
+      "ap_place": "산방산",
+      "category": "공영관광지",
+      "days": 52,
+      "avg_daily_users": 21.73,
+      "avg_congestion_index": 1.55,
+      "peak_congestion_index": 3.21,
+      "tourist_share": 0.92,
+      "foreign_share": 0.21,
+      "lat": 33.24,
+      "lon": 126.31
+     },
+     {
+      "rank": 5,
+      "ap_place": "애월한담해안",
+      "category": "해안도로",
+      "days": 52,
+      "avg_daily_users": 31.98,
+      "avg_congestion_index": 1.52,
+      "peak_congestion_index": 2.71,
+      "tourist_share": 0.85,
+      "foreign_share": 0.2,
+      "lat": 33.46,
+      "lon": 126.31
+     },
+     {
+      "rank": 6,
+      "ap_place": "함덕해수욕장",
+      "category": "해수욕장",
+      "days": 52,
+      "avg_daily_users": 42.6,
+      "avg_congestion_index": 1.52,
+      "peak_congestion_index": 2.93,
+      "tourist_share": 0.86,
+      "foreign_share": 0.2,
+      "lat": 33.54,
+      "lon": 126.67
+     },
+     {
+      "rank": 7,
+      "ap_place": "곽지해수욕장",
+      "category": "해수욕장",
+      "days": 52,
+      "avg_daily_users": 16.65,
+      "avg_congestion_index": 1.51,
+      "peak_congestion_index": 2.55,
+      "tourist_share": 0.88,
+      "foreign_share": 0.2,
+      "lat": 33.45,
+      "lon": 126.31
+     },
+     {
+      "rank": 8,
+      "ap_place": "비자림",
+      "category": "공영관광지",
+      "days": 52,
+      "avg_daily_users": 19.08,
+      "avg_congestion_index": 1.47,
+      "peak_congestion_index": 3.0,
+      "tourist_share": 0.92,
+      "foreign_share": 0.2,
+      "lat": 33.49,
+      "lon": 126.81
+     },
+     {
+      "rank": 9,
+      "ap_place": "협재해수욕장",
+      "category": "해수욕장",
+      "days": 52,
+      "avg_daily_users": 41.04,
+      "avg_congestion_index": 1.47,
+      "peak_congestion_index": 2.61,
+      "tourist_share": 0.88,
+      "foreign_share": 0.2,
+      "lat": 33.39,
+      "lon": 126.24
+     },
+     {
+      "rank": 10,
+      "ap_place": "표선해수욕장",
+      "category": "해수욕장",
+      "days": 52,
+      "avg_daily_users": 14.65,
+      "avg_congestion_index": 1.47,
+      "peak_congestion_index": 3.1,
+      "tourist_share": 0.84,
+      "foreign_share": 0.23,
+      "lat": 33.33,
+      "lon": 126.84
+     }
+    ]
+   },
+   {
+    "tool": "place_access",
+    "title": "성산일출봉 주변 대중교통 접근",
+    "params": {
+     "place": "성산일출봉",
+     "radius_km": 1.5,
+     "date_from": null,
+     "date_to": null
+    },
+    "datasets": [
+     "wifi_ap_usage",
+     "bus_station",
+     "bus_station_usage"
+    ],
+    "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
+    "facts": [
+     "성산일출봉 반경 1.5km 내 정류소 1개, 합산 일평균 승차 74명 (와이파이 일평균 이용자 63명)",
+     "가장 가까운 정류소 성산일출봉(0.2km), 피크 11시"
+    ],
+    "caveats": [
+     "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.",
+     "정류소-관광지 거리는 직선거리입니다."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 1,
+    "table": [
+     {
+      "bus_station_name": "성산일출봉",
+      "dist_km": 0.2,
+      "daily_boardings": 74.1,
+      "peak_hour": 11,
+      "latitude": 33.4602,
+      "longitude": 126.9413
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "외국인 관광객이 많이 가는 곳은?",
+  "answer": "**한 줄 결론** — 전체 기준 혼잡 1위는 제주국제공항(평균 혼잡지수 1.14, 일평균 27명).\n\n**근거**\n- 전체 기준 혼잡 1위는 제주국제공항(평균 혼잡지수 1.14, 일평균 27명)\n- 상위 10곳 중 관광 비중 최고는 성산일출봉(88%), 외국인 비중 최고는 제주국제공항(100%)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 제주국제공항 반경 1.5km 내 정류소 1개, 합산 일평균 승차 147명 (와이파이 일평균 이용자 135명)\n- 가장 가까운 정류소 제주국제공항(0.2km), 피크 18시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 1.16,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "congestion_rank",
+    "args": {
+     "weekend_only": false,
+     "foreign_only": true,
+     "sort_by": "users",
+     "top_n": 10
+    },
+    "ok": true,
+    "seconds": 0.97,
+    "rows": 10,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   },
+   {
+    "tool": "place_access",
+    "args": {
+     "place": "제주국제공항"
+    },
+    "ok": true,
+    "seconds": 0.12,
+    "rows": 1,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "congestion_rank",
+    "title": "장소별 혼잡도 순위 (전체, 외국인)",
+    "params": {
+     "date_from": null,
+     "date_to": null,
+     "weekend_only": false,
+     "foreign_only": true,
+     "sort_by": "users",
+     "top_n": 10
+    },
+    "datasets": [
+     "wifi_ap_usage"
+    ],
+    "method": "wifi_ap_usage를 ap_place×date로 고유 user_id 집계 → 평일 중앙값 대비 비율 평균",
+    "facts": [
+     "전체 기준 혼잡 1위는 제주국제공항(평균 혼잡지수 1.14, 일평균 27명)",
+     "상위 10곳 중 관광 비중 최고는 성산일출봉(88%), 외국인 비중 최고는 제주국제공항(100%)"
+    ],
+    "caveats": [
+     "와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.",
+     "혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값"
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 10,
+    "table": [
+     {
+      "rank": 1,
+      "ap_place": "제주국제공항",
+      "category": "공항",
+      "days": 181,
+      "avg_daily_users": 27.38,
+      "avg_congestion_index": 1.14,
+      "peak_congestion_index": 2.25,
+      "tourist_share": 0.67,
+      "foreign_share": 1.0,
+      "lat": 33.51,
+      "lon": 126.49
+     },
+     {
+      "rank": 2,
+      "ap_place": "성산일출봉",
+      "category": "공영관광지",
+      "days": 180,
+      "avg_daily_users": 12.68,
+      "avg_congestion_index": 1.41,
+      "peak_congestion_index": 4.44,
+      "tourist_share": 0.88,
+      "foreign_share": 1.0,
+      "lat": 33.46,
+      "lon": 126.94
+     },
+     {
+      "rank": 3,
+      "ap_place": "동문시장",
+      "category": "전통시장",
+      "days": 180,
+      "avg_daily_users": 11.07,
+      "avg_congestion_index": 1.11,
+      "peak_congestion_index": 2.3,
+      "tourist_share": 0.55,
+      "foreign_share": 1.0,
+      "lat": 33.51,
+      "lon": 126.53
+     },
+     {
+      "rank": 4,
+      "ap_place": "서귀포매일올레시장",
+      "category": "전통시장",
+      "days": 180,
+      "avg_daily_users": 9.12,
+      "avg_congestion_index": 1.14,
+      "peak_congestion_index": 2.38,
+      "tourist_share": 0.59,
+      "foreign_share": 1.0,
+      "lat": 33.25,
+      "lon": 126.56
+     },
+     {
+      "rank": 5,
+      "ap_place": "중문관광단지",
+      "category": "공영관광지",
+      "days": 179,
+      "avg_daily_users": 8.1,
+      "avg_congestion_index": 1.16,
+      "peak_congestion_index": 3.14,
+      "tourist_share": 0.84,
+      "foreign_share": 1.0,
+      "lat": 33.24,
+      "lon": 126.41
+     },
+     {
+      "rank": 6,
+      "ap_place": "노형로터리",
+      "category": "번화가",
+      "days": 179,
+      "avg_daily_users": 6.77,
+      "avg_congestion_index": 0.97,
+      "peak_congestion_index": 2.0,
+      "tourist_share": 0.28,
+      "foreign_share": 1.0,
+      "lat": 33.48,
+      "lon": 126.48
+     },
+     {
+      "rank": 7,
+      "ap_place": "협재해수욕장",
+      "category": "해수욕장",
+      "days": 177,
+      "avg_daily_users": 6.68,
+      "avg_congestion_index": 1.34,
+      "peak_congestion_index": 4.0,
+      "tourist_share": 0.77,
+      "foreign_share": 1.0,
+      "lat": 33.39,
+      "lon": 126.24
+     },
+     {
+      "rank": 8,
+      "ap_place": "함덕해수욕장",
+      "category": "해수욕장",
+      "days": 180,
+      "avg_daily_users": 6.62,
+      "avg_congestion_index": 1.2,
+      "peak_congestion_index": 3.64,
+      "tourist_share": 0.78,
+      "foreign_share": 1.0,
+      "lat": 33.54,
+      "lon": 126.67
+     },
+     {
+      "rank": 9,
+      "ap_place": "제주버스터미널",
+      "category": "터미널",
+      "days": 179,
+      "avg_daily_users": 6.54,
+      "avg_congestion_index": 0.93,
+      "peak_congestion_index": 2.14,
+      "tourist_share": 0.45,
+      "foreign_share": 1.0,
+      "lat": 33.5,
+      "lon": 126.52
+     },
+     {
+      "rank": 10,
+      "ap_place": "오설록티뮤지엄",
+      "category": "사설관광지",
+      "days": 181,
+      "avg_daily_users": 6.52,
+      "avg_congestion_index": 1.09,
+      "peak_congestion_index": 2.33,
+      "tourist_share": 0.83,
+      "foreign_share": 1.0,
+      "lat": 33.31,
+      "lon": 126.29
+     }
+    ]
+   },
+   {
+    "tool": "place_access",
+    "title": "제주국제공항 주변 대중교통 접근",
+    "params": {
+     "place": "제주국제공항",
+     "radius_km": 1.5,
+     "date_from": null,
+     "date_to": null
+    },
+    "datasets": [
+     "wifi_ap_usage",
+     "bus_station",
+     "bus_station_usage"
+    ],
+    "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
+    "facts": [
+     "제주국제공항 반경 1.5km 내 정류소 1개, 합산 일평균 승차 147명 (와이파이 일평균 이용자 135명)",
+     "가장 가까운 정류소 제주국제공항(0.2km), 피크 18시"
+    ],
+    "caveats": [
+     "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.",
+     "정류소-관광지 거리는 직선거리입니다."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 1,
+    "table": [
+     {
+      "bus_station_name": "제주국제공항",
+      "dist_km": 0.2,
+      "daily_boardings": 146.7,
+      "peak_hour": 18,
+      "latitude": 33.5085,
+      "longitude": 126.4918
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "성산일출봉은 언제 가장 붐비나?",
+  "answer": "**한 줄 결론** — 성산일출봉: 기간 내 고유 이용자 11,477명, 평일 일평균 46명 vs 주말 106명 (주말/평일 2.29배).\n\n**근거**\n- 성산일출봉: 기간 내 고유 이용자 11,477명, 평일 일평균 46명 vs 주말 106명 (주말/평일 2.29배)\n- 가장 붐비는 요일 토요일, 가장 붐빈 날 2025-04-06 (184명, 혼잡지수 3.91)\n- 방문유형: 관광 93%, 거주 3%, 업무 2%\n- 국적: 대한민국 80%, 중국 11%, 일본 3%, 대만 2%\n- 월평균 추이 2025-01 48명 → 2025-06 70명 (+48%)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 성산일출봉 반경 1.5km 내 정류소 1개, 합산 일평균 승차 74명 (와이파이 일평균 이용자 63명)\n- 가장 가까운 정류소 성산일출봉(0.2km), 피크 11시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 1.2,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "place_profile",
+    "args": {
+     "place": "성산일출봉"
+    },
+    "ok": true,
+    "seconds": 1.03,
+    "rows": 181,
+    "gate": [
+     "소집단 보호: 5 미만 셀 18개 마스킹",
+     "게이트 통과"
+    ],
+    "error": ""
+   },
+   {
+    "tool": "place_access",
+    "args": {
+     "place": "성산일출봉"
+    },
+    "ok": true,
+    "seconds": 0.11,
+    "rows": 1,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "place_profile",
+    "title": "성산일출봉 혼잡 프로필",
+    "params": {
+     "place": "성산일출봉",
+     "date_from": null,
+     "date_to": null
+    },
+    "datasets": [
+     "wifi_ap_usage"
+    ],
+    "method": "wifi_ap_usage에서 장소 필터 → 일별 고유 user_id, 요일/월 평균, 국적·방문유형 구성비",
+    "facts": [
+     "성산일출봉: 기간 내 고유 이용자 11,477명, 평일 일평균 46명 vs 주말 106명 (주말/평일 2.29배)",
+     "가장 붐비는 요일 토요일, 가장 붐빈 날 2025-04-06 (184명, 혼잡지수 3.91)",
+     "방문유형: 관광 93%, 거주 3%, 업무 2%",
+     "국적: 대한민국 80%, 중국 11%, 일본 3%, 대만 2%",
+     "월평균 추이 2025-01 48명 → 2025-06 70명 (+48%)"
+    ],
+    "caveats": [
+     "와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다."
+    ],
+    "gate": [
+     "소집단 보호: 5 미만 셀 18개 마스킹",
+     "게이트 통과"
+    ],
+    "rows": 181,
+    "table": [
+     {
+      "date": "2025-01-01",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 34,
+      "tourists": 34,
+      "foreigners": 7,
+      "congestion_index": 0.72
+     },
+     {
+      "date": "2025-01-02",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 43,
+      "tourists": 40,
+      "foreigners": 5,
+      "congestion_index": 0.91
+     },
+     {
+      "date": "2025-01-03",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 18,
+      "tourists": 17,
+      "foreigners": 0,
+      "congestion_index": 0.38
+     },
+     {
+      "date": "2025-01-04",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 60,
+      "tourists": 58,
+      "foreigners": 10,
+      "congestion_index": 1.28
+     },
+     {
+      "date": "2025-01-05",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 52,
+      "tourists": 49,
+      "foreigners": 13,
+      "congestion_index": 1.11
+     },
+     {
+      "date": "2025-01-06",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 37,
+      "tourists": 34,
+      "foreigners": 8,
+      "congestion_index": 0.79
+     },
+     {
+      "date": "2025-01-07",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 41,
+      "tourists": 34,
+      "foreigners": 6,
+      "congestion_index": 0.87
+     },
+     {
+      "date": "2025-01-08",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 49,
+      "tourists": 45,
+      "foreigners": "<5",
+      "congestion_index": 1.04
+     },
+     {
+      "date": "2025-01-09",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 25,
+      "tourists": 21,
+      "foreigners": "<5",
+      "congestion_index": 0.53
+     },
+     {
+      "date": "2025-01-10",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 37,
+      "tourists": 33,
+      "foreigners": 10,
+      "congestion_index": 0.79
+     },
+     {
+      "date": "2025-01-11",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 97,
+      "tourists": 93,
+      "foreigners": 26,
+      "congestion_index": 2.06
+     },
+     {
+      "date": "2025-01-12",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 100,
+      "tourists": 97,
+      "foreigners": 20,
+      "congestion_index": 2.13
+     },
+     {
+      "date": "2025-01-13",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 43,
+      "tourists": 36,
+      "foreigners": 16,
+      "congestion_index": 0.91
+     },
+     {
+      "date": "2025-01-14",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 41,
+      "tourists": 38,
+      "foreigners": 8,
+      "congestion_index": 0.87
+     },
+     {
+      "date": "2025-01-15",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 48,
+      "tourists": 43,
+      "foreigners": 8,
+      "congestion_index": 1.02
+     },
+     {
+      "date": "2025-01-16",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 26,
+      "tourists": 23,
+      "foreigners": 5,
+      "congestion_index": 0.55
+     },
+     {
+      "date": "2025-01-17",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 49,
+      "tourists": 47,
+      "foreigners": 13,
+      "congestion_index": 1.04
+     },
+     {
+      "date": "2025-01-18",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 62,
+      "tourists": 59,
+      "foreigners": 15,
+      "congestion_index": 1.32
+     },
+     {
+      "date": "2025-01-19",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 85,
+      "tourists": 82,
+      "foreigners": 19,
+      "congestion_index": 1.81
+     },
+     {
+      "date": "2025-01-20",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 54,
+      "tourists": 51,
+      "foreigners": 16,
+      "congestion_index": 1.15
+     },
+     {
+      "date": "2025-01-21",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 36,
+      "tourists": 32,
+      "foreigners": 8,
+      "congestion_index": 0.77
+     },
+     {
+      "date": "2025-01-22",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 38,
+      "tourists": 35,
+      "foreigners": "<5",
+      "congestion_index": 0.81
+     },
+     {
+      "date": "2025-01-23",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 39,
+      "tourists": 37,
+      "foreigners": 7,
+      "congestion_index": 0.83
+     },
+     {
+      "date": "2025-01-24",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 38,
+      "tourists": 32,
+      "foreigners": 9,
+      "congestion_index": 0.81
+     },
+     {
+      "date": "2025-01-25",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 99,
+      "tourists": 97,
+      "foreigners": 14,
+      "congestion_index": 2.11
+     },
+     {
+      "date": "2025-01-26",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 51,
+      "tourists": 50,
+      "foreigners": 8,
+      "congestion_index": 1.09
+     },
+     {
+      "date": "2025-01-27",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 47,
+      "tourists": 43,
+      "foreigners": 7,
+      "congestion_index": 1.0
+     },
+     {
+      "date": "2025-01-28",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 16,
+      "tourists": 14,
+      "foreigners": "<5",
+      "congestion_index": 0.34
+     },
+     {
+      "date": "2025-01-29",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 16,
+      "tourists": 14,
+      "foreigners": "<5",
+      "congestion_index": 0.34
+     },
+     {
+      "date": "2025-01-30",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 52,
+      "tourists": 48,
+      "foreigners": 12,
+      "congestion_index": 1.11
+     },
+     {
+      "date": "2025-01-31",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 42,
+      "tourists": 36,
+      "foreigners": 8,
+      "congestion_index": 0.89
+     },
+     {
+      "date": "2025-02-01",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 106,
+      "tourists": 101,
+      "foreigners": 24,
+      "congestion_index": 2.26
+     },
+     {
+      "date": "2025-02-02",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 87,
+      "tourists": 86,
+      "foreigners": 10,
+      "congestion_index": 1.85
+     },
+     {
+      "date": "2025-02-03",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 47,
+      "tourists": 46,
+      "foreigners": 10,
+      "congestion_index": 1.0
+     },
+     {
+      "date": "2025-02-04",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 36,
+      "tourists": 31,
+      "foreigners": 9,
+      "congestion_index": 0.77
+     },
+     {
+      "date": "2025-02-05",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 9,
+      "tourists": 7,
+      "foreigners": "<5",
+      "congestion_index": 0.19
+     },
+     {
+      "date": "2025-02-06",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 31,
+      "tourists": 30,
+      "foreigners": 9,
+      "congestion_index": 0.66
+     },
+     {
+      "date": "2025-02-07",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 53,
+      "tourists": 47,
+      "foreigners": 10,
+      "congestion_index": 1.13
+     },
+     {
+      "date": "2025-02-08",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 29,
+      "tourists": 28,
+      "foreigners": 6,
+      "congestion_index": 0.62
+     },
+     {
+      "date": "2025-02-09",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 98,
+      "tourists": 95,
+      "foreigners": 18,
+      "congestion_index": 2.09
+     },
+     {
+      "date": "2025-02-10",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 47,
+      "tourists": 42,
+      "foreigners": 8,
+      "congestion_index": 1.0
+     },
+     {
+      "date": "2025-02-11",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 61,
+      "tourists": 54,
+      "foreigners": 13,
+      "congestion_index": 1.3
+     },
+     {
+      "date": "2025-02-12",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 43,
+      "tourists": 43,
+      "foreigners": 12,
+      "congestion_index": 0.91
+     },
+     {
+      "date": "2025-02-13",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 47,
+      "tourists": 41,
+      "foreigners": 11,
+      "congestion_index": 1.0
+     },
+     {
+      "date": "2025-02-14",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 42,
+      "tourists": 39,
+      "foreigners": 5,
+      "congestion_index": 0.89
+     },
+     {
+      "date": "2025-02-15",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 104,
+      "tourists": 96,
+      "foreigners": 27,
+      "congestion_index": 2.21
+     },
+     {
+      "date": "2025-02-16",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 102,
+      "tourists": 94,
+      "foreigners": 16,
+      "congestion_index": 2.17
+     },
+     {
+      "date": "2025-02-17",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 46,
+      "tourists": 41,
+      "foreigners": 11,
+      "congestion_index": 0.98
+     },
+     {
+      "date": "2025-02-18",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 61,
+      "tourists": 58,
+      "foreigners": 13,
+      "congestion_index": 1.3
+     },
+     {
+      "date": "2025-02-19",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 18,
+      "tourists": 17,
+      "foreigners": 5,
+      "congestion_index": 0.38
+     },
+     {
+      "date": "2025-02-20",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 14,
+      "tourists": 13,
+      "foreigners": 6,
+      "congestion_index": 0.3
+     },
+     {
+      "date": "2025-02-21",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 16,
+      "tourists": 15,
+      "foreigners": 5,
+      "congestion_index": 0.34
+     },
+     {
+      "date": "2025-02-22",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 100,
+      "tourists": 96,
+      "foreigners": 21,
+      "congestion_index": 2.13
+     },
+     {
+      "date": "2025-02-23",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 92,
+      "tourists": 90,
+      "foreigners": 19,
+      "congestion_index": 1.96
+     },
+     {
+      "date": "2025-02-24",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 44,
+      "tourists": 39,
+      "foreigners": 12,
+      "congestion_index": 0.94
+     },
+     {
+      "date": "2025-02-25",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 39,
+      "tourists": 36,
+      "foreigners": 8,
+      "congestion_index": 0.83
+     },
+     {
+      "date": "2025-02-26",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 44,
+      "tourists": 38,
+      "foreigners": "<5",
+      "congestion_index": 0.94
+     },
+     {
+      "date": "2025-02-27",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 43,
+      "tourists": 40,
+      "foreigners": 9,
+      "congestion_index": 0.91
+     },
+     {
+      "date": "2025-02-28",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 12,
+      "tourists": 12,
+      "foreigners": "<5",
+      "congestion_index": 0.26
+     },
+     {
+      "date": "2025-03-01",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 33,
+      "tourists": 31,
+      "foreigners": 7,
+      "congestion_index": 0.7
+     },
+     {
+      "date": "2025-03-02",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 135,
+      "tourists": 128,
+      "foreigners": 25,
+      "congestion_index": 2.87
+     },
+     {
+      "date": "2025-03-03",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 35,
+      "tourists": 31,
+      "foreigners": 5,
+      "congestion_index": 0.74
+     },
+     {
+      "date": "2025-03-04",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 54,
+      "tourists": 50,
+      "foreigners": 9,
+      "congestion_index": 1.15
+     },
+     {
+      "date": "2025-03-05",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 75,
+      "tourists": 69,
+      "foreigners": 13,
+      "congestion_index": 1.6
+     },
+     {
+      "date": "2025-03-06",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 60,
+      "tourists": 54,
+      "foreigners": 13,
+      "congestion_index": 1.28
+     },
+     {
+      "date": "2025-03-07",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 19,
+      "tourists": 19,
+      "foreigners": 6,
+      "congestion_index": 0.4
+     },
+     {
+      "date": "2025-03-08",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 131,
+      "tourists": 125,
+      "foreigners": 27,
+      "congestion_index": 2.79
+     },
+     {
+      "date": "2025-03-09",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 115,
+      "tourists": 112,
+      "foreigners": 25,
+      "congestion_index": 2.45
+     },
+     {
+      "date": "2025-03-10",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 37,
+      "tourists": 34,
+      "foreigners": 9,
+      "congestion_index": 0.79
+     },
+     {
+      "date": "2025-03-11",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 62,
+      "tourists": 56,
+      "foreigners": 11,
+      "congestion_index": 1.32
+     },
+     {
+      "date": "2025-03-12",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 26,
+      "tourists": 25,
+      "foreigners": 7,
+      "congestion_index": 0.55
+     },
+     {
+      "date": "2025-03-13",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 54,
+      "tourists": 49,
+      "foreigners": 13,
+      "congestion_index": 1.15
+     },
+     {
+      "date": "2025-03-14",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 53,
+      "tourists": 52,
+      "foreigners": 8,
+      "congestion_index": 1.13
+     },
+     {
+      "date": "2025-03-15",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 73,
+      "tourists": 69,
+      "foreigners": 13,
+      "congestion_index": 1.55
+     },
+     {
+      "date": "2025-03-16",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 46,
+      "tourists": 44,
+      "foreigners": 14,
+      "congestion_index": 0.98
+     },
+     {
+      "date": "2025-03-17",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 54,
+      "tourists": 48,
+      "foreigners": 13,
+      "congestion_index": 1.15
+     },
+     {
+      "date": "2025-03-18",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 36,
+      "tourists": 34,
+      "foreigners": 7,
+      "congestion_index": 0.77
+     },
+     {
+      "date": "2025-03-19",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 54,
+      "tourists": 49,
+      "foreigners": 12,
+      "congestion_index": 1.15
+     },
+     {
+      "date": "2025-03-20",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 55,
+      "tourists": 50,
+      "foreigners": 11,
+      "congestion_index": 1.17
+     },
+     {
+      "date": "2025-03-21",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 47,
+      "tourists": 42,
+      "foreigners": 6,
+      "congestion_index": 1.0
+     },
+     {
+      "date": "2025-03-22",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 135,
+      "tourists": 128,
+      "foreigners": 32,
+      "congestion_index": 2.87
+     },
+     {
+      "date": "2025-03-23",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 121,
+      "tourists": 113,
+      "foreigners": 20,
+      "congestion_index": 2.57
+     },
+     {
+      "date": "2025-03-24",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 62,
+      "tourists": 55,
+      "foreigners": 17,
+      "congestion_index": 1.32
+     },
+     {
+      "date": "2025-03-25",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 32,
+      "tourists": 28,
+      "foreigners": 8,
+      "congestion_index": 0.68
+     },
+     {
+      "date": "2025-03-26",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 8,
+      "tourists": 8,
+      "foreigners": "<5",
+      "congestion_index": 0.17
+     },
+     {
+      "date": "2025-03-27",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 30,
+      "tourists": 28,
+      "foreigners": 5,
+      "congestion_index": 0.64
+     },
+     {
+      "date": "2025-03-28",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 58,
+      "tourists": 52,
+      "foreigners": 14,
+      "congestion_index": 1.23
+     },
+     {
+      "date": "2025-03-29",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 72,
+      "tourists": 68,
+      "foreigners": 13,
+      "congestion_index": 1.53
+     },
+     {
+      "date": "2025-03-30",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 44,
+      "tourists": 42,
+      "foreigners": 6,
+      "congestion_index": 0.94
+     },
+     {
+      "date": "2025-03-31",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 58,
+      "tourists": 54,
+      "foreigners": 5,
+      "congestion_index": 1.23
+     },
+     {
+      "date": "2025-04-01",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 18,
+      "tourists": 15,
+      "foreigners": 6,
+      "congestion_index": 0.38
+     },
+     {
+      "date": "2025-04-02",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 58,
+      "tourists": 50,
+      "foreigners": 9,
+      "congestion_index": 1.23
+     },
+     {
+      "date": "2025-04-03",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 58,
+      "tourists": 53,
+      "foreigners": 9,
+      "congestion_index": 1.23
+     },
+     {
+      "date": "2025-04-04",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 66,
+      "tourists": 59,
+      "foreigners": 9,
+      "congestion_index": 1.4
+     },
+     {
+      "date": "2025-04-05",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 148,
+      "tourists": 140,
+      "foreigners": 31,
+      "congestion_index": 3.15
+     },
+     {
+      "date": "2025-04-06",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 184,
+      "tourists": 175,
+      "foreigners": 35,
+      "congestion_index": 3.91
+     },
+     {
+      "date": "2025-04-07",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 66,
+      "tourists": 62,
+      "foreigners": 18,
+      "congestion_index": 1.4
+     },
+     {
+      "date": "2025-04-08",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 33,
+      "tourists": 26,
+      "foreigners": "<5",
+      "congestion_index": 0.7
+     },
+     {
+      "date": "2025-04-09",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 30,
+      "tourists": 30,
+      "foreigners": 5,
+      "congestion_index": 0.64
+     },
+     {
+      "date": "2025-04-10",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 66,
+      "tourists": 57,
+      "foreigners": 13,
+      "congestion_index": 1.4
+     },
+     {
+      "date": "2025-04-11",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 72,
+      "tourists": 62,
+      "foreigners": 16,
+      "congestion_index": 1.53
+     },
+     {
+      "date": "2025-04-12",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 121,
+      "tourists": 114,
+      "foreigners": 25,
+      "congestion_index": 2.57
+     },
+     {
+      "date": "2025-04-13",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 40,
+      "tourists": 37,
+      "foreigners": 10,
+      "congestion_index": 0.85
+     },
+     {
+      "date": "2025-04-14",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 70,
+      "tourists": 67,
+      "foreigners": 9,
+      "congestion_index": 1.49
+     },
+     {
+      "date": "2025-04-15",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 49,
+      "tourists": 44,
+      "foreigners": 17,
+      "congestion_index": 1.04
+     },
+     {
+      "date": "2025-04-16",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 60,
+      "tourists": 55,
+      "foreigners": 21,
+      "congestion_index": 1.28
+     },
+     {
+      "date": "2025-04-17",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 58,
+      "tourists": 57,
+      "foreigners": 9,
+      "congestion_index": 1.23
+     },
+     {
+      "date": "2025-04-18",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 42,
+      "tourists": 39,
+      "foreigners": 8,
+      "congestion_index": 0.89
+     },
+     {
+      "date": "2025-04-19",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 43,
+      "tourists": 42,
+      "foreigners": 7,
+      "congestion_index": 0.91
+     },
+     {
+      "date": "2025-04-20",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 153,
+      "tourists": 149,
+      "foreigners": 29,
+      "congestion_index": 3.26
+     },
+     {
+      "date": "2025-04-21",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 48,
+      "tourists": 43,
+      "foreigners": "<5",
+      "congestion_index": 1.02
+     },
+     {
+      "date": "2025-04-22",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 51,
+      "tourists": 45,
+      "foreigners": 11,
+      "congestion_index": 1.09
+     },
+     {
+      "date": "2025-04-23",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 65,
+      "tourists": 63,
+      "foreigners": 12,
+      "congestion_index": 1.38
+     },
+     {
+      "date": "2025-04-24",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 61,
+      "tourists": 52,
+      "foreigners": 7,
+      "congestion_index": 1.3
+     },
+     {
+      "date": "2025-04-25",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 17,
+      "tourists": 14,
+      "foreigners": "<5",
+      "congestion_index": 0.36
+     },
+     {
+      "date": "2025-04-26",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 129,
+      "tourists": 119,
+      "foreigners": 36,
+      "congestion_index": 2.74
+     },
+     {
+      "date": "2025-04-27",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 30,
+      "tourists": 28,
+      "foreigners": 5,
+      "congestion_index": 0.64
+     },
+     {
+      "date": "2025-04-28",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 66,
+      "tourists": 56,
+      "foreigners": 18,
+      "congestion_index": 1.4
+     },
+     {
+      "date": "2025-04-29",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 48,
+      "tourists": 45,
+      "foreigners": 9,
+      "congestion_index": 1.02
+     },
+     {
+      "date": "2025-04-30",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 58,
+      "tourists": 56,
+      "foreigners": 11,
+      "congestion_index": 1.23
+     },
+     {
+      "date": "2025-05-01",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 81,
+      "tourists": 75,
+      "foreigners": 22,
+      "congestion_index": 1.72
+     },
+     {
+      "date": "2025-05-02",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 63,
+      "tourists": 58,
+      "foreigners": 12,
+      "congestion_index": 1.34
+     },
+     {
+      "date": "2025-05-03",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 86,
+      "tourists": 82,
+      "foreigners": 11,
+      "congestion_index": 1.83
+     },
+     {
+      "date": "2025-05-04",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 163,
+      "tourists": 153,
+      "foreigners": 35,
+      "congestion_index": 3.47
+     },
+     {
+      "date": "2025-05-05",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 39,
+      "tourists": 31,
+      "foreigners": 18,
+      "congestion_index": 0.83
+     },
+     {
+      "date": "2025-05-06",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 78,
+      "tourists": 68,
+      "foreigners": 15,
+      "congestion_index": 1.66
+     },
+     {
+      "date": "2025-05-07",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 74,
+      "tourists": 68,
+      "foreigners": 17,
+      "congestion_index": 1.57
+     },
+     {
+      "date": "2025-05-08",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 16,
+      "tourists": 15,
+      "foreigners": "<5",
+      "congestion_index": 0.34
+     },
+     {
+      "date": "2025-05-09",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 36,
+      "tourists": 34,
+      "foreigners": 6,
+      "congestion_index": 0.77
+     },
+     {
+      "date": "2025-05-10",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 160,
+      "tourists": 154,
+      "foreigners": 40,
+      "congestion_index": 3.4
+     },
+     {
+      "date": "2025-05-11",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 95,
+      "tourists": 91,
+      "foreigners": 12,
+      "congestion_index": 2.02
+     },
+     {
+      "date": "2025-05-12",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 66,
+      "tourists": 60,
+      "foreigners": 6,
+      "congestion_index": 1.4
+     },
+     {
+      "date": "2025-05-13",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 78,
+      "tourists": 69,
+      "foreigners": 17,
+      "congestion_index": 1.66
+     },
+     {
+      "date": "2025-05-14",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 86,
+      "tourists": 77,
+      "foreigners": 18,
+      "congestion_index": 1.83
+     },
+     {
+      "date": "2025-05-15",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 63,
+      "tourists": 53,
+      "foreigners": 15,
+      "congestion_index": 1.34
+     },
+     {
+      "date": "2025-05-16",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 30,
+      "tourists": 29,
+      "foreigners": 6,
+      "congestion_index": 0.64
+     },
+     {
+      "date": "2025-05-17",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 156,
+      "tourists": 152,
+      "foreigners": 27,
+      "congestion_index": 3.32
+     },
+     {
+      "date": "2025-05-18",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 155,
+      "tourists": 144,
+      "foreigners": 26,
+      "congestion_index": 3.3
+     },
+     {
+      "date": "2025-05-19",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 73,
+      "tourists": 65,
+      "foreigners": 14,
+      "congestion_index": 1.55
+     },
+     {
+      "date": "2025-05-20",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 40,
+      "tourists": 36,
+      "foreigners": 8,
+      "congestion_index": 0.85
+     },
+     {
+      "date": "2025-05-21",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 69,
+      "tourists": 62,
+      "foreigners": 15,
+      "congestion_index": 1.47
+     },
+     {
+      "date": "2025-05-22",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 69,
+      "tourists": 63,
+      "foreigners": 16,
+      "congestion_index": 1.47
+     },
+     {
+      "date": "2025-05-23",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 70,
+      "tourists": 65,
+      "foreigners": 11,
+      "congestion_index": 1.49
+     },
+     {
+      "date": "2025-05-24",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 151,
+      "tourists": 146,
+      "foreigners": 29,
+      "congestion_index": 3.21
+     },
+     {
+      "date": "2025-05-25",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 177,
+      "tourists": 167,
+      "foreigners": 33,
+      "congestion_index": 3.77
+     },
+     {
+      "date": "2025-05-26",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 38,
+      "tourists": 31,
+      "foreigners": 10,
+      "congestion_index": 0.81
+     },
+     {
+      "date": "2025-05-27",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 57,
+      "tourists": 51,
+      "foreigners": 7,
+      "congestion_index": 1.21
+     },
+     {
+      "date": "2025-05-28",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 63,
+      "tourists": 54,
+      "foreigners": 17,
+      "congestion_index": 1.34
+     },
+     {
+      "date": "2025-05-29",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 56,
+      "tourists": 50,
+      "foreigners": 9,
+      "congestion_index": 1.19
+     },
+     {
+      "date": "2025-05-30",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 26,
+      "tourists": 25,
+      "foreigners": "<5",
+      "congestion_index": 0.55
+     },
+     {
+      "date": "2025-05-31",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 124,
+      "tourists": 116,
+      "foreigners": 27,
+      "congestion_index": 2.64
+     },
+     {
+      "date": "2025-06-01",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 131,
+      "tourists": 126,
+      "foreigners": 27,
+      "congestion_index": 2.79
+     },
+     {
+      "date": "2025-06-02",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 30,
+      "tourists": 27,
+      "foreigners": "<5",
+      "congestion_index": 0.64
+     },
+     {
+      "date": "2025-06-03",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 25,
+      "tourists": 23,
+      "foreigners": 6,
+      "congestion_index": 0.53
+     },
+     {
+      "date": "2025-06-04",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 40,
+      "tourists": 35,
+      "foreigners": 8,
+      "congestion_index": 0.85
+     },
+     {
+      "date": "2025-06-05",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 50,
+      "tourists": 45,
+      "foreigners": 10,
+      "congestion_index": 1.06
+     },
+     {
+      "date": "2025-06-06",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 53,
+      "tourists": 49,
+      "foreigners": 10,
+      "congestion_index": 1.13
+     },
+     {
+      "date": "2025-06-07",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 134,
+      "tourists": 132,
+      "foreigners": 23,
+      "congestion_index": 2.85
+     },
+     {
+      "date": "2025-06-08",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 145,
+      "tourists": 141,
+      "foreigners": 24,
+      "congestion_index": 3.09
+     },
+     {
+      "date": "2025-06-09",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 57,
+      "tourists": 56,
+      "foreigners": 15,
+      "congestion_index": 1.21
+     },
+     {
+      "date": "2025-06-10",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 37,
+      "tourists": 32,
+      "foreigners": 6,
+      "congestion_index": 0.79
+     },
+     {
+      "date": "2025-06-11",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 52,
+      "tourists": 46,
+      "foreigners": 9,
+      "congestion_index": 1.11
+     },
+     {
+      "date": "2025-06-12",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 21,
+      "tourists": 18,
+      "foreigners": "<5",
+      "congestion_index": 0.45
+     },
+     {
+      "date": "2025-06-13",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 14,
+      "tourists": 13,
+      "foreigners": "<5",
+      "congestion_index": 0.3
+     },
+     {
+      "date": "2025-06-14",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 163,
+      "tourists": 157,
+      "foreigners": 33,
+      "congestion_index": 3.47
+     },
+     {
+      "date": "2025-06-15",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 146,
+      "tourists": 140,
+      "foreigners": 29,
+      "congestion_index": 3.11
+     },
+     {
+      "date": "2025-06-16",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 69,
+      "tourists": 59,
+      "foreigners": 16,
+      "congestion_index": 1.47
+     },
+     {
+      "date": "2025-06-17",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 48,
+      "tourists": 41,
+      "foreigners": 9,
+      "congestion_index": 1.02
+     },
+     {
+      "date": "2025-06-18",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 30,
+      "tourists": 27,
+      "foreigners": 8,
+      "congestion_index": 0.64
+     },
+     {
+      "date": "2025-06-19",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 67,
+      "tourists": 64,
+      "foreigners": 12,
+      "congestion_index": 1.43
+     },
+     {
+      "date": "2025-06-20",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 53,
+      "tourists": 46,
+      "foreigners": 10,
+      "congestion_index": 1.13
+     },
+     {
+      "date": "2025-06-21",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 128,
+      "tourists": 123,
+      "foreigners": 24,
+      "congestion_index": 2.72
+     },
+     {
+      "date": "2025-06-22",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 77,
+      "tourists": 73,
+      "foreigners": 14,
+      "congestion_index": 1.64
+     },
+     {
+      "date": "2025-06-23",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 61,
+      "tourists": 56,
+      "foreigners": 10,
+      "congestion_index": 1.3
+     },
+     {
+      "date": "2025-06-24",
+      "dow": "화",
+      "is_weekend": 0,
+      "users": 38,
+      "tourists": 34,
+      "foreigners": 5,
+      "congestion_index": 0.81
+     },
+     {
+      "date": "2025-06-25",
+      "dow": "수",
+      "is_weekend": 0,
+      "users": 22,
+      "tourists": 21,
+      "foreigners": "<5",
+      "congestion_index": 0.47
+     },
+     {
+      "date": "2025-06-26",
+      "dow": "목",
+      "is_weekend": 0,
+      "users": 65,
+      "tourists": 59,
+      "foreigners": 11,
+      "congestion_index": 1.38
+     },
+     {
+      "date": "2025-06-27",
+      "dow": "금",
+      "is_weekend": 0,
+      "users": 65,
+      "tourists": 52,
+      "foreigners": 8,
+      "congestion_index": 1.38
+     },
+     {
+      "date": "2025-06-28",
+      "dow": "토",
+      "is_weekend": 1,
+      "users": 128,
+      "tourists": 123,
+      "foreigners": 32,
+      "congestion_index": 2.72
+     },
+     {
+      "date": "2025-06-29",
+      "dow": "일",
+      "is_weekend": 1,
+      "users": 118,
+      "tourists": 111,
+      "foreigners": 27,
+      "congestion_index": 2.51
+     },
+     {
+      "date": "2025-06-30",
+      "dow": "월",
+      "is_weekend": 0,
+      "users": 44,
+      "tourists": 38,
+      "foreigners": 7,
+      "congestion_index": 0.94
+     }
+    ]
+   },
+   {
+    "tool": "place_access",
+    "title": "성산일출봉 주변 대중교통 접근",
+    "params": {
+     "place": "성산일출봉",
+     "radius_km": 1.5,
+     "date_from": null,
+     "date_to": null
+    },
+    "datasets": [
+     "wifi_ap_usage",
+     "bus_station",
+     "bus_station_usage"
+    ],
+    "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
+    "facts": [
+     "성산일출봉 반경 1.5km 내 정류소 1개, 합산 일평균 승차 74명 (와이파이 일평균 이용자 63명)",
+     "가장 가까운 정류소 성산일출봉(0.2km), 피크 11시"
+    ],
+    "caveats": [
+     "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.",
+     "정류소-관광지 거리는 직선거리입니다."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 1,
+    "table": [
+     {
+      "bus_station_name": "성산일출봉",
+      "dist_km": 0.2,
+      "daily_boardings": 74.1,
+      "peak_hour": 11,
+      "latitude": 33.4602,
+      "longitude": 126.9413
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "성산일출봉 가는 버스 정류소는 얼마나 붐비나?",
+  "answer": "**한 줄 결론** — 성산일출봉 반경 1.5km 내 정류소 1개, 합산 일평균 승차 74명 (와이파이 일평균 이용자 63명).\n\n**근거**\n- 성산일출봉 반경 1.5km 내 정류소 1개, 합산 일평균 승차 74명 (와이파이 일평균 이용자 63명)\n- 가장 가까운 정류소 성산일출봉(0.2km), 피크 11시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.17,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "place_access",
+    "args": {
+     "place": "성산일출봉"
+    },
+    "ok": true,
+    "seconds": 0.11,
+    "rows": 1,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "place_access",
+    "title": "성산일출봉 주변 대중교통 접근",
+    "params": {
+     "place": "성산일출봉",
+     "radius_km": 1.5,
+     "date_from": null,
+     "date_to": null
+    },
+    "datasets": [
+     "wifi_ap_usage",
+     "bus_station",
+     "bus_station_usage"
+    ],
+    "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
+    "facts": [
+     "성산일출봉 반경 1.5km 내 정류소 1개, 합산 일평균 승차 74명 (와이파이 일평균 이용자 63명)",
+     "가장 가까운 정류소 성산일출봉(0.2km), 피크 11시"
+    ],
+    "caveats": [
+     "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.",
+     "정류소-관광지 거리는 직선거리입니다."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 1,
+    "table": [
+     {
+      "bus_station_name": "성산일출봉",
+      "dist_km": 0.2,
+      "daily_boardings": 74.1,
+      "peak_hour": 11,
+      "latitude": 33.4602,
+      "longitude": 126.9413
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "비 오면 어디가 한산해지나?",
+  "answer": "**한 줄 결론** — 비 올 때(≥1.0mm) 평일 기준 가장 크게 줄어드는 곳: 애월한담해안 (-56%, 맑은 날 25.7 → 비 오는 날 11.4).\n\n**근거**\n- 비 올 때(≥1.0mm) 평일 기준 가장 크게 줄어드는 곳: 애월한담해안 (-56%, 맑은 날 25.7 → 비 오는 날 11.4)\n- 가장 영향 적거나 오히려 늘어나는 곳: 오설록티뮤지엄 (+6%)\n- 분석 대상 30곳, 강우일 56일/비강우일 125일(중앙값)\n- (사용 데이터: wifi_ap_usage, weather_daily, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 강우일/비강우일 단순 비교이며 공휴일·행사 등 다른 요인은 통제되지 않았습니다(상관 관계).\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.3,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "weather_effect",
+    "args": {
+     "target": "wifi"
+    },
+    "ok": true,
+    "seconds": 0.24,
+    "rows": 30,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "weather_effect",
+    "title": "강우 영향 (wifi)",
+    "params": {
+     "target": "wifi",
+     "place": null,
+     "date_from": null,
+     "date_to": null,
+     "rain_mm": 1.0
+    },
+    "datasets": [
+     "wifi_ap_usage",
+     "weather_daily"
+    ],
+    "method": "대상별 일별 지표에 가장 가까운 관측소의 일강수량을 결합, 강우일/비강우일 평균 비율",
+    "facts": [
+     "비 올 때(≥1.0mm) 평일 기준 가장 크게 줄어드는 곳: 애월한담해안 (-56%, 맑은 날 25.7 → 비 오는 날 11.4)",
+     "가장 영향 적거나 오히려 늘어나는 곳: 오설록티뮤지엄 (+6%)",
+     "분석 대상 30곳, 강우일 56일/비강우일 125일(중앙값)"
+    ],
+    "caveats": [
+     "강우일/비강우일 단순 비교이며 공휴일·행사 등 다른 요인은 통제되지 않았습니다(상관 관계)."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 30,
+    "table": [
+     {
+      "ap_place": "애월한담해안",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 25.7,
+      "weekday_rain_avg": 11.4,
+      "weekday_rain_effect": -0.558,
+      "weekend_dry_avg": 38.3,
+      "weekend_rain_avg": 17.8,
+      "weekend_rain_effect": -0.537
+     },
+     {
+      "ap_place": "이호테우해변",
+      "rain_days": 55,
+      "dry_days": 125,
+      "weekday_dry_avg": 19.7,
+      "weekday_rain_avg": 8.7,
+      "weekday_rain_effect": -0.558,
+      "weekend_dry_avg": 29.2,
+      "weekend_rain_avg": 13.4,
+      "weekend_rain_effect": -0.543
+     },
+     {
+      "ap_place": "김녕해수욕장",
+      "rain_days": 55,
+      "dry_days": 125,
+      "weekday_dry_avg": 11.7,
+      "weekday_rain_avg": 5.4,
+      "weekday_rain_effect": -0.541,
+      "weekend_dry_avg": 17.2,
+      "weekend_rain_avg": 7.9,
+      "weekend_rain_effect": -0.542
+     },
+     {
+      "ap_place": "곽지해수욕장",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 13.5,
+      "weekday_rain_avg": 6.3,
+      "weekday_rain_effect": -0.535,
+      "weekend_dry_avg": 20.1,
+      "weekend_rain_avg": 9.0,
+      "weekend_rain_effect": -0.551
+     },
+     {
+      "ap_place": "섭지코지",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 27.6,
+      "weekday_rain_avg": 12.9,
+      "weekday_rain_effect": -0.534,
+      "weekend_dry_avg": 39.1,
+      "weekend_rain_avg": 20.6,
+      "weekend_rain_effect": -0.473
+     },
+     {
+      "ap_place": "함덕해수욕장",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 34.7,
+      "weekday_rain_avg": 16.7,
+      "weekday_rain_effect": -0.519,
+      "weekend_dry_avg": 52.2,
+      "weekend_rain_avg": 20.9,
+      "weekend_rain_effect": -0.6
+     },
+     {
+      "ap_place": "용두암",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 21.4,
+      "weekday_rain_avg": 10.6,
+      "weekday_rain_effect": -0.507,
+      "weekend_dry_avg": 31.5,
+      "weekend_rain_avg": 15.2,
+      "weekend_rain_effect": -0.518
+     },
+     {
+      "ap_place": "사려니숲길",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 17.3,
+      "weekday_rain_avg": 8.6,
+      "weekday_rain_effect": -0.503,
+      "weekend_dry_avg": 26.2,
+      "weekend_rain_avg": 11.1,
+      "weekend_rain_effect": -0.577
+     },
+     {
+      "ap_place": "정방폭포",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 16.8,
+      "weekday_rain_avg": 8.5,
+      "weekday_rain_effect": -0.496,
+      "weekend_dry_avg": 24.5,
+      "weekend_rain_avg": 10.7,
+      "weekend_rain_effect": -0.561
+     },
+     {
+      "ap_place": "비자림",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 15.3,
+      "weekday_rain_avg": 7.9,
+      "weekday_rain_effect": -0.483,
+      "weekend_dry_avg": 22.2,
+      "weekend_rain_avg": 11.9,
+      "weekend_rain_effect": -0.463
+     },
+     {
+      "ap_place": "표선해수욕장",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 11.9,
+      "weekday_rain_avg": 6.3,
+      "weekday_rain_effect": -0.473,
+      "weekend_dry_avg": 17.4,
+      "weekend_rain_avg": 8.4,
+      "weekend_rain_effect": -0.516
+     },
+     {
+      "ap_place": "성산일출봉",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 53.5,
+      "weekday_rain_avg": 28.2,
+      "weekday_rain_effect": -0.473,
+      "weekend_dry_avg": 121.6,
+      "weekend_rain_avg": 70.9,
+      "weekend_rain_effect": -0.417
+     },
+     {
+      "ap_place": "월정리해변",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 26.6,
+      "weekday_rain_avg": 14.1,
+      "weekday_rain_effect": -0.471,
+      "weekend_dry_avg": 39.9,
+      "weekend_rain_avg": 21.4,
+      "weekend_rain_effect": -0.465
+     },
+     {
+      "ap_place": "천지연폭포",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 23.1,
+      "weekday_rain_avg": 12.6,
+      "weekday_rain_effect": -0.451,
+      "weekend_dry_avg": 33.2,
+      "weekend_rain_avg": 17.0,
+      "weekend_rain_effect": -0.487
+     },
+     {
+      "ap_place": "한라산성판악",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 19.1,
+      "weekday_rain_avg": 10.6,
+      "weekday_rain_effect": -0.447,
+      "weekend_dry_avg": 26.0,
+      "weekend_rain_avg": 15.1,
+      "weekend_rain_effect": -0.421
+     },
+     {
+      "ap_place": "중문관광단지",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 40.6,
+      "weekday_rain_avg": 22.6,
+      "weekday_rain_effect": -0.443,
+      "weekend_dry_avg": 60.2,
+      "weekend_rain_avg": 31.7,
+      "weekend_rain_effect": -0.474
+     },
+     {
+      "ap_place": "협재해수욕장",
+      "rain_days": 57,
+      "dry_days": 124,
+      "weekday_dry_avg": 32.2,
+      "weekday_rain_avg": 19.5,
+      "weekday_rain_effect": -0.395,
+      "weekend_dry_avg": 48.0,
+      "weekend_rain_avg": 22.2,
+      "weekend_rain_effect": -0.537
+     },
+     {
+      "ap_place": "산방산",
+      "rain_days": 57,
+      "dry_days": 124,
+      "weekday_dry_avg": 17.1,
+      "weekday_rain_avg": 10.6,
+      "weekday_rain_effect": -0.382,
+      "weekend_dry_avg": 25.1,
+      "weekend_rain_avg": 12.5,
+      "weekend_rain_effect": -0.503
+     },
+     {
+      "ap_place": "송악산",
+      "rain_days": 56,
+      "dry_days": 124,
+      "weekday_dry_avg": 12.3,
+      "weekday_rain_avg": 7.7,
+      "weekday_rain_effect": -0.372,
+      "weekend_dry_avg": 20.7,
+      "weekend_rain_avg": 9.4,
+      "weekend_rain_effect": -0.544
+     },
+     {
+      "ap_place": "만장굴",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 13.7,
+      "weekday_rain_avg": 13.5,
+      "weekday_rain_effect": -0.012,
+      "weekend_dry_avg": 20.4,
+      "weekend_rain_avg": 19.7,
+      "weekend_rain_effect": -0.033
+     },
+     {
+      "ap_place": "노형로터리",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 35.9,
+      "weekday_rain_avg": 36.4,
+      "weekday_rain_effect": 0.011,
+      "weekend_dry_avg": 25.2,
+      "weekend_rain_avg": 22.8,
+      "weekend_rain_effect": -0.097
+     },
+     {
+      "ap_place": "제주버스터미널",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 35.0,
+      "weekday_rain_avg": 36.0,
+      "weekday_rain_effect": 0.028,
+      "weekend_dry_avg": 24.5,
+      "weekend_rain_avg": 22.6,
+      "weekend_rain_effect": -0.078
+     },
+     {
+      "ap_place": "제주국제공항",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 117.7,
+      "weekday_rain_avg": 121.3,
+      "weekday_rain_effect": 0.03,
+      "weekend_dry_avg": 174.7,
+      "weekend_rain_avg": 171.8,
+      "weekend_rain_effect": -0.016
+     },
+     {
+      "ap_place": "서귀포매일올레시장",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 38.7,
+      "weekday_rain_avg": 40.1,
+      "weekday_rain_effect": 0.036,
+      "weekend_dry_avg": 59.2,
+      "weekend_rain_avg": 56.9,
+      "weekend_rain_effect": -0.039
+     },
+     {
+      "ap_place": "제주대학교",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 42.6,
+      "weekday_rain_avg": 44.2,
+      "weekday_rain_effect": 0.038,
+      "weekend_dry_avg": 31.3,
+      "weekend_rain_avg": 26.3,
+      "weekend_rain_effect": -0.159
+     },
+     {
+      "ap_place": "제주시청",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 30.6,
+      "weekday_rain_avg": 31.8,
+      "weekday_rain_effect": 0.041,
+      "weekend_dry_avg": 22.2,
+      "weekend_rain_avg": 19.4,
+      "weekend_rain_effect": -0.128
+     },
+     {
+      "ap_place": "제주항여객터미널",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 15.1,
+      "weekday_rain_avg": 15.8,
+      "weekday_rain_effect": 0.045,
+      "weekend_dry_avg": 11.4,
+      "weekend_rain_avg": 10.1,
+      "weekend_rain_effect": -0.111
+     },
+     {
+      "ap_place": "동문시장",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 47.1,
+      "weekday_rain_avg": 49.5,
+      "weekday_rain_effect": 0.05,
+      "weekend_dry_avg": 68.6,
+      "weekend_rain_avg": 66.7,
+      "weekend_rain_effect": -0.027
+     },
+     {
+      "ap_place": "서귀포시청",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 19.6,
+      "weekday_rain_avg": 20.6,
+      "weekday_rain_effect": 0.052,
+      "weekend_dry_avg": 13.9,
+      "weekend_rain_avg": 13.9,
+      "weekend_rain_effect": 0.005
+     },
+     {
+      "ap_place": "오설록티뮤지엄",
+      "rain_days": 57,
+      "dry_days": 124,
+      "weekday_dry_avg": 29.1,
+      "weekday_rain_avg": 30.9,
+      "weekday_rain_effect": 0.064,
+      "weekend_dry_avg": 41.7,
+      "weekend_rain_avg": 44.6,
+      "weekend_rain_effect": 0.069
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "비 오는 날 버스 이용은 어떻게 바뀌어?",
+  "answer": "**한 줄 결론** — 비 올 때(≥1.0mm) 평일 기준 가장 크게 줄어드는 곳: 김녕해수욕장 (-23%, 맑은 날 15.9 → 비 오는 날 12.3).\n\n**근거**\n- 비 올 때(≥1.0mm) 평일 기준 가장 크게 줄어드는 곳: 김녕해수욕장 (-23%, 맑은 날 15.9 → 비 오는 날 12.3)\n- 가장 영향 적거나 오히려 늘어나는 곳: 표선면사무소 (+13%)\n- 분석 대상 44곳, 강우일 56일/비강우일 125일(중앙값)\n- (사용 데이터: bus_station_usage, weather_daily, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 강우일/비강우일 단순 비교이며 공휴일·행사 등 다른 요인은 통제되지 않았습니다(상관 관계).\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.39,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "weather_effect",
+    "args": {
+     "target": "bus_station"
+    },
+    "ok": true,
+    "seconds": 0.33,
+    "rows": 44,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "weather_effect",
+    "title": "강우 영향 (bus_station)",
+    "params": {
+     "target": "bus_station",
+     "place": null,
+     "date_from": null,
+     "date_to": null,
+     "rain_mm": 1.0
+    },
+    "datasets": [
+     "bus_station_usage",
+     "weather_daily"
+    ],
+    "method": "대상별 일별 지표에 가장 가까운 관측소의 일강수량을 결합, 강우일/비강우일 평균 비율",
+    "facts": [
+     "비 올 때(≥1.0mm) 평일 기준 가장 크게 줄어드는 곳: 김녕해수욕장 (-23%, 맑은 날 15.9 → 비 오는 날 12.3)",
+     "가장 영향 적거나 오히려 늘어나는 곳: 표선면사무소 (+13%)",
+     "분석 대상 44곳, 강우일 56일/비강우일 125일(중앙값)"
+    ],
+    "caveats": [
+     "강우일/비강우일 단순 비교이며 공휴일·행사 등 다른 요인은 통제되지 않았습니다(상관 관계)."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 44,
+    "table": [
+     {
+      "bus_station_name": "김녕해수욕장",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 15.9,
+      "weekday_rain_avg": 12.3,
+      "weekday_rain_effect": -0.228,
+      "weekend_dry_avg": 20.1,
+      "weekend_rain_avg": 15.0,
+      "weekend_rain_effect": -0.252
+     },
+     {
+      "bus_station_name": "월정리해변",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 30.4,
+      "weekday_rain_avg": 24.4,
+      "weekday_rain_effect": -0.198,
+      "weekend_dry_avg": 41.4,
+      "weekend_rain_avg": 35.0,
+      "weekend_rain_effect": -0.154
+     },
+     {
+      "bus_station_name": "섭지코지",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 35.3,
+      "weekday_rain_avg": 28.3,
+      "weekday_rain_effect": -0.197,
+      "weekend_dry_avg": 48.3,
+      "weekend_rain_avg": 40.0,
+      "weekend_rain_effect": -0.172
+     },
+     {
+      "bus_station_name": "애월한담해안",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 33.4,
+      "weekday_rain_avg": 27.0,
+      "weekday_rain_effect": -0.192,
+      "weekend_dry_avg": 45.8,
+      "weekend_rain_avg": 39.6,
+      "weekend_rain_effect": -0.135
+     },
+     {
+      "bus_station_name": "비자림",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 20.0,
+      "weekday_rain_avg": 16.2,
+      "weekday_rain_effect": -0.19,
+      "weekend_dry_avg": 28.6,
+      "weekend_rain_avg": 23.4,
+      "weekend_rain_effect": -0.181
+     },
+     {
+      "bus_station_name": "제주시외버스터미널",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 156.4,
+      "weekday_rain_avg": 127.2,
+      "weekday_rain_effect": -0.187,
+      "weekend_dry_avg": 214.7,
+      "weekend_rain_avg": 165.8,
+      "weekend_rain_effect": -0.228
+     },
+     {
+      "bus_station_name": "용두암",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 27.7,
+      "weekday_rain_avg": 22.5,
+      "weekday_rain_effect": -0.186,
+      "weekend_dry_avg": 37.8,
+      "weekend_rain_avg": 29.7,
+      "weekend_rain_effect": -0.214
+     },
+     {
+      "bus_station_name": "이호테우해변",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 25.1,
+      "weekday_rain_avg": 20.7,
+      "weekday_rain_effect": -0.174,
+      "weekend_dry_avg": 34.2,
+      "weekend_rain_avg": 26.4,
+      "weekend_rain_effect": -0.229
+     },
+     {
+      "bus_station_name": "성산일출봉",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 69.9,
+      "weekday_rain_avg": 58.5,
+      "weekday_rain_effect": -0.163,
+      "weekend_dry_avg": 96.4,
+      "weekend_rain_avg": 83.9,
+      "weekend_rain_effect": -0.129
+     },
+     {
+      "bus_station_name": "중문관광단지",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 56.1,
+      "weekday_rain_avg": 47.6,
+      "weekday_rain_effect": -0.152,
+      "weekend_dry_avg": 76.5,
+      "weekend_rain_avg": 57.9,
+      "weekend_rain_effect": -0.243
+     },
+     {
+      "bus_station_name": "함덕해수욕장",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 45.7,
+      "weekday_rain_avg": 38.7,
+      "weekday_rain_effect": -0.152,
+      "weekend_dry_avg": 63.5,
+      "weekend_rain_avg": 50.3,
+      "weekend_rain_effect": -0.207
+     },
+     {
+      "bus_station_name": "오설록티뮤지엄",
+      "rain_days": 57,
+      "dry_days": 124,
+      "weekday_dry_avg": 37.7,
+      "weekday_rain_avg": 32.3,
+      "weekday_rain_effect": -0.143,
+      "weekend_dry_avg": 48.8,
+      "weekend_rain_avg": 39.6,
+      "weekend_rain_effect": -0.189
+     },
+     {
+      "bus_station_name": "곽지해수욕장",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 18.0,
+      "weekday_rain_avg": 15.5,
+      "weekday_rain_effect": -0.14,
+      "weekend_dry_avg": 25.1,
+      "weekend_rain_avg": 19.2,
+      "weekend_rain_effect": -0.232
+     },
+     {
+      "bus_station_name": "산방산",
+      "rain_days": 57,
+      "dry_days": 124,
+      "weekday_dry_avg": 23.0,
+      "weekday_rain_avg": 19.9,
+      "weekday_rain_effect": -0.135,
+      "weekend_dry_avg": 30.6,
+      "weekend_rain_avg": 24.6,
+      "weekend_rain_effect": -0.196
+     },
+     {
+      "bus_station_name": "서귀포버스터미널",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 84.7,
+      "weekday_rain_avg": 73.4,
+      "weekday_rain_effect": -0.133,
+      "weekend_dry_avg": 121.5,
+      "weekend_rain_avg": 94.6,
+      "weekend_rain_effect": -0.221
+     },
+     {
+      "bus_station_name": "한라산성판악",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 24.6,
+      "weekday_rain_avg": 21.4,
+      "weekday_rain_effect": -0.129,
+      "weekend_dry_avg": 35.3,
+      "weekend_rain_avg": 28.4,
+      "weekend_rain_effect": -0.196
+     },
+     {
+      "bus_station_name": "사려니숲길",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 23.0,
+      "weekday_rain_avg": 20.1,
+      "weekday_rain_effect": -0.127,
+      "weekend_dry_avg": 32.2,
+      "weekend_rain_avg": 25.2,
+      "weekend_rain_effect": -0.215
+     },
+     {
+      "bus_station_name": "정방폭포",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 22.8,
+      "weekday_rain_avg": 20.2,
+      "weekday_rain_effect": -0.113,
+      "weekend_dry_avg": 29.0,
+      "weekend_rain_avg": 24.9,
+      "weekend_rain_effect": -0.139
+     },
+     {
+      "bus_station_name": "협재해수욕장",
+      "rain_days": 57,
+      "dry_days": 124,
+      "weekday_dry_avg": 41.3,
+      "weekday_rain_avg": 36.7,
+      "weekday_rain_effect": -0.11,
+      "weekend_dry_avg": 58.8,
+      "weekend_rain_avg": 47.4,
+      "weekend_rain_effect": -0.194
+     },
+     {
+      "bus_station_name": "표선해수욕장",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 14.6,
+      "weekday_rain_avg": 13.0,
+      "weekday_rain_effect": -0.107,
+      "weekend_dry_avg": 20.5,
+      "weekend_rain_avg": 15.8,
+      "weekend_rain_effect": -0.231
+     },
+     {
+      "bus_station_name": "송악산",
+      "rain_days": 57,
+      "dry_days": 124,
+      "weekday_dry_avg": 17.9,
+      "weekday_rain_avg": 16.1,
+      "weekday_rain_effect": -0.1,
+      "weekend_dry_avg": 25.0,
+      "weekend_rain_avg": 19.4,
+      "weekend_rain_effect": -0.225
+     },
+     {
+      "bus_station_name": "천지연폭포",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 29.3,
+      "weekday_rain_avg": 26.7,
+      "weekday_rain_effect": -0.088,
+      "weekend_dry_avg": 40.6,
+      "weekend_rain_avg": 32.5,
+      "weekend_rain_effect": -0.2
+     },
+     {
+      "bus_station_name": "만장굴",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 17.0,
+      "weekday_rain_avg": 15.9,
+      "weekday_rain_effect": -0.063,
+      "weekend_dry_avg": 23.7,
+      "weekend_rain_avg": 20.2,
+      "weekend_rain_effect": -0.149
+     },
+     {
+      "bus_station_name": "제주버스터미널",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 46.8,
+      "weekday_rain_avg": 47.6,
+      "weekday_rain_effect": 0.016,
+      "weekend_dry_avg": 35.4,
+      "weekend_rain_avg": 39.2,
+      "weekend_rain_effect": 0.11
+     },
+     {
+      "bus_station_name": "구좌읍사무소",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 19.0,
+      "weekday_rain_avg": 19.3,
+      "weekday_rain_effect": 0.017,
+      "weekend_dry_avg": 14.4,
+      "weekend_rain_avg": 15.2,
+      "weekend_rain_effect": 0.062
+     },
+     {
+      "bus_station_name": "한림환승정류장",
+      "rain_days": 57,
+      "dry_days": 124,
+      "weekday_dry_avg": 44.8,
+      "weekday_rain_avg": 45.9,
+      "weekday_rain_effect": 0.026,
+      "weekend_dry_avg": 34.5,
+      "weekend_rain_avg": 36.4,
+      "weekend_rain_effect": 0.054
+     },
+     {
+      "bus_station_name": "노형로터리",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 47.4,
+      "weekday_rain_avg": 49.4,
+      "weekday_rain_effect": 0.042,
+      "weekend_dry_avg": 37.5,
+      "weekend_rain_avg": 36.9,
+      "weekend_rain_effect": -0.017
+     },
+     {
+      "bus_station_name": "제주대학교병원",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 60.8,
+      "weekday_rain_avg": 63.6,
+      "weekday_rain_effect": 0.046,
+      "weekend_dry_avg": 43.6,
+      "weekend_rain_avg": 48.4,
+      "weekend_rain_effect": 0.109
+     },
+     {
+      "bus_station_name": "남원읍사무소",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 16.3,
+      "weekday_rain_avg": 17.1,
+      "weekday_rain_effect": 0.046,
+      "weekend_dry_avg": 11.9,
+      "weekend_rain_avg": 11.4,
+      "weekend_rain_effect": -0.046
+     },
+     {
+      "bus_station_name": "대정읍사무소",
+      "rain_days": 57,
+      "dry_days": 124,
+      "weekday_dry_avg": 20.7,
+      "weekday_rain_avg": 21.9,
+      "weekday_rain_effect": 0.059,
+      "weekend_dry_avg": 14.7,
+      "weekend_rain_avg": 15.9,
+      "weekend_rain_effect": 0.087
+     },
+     {
+      "bus_station_name": "제주시청",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 41.7,
+      "weekday_rain_avg": 44.2,
+      "weekday_rain_effect": 0.061,
+      "weekend_dry_avg": 30.0,
+      "weekend_rain_avg": 32.1,
+      "weekend_rain_effect": 0.07
+     },
+     {
+      "bus_station_name": "제주시청(아라방면)",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 140.3,
+      "weekday_rain_avg": 149.2,
+      "weekday_rain_effect": 0.063,
+      "weekend_dry_avg": 102.8,
+      "weekend_rain_avg": 115.9,
+      "weekend_rain_effect": 0.128
+     },
+     {
+      "bus_station_name": "동문시장",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 63.2,
+      "weekday_rain_avg": 67.6,
+      "weekday_rain_effect": 0.069,
+      "weekend_dry_avg": 47.4,
+      "weekend_rain_avg": 50.2,
+      "weekend_rain_effect": 0.06
+     },
+     {
+      "bus_station_name": "제주국제공항",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 154.6,
+      "weekday_rain_avg": 165.2,
+      "weekday_rain_effect": 0.069,
+      "weekend_dry_avg": 115.9,
+      "weekend_rain_avg": 126.1,
+      "weekend_rain_effect": 0.088
+     },
+     {
+      "bus_station_name": "신제주로터리",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 119.7,
+      "weekday_rain_avg": 129.5,
+      "weekday_rain_effect": 0.082,
+      "weekend_dry_avg": 88.9,
+      "weekend_rain_avg": 103.1,
+      "weekend_rain_effect": 0.159
+     },
+     {
+      "bus_station_name": "성산읍사무소",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 18.0,
+      "weekday_rain_avg": 19.6,
+      "weekday_rain_effect": 0.087,
+      "weekend_dry_avg": 14.5,
+      "weekend_rain_avg": 13.8,
+      "weekend_rain_effect": -0.049
+     },
+     {
+      "bus_station_name": "서귀포시청",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 26.3,
+      "weekday_rain_avg": 28.7,
+      "weekday_rain_effect": 0.089,
+      "weekend_dry_avg": 19.9,
+      "weekend_rain_avg": 20.3,
+      "weekend_rain_effect": 0.024
+     },
+     {
+      "bus_station_name": "제주항여객터미널",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 20.5,
+      "weekday_rain_avg": 22.4,
+      "weekday_rain_effect": 0.094,
+      "weekend_dry_avg": 15.8,
+      "weekend_rain_avg": 16.0,
+      "weekend_rain_effect": 0.011
+     },
+     {
+      "bus_station_name": "애월읍사무소",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 23.9,
+      "weekday_rain_avg": 26.2,
+      "weekday_rain_effect": 0.095,
+      "weekend_dry_avg": 19.6,
+      "weekend_rain_avg": 19.8,
+      "weekend_rain_effect": 0.006
+     },
+     {
+      "bus_station_name": "제주대학교",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 56.8,
+      "weekday_rain_avg": 62.2,
+      "weekday_rain_effect": 0.097,
+      "weekend_dry_avg": 42.2,
+      "weekend_rain_avg": 48.4,
+      "weekend_rain_effect": 0.148
+     },
+     {
+      "bus_station_name": "한라병원",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 71.1,
+      "weekday_rain_avg": 78.6,
+      "weekday_rain_effect": 0.105,
+      "weekend_dry_avg": 54.7,
+      "weekend_rain_avg": 60.4,
+      "weekend_rain_effect": 0.105
+     },
+     {
+      "bus_station_name": "서귀포매일올레시장",
+      "rain_days": 55,
+      "dry_days": 126,
+      "weekday_dry_avg": 50.5,
+      "weekday_rain_avg": 56.0,
+      "weekday_rain_effect": 0.111,
+      "weekend_dry_avg": 39.1,
+      "weekend_rain_avg": 40.9,
+      "weekend_rain_effect": 0.046
+     },
+     {
+      "bus_station_name": "조천읍사무소",
+      "rain_days": 56,
+      "dry_days": 125,
+      "weekday_dry_avg": 22.2,
+      "weekday_rain_avg": 25.0,
+      "weekday_rain_effect": 0.128,
+      "weekend_dry_avg": 15.7,
+      "weekend_rain_avg": 19.9,
+      "weekend_rain_effect": 0.273
+     },
+     {
+      "bus_station_name": "표선면사무소",
+      "rain_days": 53,
+      "dry_days": 128,
+      "weekday_dry_avg": 15.8,
+      "weekday_rain_avg": 17.9,
+      "weekday_rain_effect": 0.134,
+      "weekend_dry_avg": 12.8,
+      "weekend_rain_avg": 11.5,
+      "weekend_rain_effect": -0.104
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "251번 노선 시간대별 이용 현황 알려줘",
+  "answer": "**한 줄 결론** — 251(제주버스터미널~대정환승정류장): 일평균 승차 81명, 피크 16시(12명/시).\n\n**근거**\n- 251(제주버스터미널~대정환승정류장): 일평균 승차 81명, 피크 16시(12명/시)\n- 저이용 시간대(피크의 15% 미만): 5시, 10시, 11시, 12시, 15시, 23시\n- 이용자 구성: 일반 68%, 경로 15%, 청소년 10%, 어린이 3%\n- 노선거리 52.0km, 정류소 90개 → 1.6명/km/일\n- (사용 데이터: bus_route_usage, bus_route, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.16,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "bus_route_efficiency",
+    "args": {
+     "route": "251"
+    },
+    "ok": true,
+    "seconds": 0.1,
+    "rows": 19,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "bus_route_efficiency",
+    "title": "251(제주버스터미널~대정환승정류장) 시간대별 이용",
+    "params": {
+     "route": "251(제주버스터미널~대정환승정류장)",
+     "date_from": null,
+     "date_to": null
+    },
+    "datasets": [
+     "bus_route_usage",
+     "bus_route"
+    ],
+    "method": "bus_route_usage 승차 행을 시간대별 합산 ÷ 일수; 저이용=피크의 15% 미만",
+    "facts": [
+     "251(제주버스터미널~대정환승정류장): 일평균 승차 81명, 피크 16시(12명/시)",
+     "저이용 시간대(피크의 15% 미만): 5시, 10시, 11시, 12시, 15시, 23시",
+     "이용자 구성: 일반 68%, 경로 15%, 청소년 10%, 어린이 3%",
+     "노선거리 52.0km, 정류소 90개 → 1.6명/km/일"
+    ],
+    "caveats": [
+     "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 19,
+    "table": [
+     {
+      "hour": 5,
+      "avg_boardings": 1.2,
+      "weekday": 1.2,
+      "weekend": 1.1
+     },
+     {
+      "hour": 6,
+      "avg_boardings": 2.3,
+      "weekday": 2.4,
+      "weekend": 2.2
+     },
+     {
+      "hour": 7,
+      "avg_boardings": 3.8,
+      "weekday": 3.9,
+      "weekend": 3.4
+     },
+     {
+      "hour": 8,
+      "avg_boardings": 7.1,
+      "weekday": 7.5,
+      "weekend": 5.9
+     },
+     {
+      "hour": 9,
+      "avg_boardings": 10.9,
+      "weekday": 11.6,
+      "weekend": 9.4
+     },
+     {
+      "hour": 10,
+      "avg_boardings": 1.6,
+      "weekday": 1.8,
+      "weekend": 1.3
+     },
+     {
+      "hour": 11,
+      "avg_boardings": 1.6,
+      "weekday": 1.8,
+      "weekend": 1.2
+     },
+     {
+      "hour": 12,
+      "avg_boardings": 1.6,
+      "weekday": 1.8,
+      "weekend": 1.1
+     },
+     {
+      "hour": 13,
+      "avg_boardings": 1.8,
+      "weekday": 1.9,
+      "weekend": 1.7
+     },
+     {
+      "hour": 14,
+      "avg_boardings": 1.8,
+      "weekday": 2.0,
+      "weekend": 1.2
+     },
+     {
+      "hour": 15,
+      "avg_boardings": 1.7,
+      "weekday": 1.7,
+      "weekend": 1.5
+     },
+     {
+      "hour": 16,
+      "avg_boardings": 11.5,
+      "weekday": 12.3,
+      "weekend": 9.5
+     },
+     {
+      "hour": 17,
+      "avg_boardings": 10.2,
+      "weekday": 11.1,
+      "weekend": 7.9
+     },
+     {
+      "hour": 18,
+      "avg_boardings": 7.7,
+      "weekday": 8.0,
+      "weekend": 7.1
+     },
+     {
+      "hour": 19,
+      "avg_boardings": 5.6,
+      "weekday": 6.0,
+      "weekend": 4.8
+     },
+     {
+      "hour": 20,
+      "avg_boardings": 4.3,
+      "weekday": 4.7,
+      "weekend": 3.4
+     },
+     {
+      "hour": 21,
+      "avg_boardings": 3.0,
+      "weekday": 3.3,
+      "weekend": 2.4
+     },
+     {
+      "hour": 22,
+      "avg_boardings": 2.1,
+      "weekday": 2.2,
+      "weekend": 1.8
+     },
+     {
+      "hour": 23,
+      "avg_boardings": 1.3,
+      "weekday": 1.4,
+      "weekend": 1.0
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "효율이 낮은 버스 노선은?",
+  "answer": "**한 줄 결론** — 효율 최저 노선 251(제주버스터미널~대정환승정류장): 일평균 승차 81명, 1.56명/km/일, 저이용 시간대 6개(5,10,11,12,15,23).\n\n**근거**\n- 효율 최저 노선 251(제주버스터미널~대정환승정류장): 일평균 승차 81명, 1.56명/km/일, 저이용 시간대 6개(5,10,11,12,15,23)\n- 분석 노선 15개, 전체 일평균 승차 11,959명\n- (사용 데이터: bus_route_usage, bus_route, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.19,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "bus_route_efficiency",
+    "args": {
+     "ascending": true,
+     "top_n": 10
+    },
+    "ok": true,
+    "seconds": 0.13,
+    "rows": 10,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "bus_route_efficiency",
+    "title": "노선 효율 순위 (낮은 순)",
+    "params": {
+     "date_from": null,
+     "date_to": null,
+     "ascending": true,
+     "top_n": 10
+    },
+    "datasets": [
+     "bus_route_usage",
+     "bus_route"
+    ],
+    "method": "bus_route_usage 승차 합산 ÷ 일수 ÷ 노선거리(km); 저이용 시간대 = 시간대 승차가 피크의 15% 미만",
+    "facts": [
+     "효율 최저 노선 251(제주버스터미널~대정환승정류장): 일평균 승차 81명, 1.56명/km/일, 저이용 시간대 6개(5,10,11,12,15,23)",
+     "분석 노선 15개, 전체 일평균 승차 11,959명"
+    ],
+    "caveats": [
+     "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 10,
+    "table": [
+     {
+      "rank": 1,
+      "bus_route_name": "251(제주버스터미널~대정환승정류장)",
+      "daily_boardings": 81.2,
+      "boardings_per_km": 1.56,
+      "boardings_per_station": 0.9,
+      "bus_route_length": 52000,
+      "n_low_hours": 6,
+      "low_hours": "5,10,11,12,15,23"
+     },
+     {
+      "rank": 2,
+      "bus_route_name": "701(성산항~표선~서귀포)",
+      "daily_boardings": 80.3,
+      "boardings_per_km": 1.67,
+      "boardings_per_station": 0.9,
+      "bus_route_length": 48000,
+      "n_low_hours": 6,
+      "low_hours": "5,10,12,14,15,23"
+     },
+     {
+      "rank": 3,
+      "bus_route_name": "771-1(제주국제공항~애월환승정류장)",
+      "daily_boardings": 50.1,
+      "boardings_per_km": 1.93,
+      "boardings_per_station": 1.3,
+      "bus_route_length": 26000,
+      "n_low_hours": 4,
+      "low_hours": "5,12,15,23"
+     },
+     {
+      "rank": 4,
+      "bus_route_name": "181(제주국제공항~제주국제공항,516도로)",
+      "daily_boardings": 335.3,
+      "boardings_per_km": 4.93,
+      "boardings_per_station": 9.3,
+      "bus_route_length": 68000,
+      "n_low_hours": 4,
+      "low_hours": "5,6,22,23"
+     },
+     {
+      "rank": 5,
+      "bus_route_name": "112(제주국제공항~성산항)",
+      "daily_boardings": 452.5,
+      "boardings_per_km": 8.38,
+      "boardings_per_station": 14.1,
+      "bus_route_length": 54000,
+      "n_low_hours": 4,
+      "low_hours": "5,6,22,23"
+     },
+     {
+      "rank": 6,
+      "bus_route_name": "151(제주국제공항~운진항)",
+      "daily_boardings": 482.7,
+      "boardings_per_km": 9.65,
+      "boardings_per_station": 14.2,
+      "bus_route_length": 50000,
+      "n_low_hours": 4,
+      "low_hours": "5,6,22,23"
+     },
+     {
+      "rank": 7,
+      "bus_route_name": "111(제주국제공항~성산항)",
+      "daily_boardings": 614.5,
+      "boardings_per_km": 11.82,
+      "boardings_per_station": 20.5,
+      "bus_route_length": 52000,
+      "n_low_hours": 3,
+      "low_hours": "5,22,23"
+     },
+     {
+      "rank": 8,
+      "bus_route_name": "102(제주버스터미널~서귀포버스터미널,서일주)",
+      "daily_boardings": 988.3,
+      "boardings_per_km": 13.36,
+      "boardings_per_station": 21.0,
+      "bus_route_length": 74000,
+      "n_low_hours": 3,
+      "low_hours": "5,22,23"
+     },
+     {
+      "rank": 9,
+      "bus_route_name": "101(제주버스터미널~서귀포버스터미널,동일주)",
+      "daily_boardings": 1070.8,
+      "boardings_per_km": 14.09,
+      "boardings_per_station": 22.3,
+      "bus_route_length": 76000,
+      "n_low_hours": 3,
+      "low_hours": "5,22,23"
+     },
+     {
+      "rank": 10,
+      "bus_route_name": "202(제주버스터미널~서귀포버스터미널,서일주)",
+      "daily_boardings": 1399.0,
+      "boardings_per_km": 17.71,
+      "boardings_per_station": 9.5,
+      "bus_route_length": 79000,
+      "n_low_hours": 4,
+      "low_hours": "5,6,22,23"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "어르신이 많이 타는 정류소는?",
+  "answer": "**한 줄 결론** — senior_share 기준 1위 대정읍사무소: 일평균 승차 19명, 교통약자 비중 43%(경로 37%), 주말/평일 0.71배.\n\n**근거**\n- senior_share 기준 1위 대정읍사무소: 일평균 승차 19명, 교통약자 비중 43%(경로 37%), 주말/평일 0.71배\n- 분석기간 181일, 전체 정류소 교통약자 평균 비중 20%\n- (사용 데이터: bus_station_usage, bus_station, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.27,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "bus_station_rank",
+    "args": {
+     "sort_by": "senior_share",
+     "top_n": 10
+    },
+    "ok": true,
+    "seconds": 0.21,
+    "rows": 10,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "bus_station_rank",
+    "title": "정류소 순위 (senior_share)",
+    "params": {
+     "date_from": null,
+     "date_to": null,
+     "sort_by": "senior_share",
+     "ascending": false,
+     "city_type": null,
+     "top_n": 10
+    },
+    "datasets": [
+     "bus_station_usage",
+     "bus_station"
+    ],
+    "method": "bus_station_usage 승차 행을 정류소별 합산, 교통약자(경로·장애·유공·어린이) 비중과 주말/평일 일평균 비율 계산",
+    "facts": [
+     "senior_share 기준 1위 대정읍사무소: 일평균 승차 19명, 교통약자 비중 43%(경로 37%), 주말/평일 0.71배",
+     "분석기간 181일, 전체 정류소 교통약자 평균 비중 20%"
+    ],
+    "caveats": [
+     "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 10,
+    "table": [
+     {
+      "rank": 1,
+      "bus_station_name": "대정읍사무소",
+      "daily_boardings": 19.3,
+      "vulnerable_share": 0.428,
+      "senior_share": 0.372,
+      "weekend_ratio": 0.71,
+      "bus_city_type": "시내",
+      "latitude": 33.225,
+      "longitude": 126.25
+     },
+     {
+      "rank": 2,
+      "bus_station_name": "표선면사무소",
+      "daily_boardings": 15.2,
+      "vulnerable_share": 0.41,
+      "senior_share": 0.348,
+      "weekend_ratio": 0.76,
+      "bus_city_type": "시내",
+      "latitude": 33.327,
+      "longitude": 126.833
+     },
+     {
+      "rank": 3,
+      "bus_station_name": "애월읍사무소",
+      "daily_boardings": 23.2,
+      "vulnerable_share": 0.395,
+      "senior_share": 0.339,
+      "weekend_ratio": 0.8,
+      "bus_city_type": "시내",
+      "latitude": 33.463,
+      "longitude": 126.329
+     },
+     {
+      "rank": 4,
+      "bus_station_name": "남원읍사무소",
+      "daily_boardings": 15.2,
+      "vulnerable_share": 0.39,
+      "senior_share": 0.336,
+      "weekend_ratio": 0.71,
+      "bus_city_type": "시내",
+      "latitude": 33.279,
+      "longitude": 126.717
+     },
+     {
+      "rank": 5,
+      "bus_station_name": "구좌읍사무소",
+      "daily_boardings": 17.8,
+      "vulnerable_share": 0.395,
+      "senior_share": 0.335,
+      "weekend_ratio": 0.77,
+      "bus_city_type": "시내",
+      "latitude": 33.521,
+      "longitude": 126.852
+     },
+     {
+      "rank": 6,
+      "bus_station_name": "성산읍사무소",
+      "daily_boardings": 17.3,
+      "vulnerable_share": 0.396,
+      "senior_share": 0.335,
+      "weekend_ratio": 0.78,
+      "bus_city_type": "시내",
+      "latitude": 33.438,
+      "longitude": 126.914
+     },
+     {
+      "rank": 7,
+      "bus_station_name": "한림환승정류장",
+      "daily_boardings": 42.2,
+      "vulnerable_share": 0.359,
+      "senior_share": 0.302,
+      "weekend_ratio": 0.78,
+      "bus_city_type": "시외",
+      "latitude": 33.411,
+      "longitude": 126.269
+     },
+     {
+      "rank": 8,
+      "bus_station_name": "조천읍사무소",
+      "daily_boardings": 21.3,
+      "vulnerable_share": 0.358,
+      "senior_share": 0.295,
+      "weekend_ratio": 0.74,
+      "bus_city_type": "시내",
+      "latitude": 33.538,
+      "longitude": 126.635
+     },
+     {
+      "rank": 9,
+      "bus_station_name": "제주대학교병원",
+      "daily_boardings": 56.9,
+      "vulnerable_share": 0.353,
+      "senior_share": 0.293,
+      "weekend_ratio": 0.73,
+      "bus_city_type": "시내",
+      "latitude": 33.458,
+      "longitude": 126.564
+     },
+     {
+      "rank": 10,
+      "bus_station_name": "한라병원",
+      "daily_boardings": 68.5,
+      "vulnerable_share": 0.333,
+      "senior_share": 0.277,
+      "weekend_ratio": 0.77,
+      "bus_city_type": "시내",
+      "latitude": 33.489,
+      "longitude": 126.479
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "한라병원 정류소는 몇 시에 가장 붐비나?",
+  "answer": "**한 줄 결론** — 한라병원: 평일 피크 18시 8명, 주말 피크 7시 6명.\n\n**근거**\n- 한라병원: 평일 피크 18시 8명, 주말 피크 7시 6명\n- 평일 일평균 73명, 주말 56명\n- (사용 데이터: bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.14,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "hourly_profile",
+    "args": {
+     "station": "한라병원"
+    },
+    "ok": true,
+    "seconds": 0.08,
+    "rows": 24,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "hourly_profile",
+    "title": "한라병원 시간대별 승차",
+    "params": {
+     "station": "한라병원",
+     "date_from": null,
+     "date_to": null,
+     "user_category": null
+    },
+    "datasets": [
+     "bus_station_usage"
+    ],
+    "method": "bus_station_usage 승차 행을 시간대×평일/주말로 합산 ÷ 해당 일수",
+    "facts": [
+     "한라병원: 평일 피크 18시 8명, 주말 피크 7시 6명",
+     "평일 일평균 73명, 주말 56명"
+    ],
+    "caveats": [
+     "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 24,
+    "table": [
+     {
+      "hour": 0,
+      "weekday": 0.1,
+      "weekend": 0.2
+     },
+     {
+      "hour": 1,
+      "weekday": 0.1,
+      "weekend": 0.0
+     },
+     {
+      "hour": 2,
+      "weekday": 0.0,
+      "weekend": 0.0
+     },
+     {
+      "hour": 3,
+      "weekday": 0.0,
+      "weekend": 0.0
+     },
+     {
+      "hour": 4,
+      "weekday": 0.2,
+      "weekend": 0.2
+     },
+     {
+      "hour": 5,
+      "weekday": 1.1,
+      "weekend": 0.5
+     },
+     {
+      "hour": 6,
+      "weekday": 3.7,
+      "weekend": 2.4
+     },
+     {
+      "hour": 7,
+      "weekday": 6.9,
+      "weekend": 5.8
+     },
+     {
+      "hour": 8,
+      "weekday": 7.0,
+      "weekend": 5.3
+     },
+     {
+      "hour": 9,
+      "weekday": 3.7,
+      "weekend": 3.0
+     },
+     {
+      "hour": 10,
+      "weekday": 3.0,
+      "weekend": 2.2
+     },
+     {
+      "hour": 11,
+      "weekday": 2.8,
+      "weekend": 2.5
+     },
+     {
+      "hour": 12,
+      "weekday": 4.0,
+      "weekend": 2.7
+     },
+     {
+      "hour": 13,
+      "weekday": 3.4,
+      "weekend": 2.4
+     },
+     {
+      "hour": 14,
+      "weekday": 2.8,
+      "weekend": 2.4
+     },
+     {
+      "hour": 15,
+      "weekday": 3.8,
+      "weekend": 3.0
+     },
+     {
+      "hour": 16,
+      "weekday": 4.5,
+      "weekend": 3.7
+     },
+     {
+      "hour": 17,
+      "weekday": 6.6,
+      "weekend": 5.2
+     },
+     {
+      "hour": 18,
+      "weekday": 7.6,
+      "weekend": 5.5
+     },
+     {
+      "hour": 19,
+      "weekday": 5.0,
+      "weekend": 3.8
+     },
+     {
+      "hour": 20,
+      "weekday": 3.3,
+      "weekend": 2.6
+     },
+     {
+      "hour": 21,
+      "weekday": 2.0,
+      "weekend": 1.7
+     },
+     {
+      "hour": 22,
+      "weekday": 1.1,
+      "weekend": 0.8
+     },
+     {
+      "hour": 23,
+      "weekday": 0.6,
+      "weekend": 0.4
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "5월에 가장 붐빈 관광지는?",
+  "answer": "**한 줄 결론** — 전체 기준 혼잡 1위는 성산일출봉(평균 혼잡지수 1.30, 일평균 82명).\n\n**근거**\n- 전체 기준 혼잡 1위는 성산일출봉(평균 혼잡지수 1.30, 일평균 82명)\n- 상위 10곳 중 관광 비중 최고는 성산일출봉(92%), 외국인 비중 최고는 용두암(23%)\n- (사용 데이터: wifi_ap_usage, 기간 2025-05-01~2025-05-31)\n- 성산일출봉 반경 1.5km 내 정류소 1개, 합산 일평균 승차 91명 (와이파이 일평균 이용자 63명)\n- 가장 가까운 정류소 성산일출봉(0.2km), 피크 14시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 기간 2025-05-01~2025-05-31)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.48,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "congestion_rank",
+    "args": {
+     "weekend_only": false,
+     "foreign_only": false,
+     "sort_by": "congestion_index",
+     "top_n": 10,
+     "date_from": "2025-05-01",
+     "date_to": "2025-05-31"
+    },
+    "ok": true,
+    "seconds": 0.29,
+    "rows": 10,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   },
+   {
+    "tool": "place_access",
+    "args": {
+     "place": "성산일출봉",
+     "date_from": "2025-05-01",
+     "date_to": "2025-05-31"
+    },
+    "ok": true,
+    "seconds": 0.13,
+    "rows": 1,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "congestion_rank",
+    "title": "장소별 혼잡도 순위 (전체)",
+    "params": {
+     "date_from": "2025-05-01",
+     "date_to": "2025-05-31",
+     "weekend_only": false,
+     "foreign_only": false,
+     "sort_by": "congestion_index",
+     "top_n": 10
+    },
+    "datasets": [
+     "wifi_ap_usage"
+    ],
+    "method": "wifi_ap_usage를 ap_place×date로 고유 user_id 집계 → 평일 중앙값 대비 비율 평균",
+    "facts": [
+     "전체 기준 혼잡 1위는 성산일출봉(평균 혼잡지수 1.30, 일평균 82명)",
+     "상위 10곳 중 관광 비중 최고는 성산일출봉(92%), 외국인 비중 최고는 용두암(23%)"
+    ],
+    "caveats": [
+     "와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.",
+     "혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값"
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 10,
+    "table": [
+     {
+      "rank": 1,
+      "ap_place": "성산일출봉",
+      "category": "공영관광지",
+      "days": 31,
+      "avg_daily_users": 81.87,
+      "avg_congestion_index": 1.3,
+      "peak_congestion_index": 2.81,
+      "tourist_share": 0.92,
+      "foreign_share": 0.2,
+      "lat": 33.46,
+      "lon": 126.94
+     },
+     {
+      "rank": 2,
+      "ap_place": "용두암",
+      "category": "공영관광지",
+      "days": 31,
+      "avg_daily_users": 25.97,
+      "avg_congestion_index": 1.21,
+      "peak_congestion_index": 2.05,
+      "tourist_share": 0.77,
+      "foreign_share": 0.23,
+      "lat": 33.52,
+      "lon": 126.51
+     },
+     {
+      "rank": 3,
+      "ap_place": "서귀포매일올레시장",
+      "category": "전통시장",
+      "days": 31,
+      "avg_daily_users": 55.48,
+      "avg_congestion_index": 1.17,
+      "peak_congestion_index": 1.75,
+      "tourist_share": 0.62,
+      "foreign_share": 0.21,
+      "lat": 33.25,
+      "lon": 126.56
+     },
+     {
+      "rank": 4,
+      "ap_place": "송악산",
+      "category": "공영관광지",
+      "days": 31,
+      "avg_daily_users": 15.1,
+      "avg_congestion_index": 1.16,
+      "peak_congestion_index": 2.46,
+      "tourist_share": 0.88,
+      "foreign_share": 0.19,
+      "lat": 33.2,
+      "lon": 126.29
+     },
+     {
+      "rank": 5,
+      "ap_place": "곽지해수욕장",
+      "category": "해수욕장",
+      "days": 31,
+      "avg_daily_users": 16.0,
+      "avg_congestion_index": 1.14,
+      "peak_congestion_index": 2.0,
+      "tourist_share": 0.84,
+      "foreign_share": 0.18,
+      "lat": 33.45,
+      "lon": 126.31
+     },
+     {
+      "rank": 6,
+      "ap_place": "만장굴",
+      "category": "공영관광지",
+      "days": 31,
+      "avg_daily_users": 18.26,
+      "avg_congestion_index": 1.14,
+      "peak_congestion_index": 2.12,
+      "tourist_share": 0.91,
+      "foreign_share": 0.2,
+      "lat": 33.53,
+      "lon": 126.77
+     },
+     {
+      "rank": 7,
+      "ap_place": "비자림",
+      "category": "공영관광지",
+      "days": 31,
+      "avg_daily_users": 19.35,
+      "avg_congestion_index": 1.14,
+      "peak_congestion_index": 2.29,
+      "tourist_share": 0.85,
+      "foreign_share": 0.21,
+      "lat": 33.49,
+      "lon": 126.81
+     },
+     {
+      "rank": 8,
+      "ap_place": "이호테우해변",
+      "category": "해수욕장",
+      "days": 31,
+      "avg_daily_users": 24.42,
+      "avg_congestion_index": 1.14,
+      "peak_congestion_index": 2.14,
+      "tourist_share": 0.64,
+      "foreign_share": 0.2,
+      "lat": 33.5,
+      "lon": 126.45
+     },
+     {
+      "rank": 9,
+      "ap_place": "제주국제공항",
+      "category": "공항",
+      "days": 31,
+      "avg_daily_users": 161.52,
+      "avg_congestion_index": 1.13,
+      "peak_congestion_index": 1.59,
+      "tourist_share": 0.73,
+      "foreign_share": 0.2,
+      "lat": 33.51,
+      "lon": 126.49
+     },
+     {
+      "rank": 10,
+      "ap_place": "정방폭포",
+      "category": "공영관광지",
+      "days": 31,
+      "avg_daily_users": 20.77,
+      "avg_congestion_index": 1.12,
+      "peak_congestion_index": 2.32,
+      "tourist_share": 0.87,
+      "foreign_share": 0.18,
+      "lat": 33.24,
+      "lon": 126.57
+     }
+    ]
+   },
+   {
+    "tool": "place_access",
+    "title": "성산일출봉 주변 대중교통 접근",
+    "params": {
+     "place": "성산일출봉",
+     "radius_km": 1.5,
+     "date_from": "2025-05-01",
+     "date_to": "2025-05-31"
+    },
+    "datasets": [
+     "wifi_ap_usage",
+     "bus_station",
+     "bus_station_usage"
+    ],
+    "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
+    "facts": [
+     "성산일출봉 반경 1.5km 내 정류소 1개, 합산 일평균 승차 91명 (와이파이 일평균 이용자 63명)",
+     "가장 가까운 정류소 성산일출봉(0.2km), 피크 14시"
+    ],
+    "caveats": [
+     "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.",
+     "정류소-관광지 거리는 직선거리입니다."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 1,
+    "table": [
+     {
+      "bus_station_name": "성산일출봉",
+      "dist_km": 0.2,
+      "daily_boardings": 90.8,
+      "peak_hour": 14,
+      "latitude": 33.4602,
+      "longitude": 126.9413
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "어떤 데이터가 있어?",
+  "answer": "**한 줄 결론** — 9개 데이터셋 적재, 엔진 sqlite.\n\n**근거**\n- 9개 데이터셋 적재, 엔진 sqlite\n- ⚠️ 일부/전체가 개발용 합성 데이터입니다. 실제 결론에 사용하지 마세요.\n- (사용 데이터: wifi_ap_usage, wifi_ap, wifi_daily_users, bus_station_usage, bus_route_usage, bus_station, bus_route, weather_daily, weather_station, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.06,
+  "synthetic": true,
+  "steps": [
+   {
+    "tool": "describe_data",
+    "args": {},
+    "ok": true,
+    "seconds": 0.0,
+    "rows": 9,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "describe_data",
+    "title": "적재 데이터 요약",
+    "params": {},
+    "datasets": [
+     "wifi_ap_usage",
+     "wifi_ap",
+     "wifi_daily_users",
+     "bus_station_usage",
+     "bus_route_usage",
+     "bus_station",
+     "bus_route",
+     "weather_daily",
+     "weather_station"
+    ],
+    "method": "",
+    "facts": [
+     "9개 데이터셋 적재, 엔진 sqlite",
+     "⚠️ 일부/전체가 개발용 합성 데이터입니다. 실제 결론에 사용하지 마세요."
+    ],
+    "caveats": [],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 9,
+    "table": [
+     {
+      "key": "wifi_ap_usage",
+      "code": "4-05",
+      "name": "와이파이 AP별 이용 현황",
+      "source": "synthetic",
+      "rows": 159874,
+      "files": "wifi_ap_usage.csv",
+      "period": "2025-01-01~2025-06-30",
+      "note": ""
+     },
+     {
+      "key": "wifi_ap",
+      "code": "4-01",
+      "name": "와이파이 AP 현황(고정형, 최신)",
+      "source": "synthetic",
+      "rows": 40,
+      "files": "wifi_ap.csv",
+      "period": "2025-01-01~2025-01-01",
+      "note": ""
+     },
+     {
+      "key": "wifi_daily_users",
+      "code": "4-06",
+      "name": "와이파이 일별 이용자 현황",
+      "source": "synthetic",
+      "rows": 42811,
+      "files": "wifi_daily_users.csv",
+      "period": "2025-01-01~2025-06-30",
+      "note": ""
+     },
+     {
+      "key": "bus_station_usage",
+      "code": "3-04",
+      "name": "버스 정류소별 이용 현황",
+      "source": "synthetic",
+      "rows": 382251,
+      "files": "bus_station_usage.csv",
+      "period": "2025-01-01~2025-06-30",
+      "note": ""
+     },
+     {
+      "key": "bus_route_usage",
+      "code": "3-02",
+      "name": "버스 노선별 이용 현황",
+      "source": "synthetic",
+      "rows": 248875,
+      "files": "bus_route_usage.csv",
+      "period": "2025-01-01~2025-06-30",
+      "note": ""
+     },
+     {
+      "key": "bus_station",
+      "code": "3-03",
+      "name": "버스 정류소 정보",
+      "source": "synthetic",
+      "rows": 44,
+      "files": "bus_station.csv",
+      "period": "2025-01-01~2025-01-01",
+      "note": ""
+     },
+     {
+      "key": "bus_route",
+      "code": "3-01",
+      "name": "버스 노선 정보",
+      "source": "synthetic",
+      "rows": 15,
+      "files": "bus_route.csv",
+      "period": "2025-01-01~2025-01-01",
+      "note": ""
+     },
+     {
+      "key": "weather_daily",
+      "code": "5-02",
+      "name": "일일 날씨 정보",
+      "source": "synthetic",
+      "rows": 724,
+      "files": "weather_daily.csv",
+      "period": "2025-01-01~2025-06-30",
+      "note": ""
+     },
+     {
+      "key": "weather_station",
+      "code": "5-01",
+      "name": "날씨 관측소 정보",
+      "source": "synthetic",
+      "rows": 4,
+      "files": "weather_station.csv",
+      "period": "",
+      "note": ""
+     }
+    ]
+   }
+  ]
+ }
+]

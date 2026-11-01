@@ -1,0 +1,48 @@
+# 데이터 활용 명세
+
+## 1. 필수 데이터 사용 내역 (제주빅데이터센터 데이터 명세서 v12, 2026.1.28)
+
+| 코드 | 데이터명 | 제공처 | 반출 | 사용 컬럼 | 용도 |
+|---|---|---|---|---|---|
+| 4-05 | 와이파이 AP별 이용 현황 | 제주특별자치도 | 가능 | base_date, user_id(집계용 nunique만), ap_place, ap_category, ap_latitude, ap_longitude, nationality, visit_type | 장소별 일일 고유 이용자 → 혼잡지수, 관광·외국인 비중, 지도 |
+| 4-01 | 와이파이 AP 현황(고정형, 최신) | 제주특별자치도 | 가능 | ap_group_name, category, latitude, longitude | AP 위치·카테고리 보조 |
+| 4-06 | 와이파이 일별 이용자 현황 | 제주특별자치도 | 가능 | base_date, nationality, visit_type, user_count | 전체 추세 보조 |
+| 3-04 | 버스 정류소별 이용 현황 | 제주특별자치도(티머니) | 가능 | base_date, base_hour, bus_station_id/name, get_on_off_type, user_category, user_count | 정류소 승차 수요, 교통약자 비중, 시간대 |
+| 3-02 | 버스 노선별 이용 현황 | 제주특별자치도(티머니) | 가능 | base_date, base_hour, bus_route_id/name, get_on_off_type, user_category, user_count | 노선 효율, 저이용 시간대 |
+| 3-01 | 버스 노선 정보 | 제주특별자치도(티머니) | 가능 | bus_route_id, bus_route_length, bus_station_count | 승객/km/일 |
+| 3-03 | 버스 정류소 정보 | 제주특별자치도(티머니) | 가능 | bus_station_id, bus_city_type, latitude, longitude | 정류소 좌표(관광지 반경 검색) |
+| 5-02 | 일일 날씨 정보 | 제주특별자치도 | 가능 | base_date, observatory_code, daily_rainfall, average_temperature | 강우일 판정 |
+| 5-01 | 날씨 관측소 정보 | 제주특별자치도(농업기술원) | 가능 | observatory_code, latitude, longitude | 가장 가까운 관측소 |
+
+이용조건: 제주데이터허브 공개 데이터(명세서상 "데이터 반출 가능"). 출처 표기 의무를 README·리포트 하단에 이행. 비반출 데이터는 사용하지 않음.
+
+## 2. 수집
+- 제주데이터허브(jejudatahub.net) → 제주빅데이터센터 메뉴 → 해당 데이터 CSV 다운로드 → `data/raw/` 복사.
+- 파일명은 데이터명(한글)·코드·영문키(`wifi_ap_usage` 등) 어느 것으로 시작해도 자동 인식. 여러 기간 파일은 `data/raw/wifi_ap_usage/*.csv` 처럼 폴더에 모아도 됨.
+
+## 3. 전처리 (`jeju_agent/data/loader.py`)
+1. 인코딩 자동 판별(utf-8-sig → cp949 → euc-kr).
+2. 헤더 표준화: 명세서의 컬럼명(영문)·컬럼명(한글) 모두 영문 표준명으로 매핑, 공백·괄호 무시.
+3. 타입 캐스팅: 명세서 INT/BIGINT/DOUBLE + 위경도·user_count 등 STRING으로 표기된 숫자 컬럼을 숫자로.
+4. 파생 컬럼: `date`(YYYY-MM-DD), `ym`, `weekday`(0=월), `dow`(월~일), `is_weekend`, `hour`.
+5. 중복 정보성 테이블(노선·정류소 정보)은 ID 기준 `drop_duplicates`로 최신 1행만 사용.
+6. 결측·형식 오류 값은 NaN 처리(오류로 중단하지 않음).
+
+## 4. 분석 흐름과 지표 정의
+| 도구 | 정의 |
+|---|---|
+| 혼잡지수 | `장소·일 고유 user_id 수 ÷ 분석기간 평일 중앙값`. 1.0=평소 평일 수준 |
+| 관광/외국인 비중 | visit_type='관광' / nationality≠'대한민국' 이용자 ÷ 전체 |
+| 정류소 일평균 승차 | get_on_off_type='승차' user_count 합 ÷ 일수 |
+| 교통약자 비중 | (경로+어린이+장애+유공) ÷ 전체 승차 |
+| 노선 효율 | 일평균 승차 ÷ 노선거리(km); 저이용 시간대 = 시간대 승차 < 피크의 15% (05~23시) |
+| 강우 효과 | 가장 가까운 관측소 일강수량 ≥ 1mm를 강우일로 보고 `강우일 평균 ÷ 비강우일 평균 − 1` (평일/주말 분리) |
+| 관광지 접근 | 와이파이 장소 좌표 기준 반경 1.5km(haversine) 내 정류소의 승차·피크 시간 |
+
+## 5. 반출 게이트 (`jeju_agent/gate.py`, `config/export_rules.yaml`)
+LLM·화면·리포트로 나가는 모든 표는 ① 식별자 컬럼 제거 ② 500행 상한 ③ 5명 미만 인원 셀 `<5` 마스킹 ④ 원본 행 조회 차단(run_sql은 집계 쿼리만) 을 거친다. 비반출 데이터를 추가하더라도 같은 경로로만 결과가 나간다.
+
+## 6. 외부 데이터·오픈소스
+- 외부 데이터: 없음 (합성 데이터는 명세서 구조만 참고한 자체 생성물).
+- 오픈소스: pandas, numpy, DuckDB, Streamlit, Plotly, pydeck, PyYAML, python-dotenv, requests, pytest.
+- 외부 API: LLM(Anthropic / OpenAI, 선택). 원본 행은 전송하지 않으며 게이트 통과 집계표(최대 40행 텍스트)만 전송.
