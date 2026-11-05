@@ -9,11 +9,12 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from dataclasses import dataclass, field
 
 import requests
 
-from .config import LLM_MODEL, LLM_PROVIDER, LLM_TIMEOUT, OLLAMA_BASE_URL
+from .config import LLM_MODEL, LLM_PROVIDER, LLM_RETRIES, LLM_TIMEOUT, OLLAMA_BASE_URL
 
 DEFAULT_MODELS = {"anthropic": "claude-sonnet-5-5", "openai": "gpt-4o-mini", "ollama": "qwen2.5:7b"}
 
@@ -66,9 +67,37 @@ class LLM:
             return self._openai_compat(system, messages, tools, max_tokens)
         raise RuntimeError("LLM 공급자가 설정되지 않았습니다 (offline).")
 
+    # ---------- 공통: 재시도 ----------
+    @staticmethod
+    def _post(url: str, body: dict, headers: dict, timeout: int) -> dict:
+        """429/5xx·네트워크 오류는 지수 백오프로 최대 LLM_RETRIES 회 재시도. 4xx(인증·요청 오류)는 즉시 실패."""
+        last: Exception | None = None
+        for attempt in range(LLM_RETRIES + 1):
+            try:
+                r = requests.post(url, json=body, headers=headers, timeout=timeout)
+                if r.status_code in (429, 500, 502, 503, 504, 529) and attempt < LLM_RETRIES:
+                    time.sleep(min(2 ** attempt, 8))
+                    continue
+                if not r.ok:
+                    detail = ""
+                    try:
+                        detail = r.json().get("error", {}).get("message", "")[:200]
+                    except Exception:  # noqa: BLE001
+                        detail = r.text[:200]
+                    raise RuntimeError(f"HTTP {r.status_code} {detail}".strip())
+                return r.json()
+            except (requests.ConnectionError, requests.Timeout) as e:
+                last = e
+                if attempt < LLM_RETRIES:
+                    time.sleep(min(2 ** attempt, 8))
+                    continue
+                raise
+        raise last or RuntimeError("LLM 요청 실패")
+
     # ---------- Anthropic ----------
-    def _anthropic(self, system, messages, tools, max_tokens) -> LLMReply:
-        conv = []
+    @staticmethod
+    def _to_anthropic(messages: list[dict]) -> list[dict]:
+        conv: list[dict] = []
         for m in messages:
             if m["role"] == "user":
                 conv.append({"role": "user", "content": m["content"]})
@@ -78,20 +107,21 @@ class LLM:
                     blocks.append({"type": "text", "text": m["content"]})
                 for tc in m.get("tool_calls", []):
                     blocks.append({"type": "tool_use", "id": tc["id"], "name": tc["name"], "input": tc["args"]})
-                conv.append({"role": "assistant", "content": blocks})
+                conv.append({"role": "assistant", "content": blocks or [{"type": "text", "text": "(없음)"}]})
             elif m["role"] == "tool":
                 block = {"type": "tool_result", "tool_use_id": m["tool_call_id"], "content": m["content"]}
                 if conv and conv[-1]["role"] == "user" and isinstance(conv[-1]["content"], list):
                     conv[-1]["content"].append(block)
                 else:
                     conv.append({"role": "user", "content": [block]})
-        body = {"model": self.model, "max_tokens": max_tokens, "system": system, "messages": conv, "temperature": 0}
+        return conv
+
+    def _anthropic(self, system, messages, tools, max_tokens) -> LLMReply:
+        body = {"model": self.model, "max_tokens": max_tokens, "system": system, "messages": self._to_anthropic(messages), "temperature": 0}
         if tools:
             body["tools"] = [{"name": t["name"], "description": t["description"], "input_schema": t["parameters"]} for t in tools]
-        r = requests.post("https://api.anthropic.com/v1/messages", timeout=LLM_TIMEOUT, json=body,
-                          headers={"x-api-key": os.environ["ANTHROPIC_API_KEY"], "anthropic-version": "2023-06-01", "content-type": "application/json"})
-        r.raise_for_status()
-        data = r.json()
+        data = self._post("https://api.anthropic.com/v1/messages", body, {
+            "x-api-key": os.environ.get("ANTHROPIC_API_KEY", ""), "anthropic-version": "2023-06-01", "content-type": "application/json"}, LLM_TIMEOUT)
         rep = LLMReply(raw=data, usage=data.get("usage", {}))
         for b in data.get("content", []):
             if b["type"] == "text":
@@ -117,12 +147,10 @@ class LLM:
         if tools:
             body["tools"] = [{"type": "function", "function": {"name": t["name"], "description": t["description"], "parameters": t["parameters"]}} for t in tools]
         if self.provider == "openai":
-            url, headers = "https://api.openai.com/v1/chat/completions", {"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"}
+            url, headers = "https://api.openai.com/v1/chat/completions", {"Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY', '')}"}
         else:
             url, headers = f"{OLLAMA_BASE_URL}/v1/chat/completions", {}
-        r = requests.post(url, json=body, headers=headers, timeout=LLM_TIMEOUT * (3 if self.provider == "ollama" else 1))
-        r.raise_for_status()
-        data = r.json()
+        data = self._post(url, body, headers, LLM_TIMEOUT * (3 if self.provider == "ollama" else 1))
         msg = data["choices"][0]["message"]
         rep = LLMReply(text=msg.get("content") or "", raw=data, usage=data.get("usage", {}))
         for i, tc in enumerate(msg.get("tool_calls") or []):

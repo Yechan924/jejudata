@@ -71,8 +71,14 @@ with st.sidebar:
     if db.uses_synthetic():
         st.warning("⚠️ 개발용 합성 데이터가 포함되어 있습니다. data/raw 에 실제 CSV를 넣고 '다시 읽기'를 누르세요.", icon="⚠️")
     with st.expander("적재 데이터", expanded=False):
-        st.dataframe(db.summary()[["code", "name", "source", "rows", "period"]], hide_index=True, use_container_width=True)
-        st.caption(f"원본 CSV 폴더: `{RAW_DIR}`")
+        summ = db.summary()
+        st.dataframe(summ[["code", "name", "source", "rows", "period"]], hide_index=True, use_container_width=True)
+        notes = summ[summ["note"].astype(str).str.len() > 0]
+        if len(notes):
+            st.caption("헤더 매핑·기본값 채움 기록 (실데이터 점검용)")
+            for r in notes.itertuples():
+                st.caption(f"· {r.code}: {r.note}")
+        st.caption(f"원본 CSV 폴더: `{RAW_DIR}` · 점검: `python scripts/check_data.py`")
         up = st.file_uploader("CSV 추가 (제주데이터허브에서 받은 파일)", type=["csv"], accept_multiple_files=True)
         if up:
             RAW_DIR.mkdir(parents=True, exist_ok=True)
@@ -101,12 +107,25 @@ with st.sidebar:
 
 # ---------------- 결과 렌더링 ----------------
 def render_result(res, key_prefix: str):
+    if res.plan:
+        with st.expander("🧭 Agent 실행 계획 — 어떤 데이터를 어떤 순서로 봤나", expanded=False):
+            for i, p in enumerate(res.plan, 1):
+                st.markdown(f"{i}. {p}")
+            for s_ in res.steps:
+                st.caption(("✅" if s_.ok else "❌") + f" `{s_.tool}` {json.dumps(s_.args, ensure_ascii=False)} · {s_.seconds}s · {s_.rows}행" + (f" · {s_.error}" if s_.error else ""))
     st.markdown(res.answer)
     cols = st.columns(4)
     cols[0].metric("모드", res.mode.split("/")[0])
     cols[1].metric("도구 호출", len(res.steps))
     cols[2].metric("LLM 호출", res.llm_calls)
     cols[3].metric("소요(초)", res.elapsed)
+    if res.followups:
+        st.caption("이어서 물어보기")
+        fcols = st.columns(len(res.followups))
+        for j, f in enumerate(res.followups):
+            if fcols[j].button(f, key=f"{key_prefix}_fu_{j}", use_container_width=True):
+                st.session_state["pending_q"] = f
+                st.rerun()
     if not res.results:
         return
     if res.notes:
@@ -162,6 +181,11 @@ def render_result(res, key_prefix: str):
             st.markdown(f"**{r.title}** · 데이터: `{'`, `'.join(r.datasets)}` · {len(r.table)}행")
             st.dataframe(r.table, hide_index=True, use_container_width=True)
     with tabs[3]:
+        if res.limitations:
+            st.markdown("**자동 점검** — 코드가 데이터 출처·기간·게이트·표본을 확인해 적은 한계")
+            for x in res.limitations:
+                st.markdown(f"- {x}")
+            st.divider()
         for r in res.results:
             st.markdown(f"**{r.title}**\n- 방법: {r.method}\n- 인자: `{json.dumps(r.params, ensure_ascii=False)}`\n- 반출 게이트: {' / '.join(r.gate_log)}")
             for cv in r.caveats:
@@ -204,7 +228,10 @@ if q:
         st.write(q)
     with st.chat_message("assistant"):
         with st.spinner("분석 중…"):
-            res = agent.run(q)
+            history = []
+            for t in turns[-3:]:   # 최근 3턴을 맥락으로 전달 ("거기 가는 버스는?" 같은 후속 질문 해석용)
+                history += [{"role": "user", "content": t["q"]}, {"role": "assistant", "content": t["res"].answer[:1500]}]
+            res = agent.run(q, history=history)
         render_result(res, f"t{len(turns)}")
     turns.append({"q": q, "res": res})
 

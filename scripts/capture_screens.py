@@ -1,0 +1,106 @@
+"""UI 스크린샷 자동 캡처 (README·기획서·상호평가용).
+
+준비(한 번):  pip install playwright && playwright install chromium
+실행:         python scripts/capture_screens.py                # Streamlit을 띄우고 docs/screens/*.png 저장
+              python scripts/capture_screens.py --url http://localhost:8501   # 이미 떠 있는 앱 사용
+              python scripts/capture_screens.py --offline      # LLM 키가 있어도 오프라인 모드로 캡처
+
+저장되는 파일 (docs/screens/)
+  01_home.png        첫 화면(사이드바·예시 질문)
+  02_answer.png      답변 + 실행 계획 패널 + 이어서 물어보기
+  03_map.png         지도 탭
+  04_chart.png       차트 탭
+  05_evidence.png    근거 표 탭
+  06_llm_transfer.png LLM 전송 내용 탭
+  07_followup.png    후속 질문 클릭 결과
+"""
+from __future__ import annotations
+
+import argparse
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "docs" / "screens"
+QUESTION = "주말에 가장 붐비는 관광지는 어디야?"
+
+
+def wait_ready(page, timeout=90):
+    """Streamlit 'Running…' 표시가 사라질 때까지 대기."""
+    page.wait_for_timeout(1500)
+    for _ in range(timeout * 2):
+        if page.locator("[data-testid='stStatusWidget']").count() == 0:
+            break
+        page.wait_for_timeout(500)
+    page.wait_for_timeout(800)
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--url", default="")
+    ap.add_argument("--offline", action="store_true")
+    ap.add_argument("--port", type=int, default=8765)
+    a = ap.parse_args()
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("pip install playwright && playwright install chromium  을 먼저 실행하세요.")
+        return 1
+
+    proc = None
+    url = a.url
+    if not url:
+        env = dict(os.environ)
+        if a.offline:
+            env["LLM_PROVIDER"] = "offline"
+        proc = subprocess.Popen([sys.executable, "-m", "streamlit", "run", "app.py", "--server.port", str(a.port), "--server.headless", "true"],
+                                cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        url = f"http://localhost:{a.port}"
+        time.sleep(6)
+
+    OUT.mkdir(parents=True, exist_ok=True)
+    try:
+        with sync_playwright() as p:
+            b = p.chromium.launch()
+            page = b.new_page(viewport={"width": 1440, "height": 900}, device_scale_factor=1.5)
+            page.goto(url, wait_until="networkidle", timeout=120_000)
+            wait_ready(page, 120)   # 첫 실행은 데이터 적재(합성 생성 시 최대 1분)
+            page.screenshot(path=str(OUT / "01_home.png"))
+            print("01_home")
+
+            page.get_by_role("button", name=QUESTION).first.click()
+            wait_ready(page, 120)
+            page.locator("text=Agent 실행 계획").first.click()
+            page.wait_for_timeout(500)
+            page.screenshot(path=str(OUT / "02_answer.png"), full_page=False)
+            print("02_answer")
+
+            tabs = {"03_map.png": "지도", "04_chart.png": "차트", "05_evidence.png": "근거 표", "06_llm_transfer.png": "LLM 전송 내용"}
+            for fn, label in tabs.items():
+                t = page.get_by_role("tab", name=label, exact=False).last
+                t.scroll_into_view_if_needed()
+                t.click()
+                page.wait_for_timeout(1500)
+                page.screenshot(path=str(OUT / fn))
+                print(fn[:-4])
+
+            fu = page.locator("button", has_text="언제 가장 붐비나").first
+            if fu.count():
+                fu.scroll_into_view_if_needed()
+                fu.click()
+                wait_ready(page, 120)
+                page.screenshot(path=str(OUT / "07_followup.png"))
+                print("07_followup")
+            b.close()
+    finally:
+        if proc:
+            proc.terminate()
+    print(f"\n저장: {OUT}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

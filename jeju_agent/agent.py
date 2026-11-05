@@ -13,10 +13,11 @@ from pathlib import Path
 
 from . import schemas
 from .config import ATTRIBUTION, LLM_MAX_TOOL_CALLS
-from .data.loader import JejuDB
+from .data.loader import INFO_TABLES, JejuDB
 from .gate import apply_gate
+from .insight import auto_limitations, describe_step, suggest_followups
 from .llm import LLM
-from .planner_rules import plan as rule_plan, template_answer
+from .planner_rules import parse_period, plan as rule_plan, template_answer
 from .tools import ToolResult, call_tool, tool_specs
 from .verify import verify_numbers
 
@@ -48,6 +49,9 @@ class AgentResult:
     llm_transcript: list[dict] = field(default_factory=list)   # LLM에 실제로 보낸/받은 내용 (미리보기용)
     verification: dict = field(default_factory=dict)             # 답변 숫자 검증 결과
     notes: list[str] = field(default_factory=list)
+    plan: list[str] = field(default_factory=list)                # Agent가 세운 실행 계획(사람이 읽는 문장)
+    limitations: list[str] = field(default_factory=list)         # 코드가 자동으로 모은 데이터·방법 한계
+    followups: list[str] = field(default_factory=list)           # 다음 질문 제안
 
 
 class JejuAgent:
@@ -60,7 +64,7 @@ class JejuAgent:
     # ---------- 공통 ----------
     def _system_prompt(self) -> str:
         prov = self.db.summary()
-        prov_txt = "\n".join(f"- {r.key}: {r.source}, {r.rows:,}행, {r.period}" for r in prov.itertuples())
+        prov_txt = "\n".join(f"- {r.key}: {r.source}, {r.rows:,}행, {r.period}" + (f" ({r.note})" if r.note else "") for r in prov.itertuples())
         if self.db.uses_synthetic():
             prov_txt += "\n⚠️ 'synthetic'은 명세서 구조만 따른 개발용 가짜 데이터입니다. 답변 '한계'에 이 사실을 반드시 적으세요."
         return PROMPT_PATH.read_text(encoding="utf-8").format(datasets=schemas.describe_for_llm(), provenance=prov_txt)
@@ -84,31 +88,47 @@ class JejuAgent:
         return places, stations, routes
 
     def _data_range(self) -> tuple[str, str]:
-        ps = [p for p in self.db.provenance.values() if p.date_min]
+        ps = [p for k, p in self.db.provenance.items() if p.date_min and k not in INFO_TABLES]
         return (min(p.date_min for p in ps), max(p.date_max for p in ps)) if ps else ("", "")
 
     # ---------- 오프라인(규칙) 모드 ----------
-    def run_offline(self, question: str) -> AgentResult:
+    def run_offline(self, question: str, history: list[dict] | None = None) -> AgentResult:
         t0 = time.time()
         places, stations, routes = self._names()
         dmin, dmax = self._data_range()
         steps: list[StepLog] = []
         results: list[ToolResult] = []
-        for name, args in rule_plan(question, places, stations, routes, dmin, dmax):
+        plan_txt: list[str] = []
+        q_eff = question
+        if history and any(k in question.replace(" ", "") for k in ("거기", "그곳", "그장소", "그노선", "그정류소", "그정류장", "여기")):
+            # 간단한 지시어 해석: 직전 대화에 나온 장소·정류소·노선명을 질문에 보탠다
+            from .planner_rules import fuzzy_match_any
+            prev = " ".join(m.get("content", "") for m in history[-2:]).replace(" ", "")
+            ref = fuzzy_match_any(prev, places) or fuzzy_match_any(prev, stations) or fuzzy_match_any(prev, routes)
+            if ref:
+                q_eff = f"{ref} {question}"
+                plan_txt.append(f"지시어를 직전 대화의 '{ref}'(으)로 해석")
+        planned = rule_plan(q_eff, places, stations, routes, dmin, dmax)
+        plan_txt.append("규칙 플래너: 질문의 키워드로 도구를 골랐습니다 → " + " → ".join(describe_step(n, a) for n, a in planned))
+        for name, args in planned:
             if args.get("place") == "__TOP1__":
                 if not results or results[0].table.empty:
                     continue
                 args = {**args, "place": str(results[0].table.iloc[0].get("ap_place", ""))}
+                plan_txt.append(f"1위 장소 '{args['place']}'를 다음 단계 입력으로 사용")
             r = self._run_tool(name, args, steps)
             if r is not None:
                 results.append(r)
-        ans = template_answer(question, results, self.db.uses_synthetic()) + "\n\n" + ATTRIBUTION
-        return AgentResult(question, ans, results, steps, "offline", elapsed=round(time.time() - t0, 2), synthetic=self.db.uses_synthetic())
+        lim = auto_limitations(self.db, results, None, parse_period(question, dmin, dmax))
+        ans = template_answer(question, results, self.db.uses_synthetic(), lim) + "\n\n" + ATTRIBUTION
+        res = AgentResult(question, ans, results, steps, "offline", elapsed=round(time.time() - t0, 2), synthetic=self.db.uses_synthetic())
+        res.plan, res.limitations, res.followups = plan_txt, lim, suggest_followups(question, results, self.db)
+        return res
 
     # ---------- LLM 모드 ----------
     def run(self, question: str, history: list[dict] | None = None) -> AgentResult:
         if not self.llm.available:
-            return self.run_offline(question)
+            return self.run_offline(question, history)
         t0 = time.time()
         steps: list[StepLog] = []
         results: list[ToolResult] = []
@@ -118,6 +138,7 @@ class JejuAgent:
         calls, usage = 0, {"input": 0, "output": 0}
         transcript: list[dict] = [{"direction": "→LLM", "kind": "system", "content": system},
                                   {"direction": "→LLM", "kind": "user", "content": question}]
+        plan_txt: list[str] = []
         try:
             for _ in range(LLM_MAX_TOOL_CALLS + 1):
                 rep = self.llm.chat(system, messages, tools)
@@ -127,7 +148,10 @@ class JejuAgent:
                 usage["output"] += u.get("output_tokens", u.get("completion_tokens", 0)) or 0
                 if not rep.tool_calls:
                     transcript.append({"direction": "←LLM", "kind": "answer", "content": rep.text})
-                    return self._finish(question, rep.text, results, steps, calls, usage, t0, transcript)
+                    return self._finish(question, rep.text, results, steps, calls, usage, t0, transcript, plan_txt)
+                if rep.text and rep.text.strip():
+                    plan_txt.append(rep.text.strip())
+                plan_txt.append("도구 호출: " + " · ".join(describe_step(tc.name, tc.args) for tc in rep.tool_calls))
                 transcript.append({"direction": "←LLM", "kind": "tool_calls", "content": json.dumps([{"name": tc.name, "args": tc.args} for tc in rep.tool_calls], ensure_ascii=False)})
                 messages.append({"role": "assistant", "content": rep.text, "tool_calls": [{"id": tc.id, "name": tc.name, "args": tc.args} for tc in rep.tool_calls]})
                 for tc in rep.tool_calls:
@@ -144,31 +168,40 @@ class JejuAgent:
             rep = self.llm.chat(system, messages, None)
             calls += 1
             transcript.append({"direction": "←LLM", "kind": "answer", "content": rep.text})
-            return self._finish(question, rep.text, results, steps, calls, usage, t0, transcript)
+            plan_txt.append("도구 호출 한도 도달 → 지금까지 결과로 마무리")
+            return self._finish(question, rep.text, results, steps, calls, usage, t0, transcript, plan_txt)
         except Exception as e:  # noqa: BLE001  LLM 장애 → 오프라인 폴백
             steps.append(StepLog("llm", {}, False, 0, error=f"{type(e).__name__}: {e}"))
-            off = self.run_offline(question)
+            off = self.run_offline(question, history)
             off.steps = steps + off.steps
             off.mode = f"offline(fallback from {self.llm.provider}: {type(e).__name__})"
             off.llm_calls = calls
+            off.plan = plan_txt + [f"LLM 장애({type(e).__name__}) → 규칙 플래너로 대체"] + off.plan
             return off
 
-    def _finish(self, question, text, results, steps, calls, usage, t0, transcript) -> AgentResult:
-        """LLM 답변 마무리: 숫자 검증 → 실패 시 템플릿 대체 → 출처 문구 부착."""
+    def _finish(self, question, text, results, steps, calls, usage, t0, transcript, plan_txt=None) -> AgentResult:
+        """LLM 답변 마무리: 숫자 검증 → 실패 시 템플릿 대체 → 자동 점검·출처 문구 부착."""
         notes: list[str] = []
         answer = (text or "").strip()
         v = verify_numbers(answer, results) if answer else None
+        verification = {"checked": v.checked, "unsupported": v.unsupported} if v else {}
+        dmin, dmax = self._data_range()
+        lim = auto_limitations(self.db, results, verification, parse_period(question, dmin, dmax) if dmin else None)
         if not answer or (v and not v.ok):
             if v and not v.ok:
                 notes.append(f"LLM 해설의 숫자 {', '.join(v.unsupported[:5])} 이(가) 근거표에 없어 템플릿 해설로 대체했습니다.")
-            answer = template_answer(question, results, self.db.uses_synthetic())
-        elif v and v.unsupported:
-            notes.append(f"근거표에서 확인되지 않은 숫자: {', '.join(v.unsupported[:5])} (검토 필요)")
+            lim = auto_limitations(self.db, results, None, parse_period(question, dmin, dmax) if dmin else None)  # 폐기된 해설의 숫자는 제외
+            answer = template_answer(question, results, self.db.uses_synthetic(), lim)
+        else:
+            if v and v.unsupported:
+                notes.append(f"근거표에서 확인되지 않은 숫자: {', '.join(v.unsupported[:5])} (검토 필요)")
+            if lim:
+                answer += "\n\n**자동 점검** (코드가 확인한 데이터·방법 한계)\n" + "\n".join(f"- {x}" for x in lim[:6])
         answer += "\n\n" + ATTRIBUTION
         res = AgentResult(question, answer, results, steps, f"llm:{self.llm.provider}/{self.llm.model}", calls, usage,
                           round(time.time() - t0, 2), self.db.uses_synthetic())
-        res.llm_transcript, res.notes = transcript, notes
-        res.verification = {"checked": v.checked, "unsupported": v.unsupported} if v else {}
+        res.llm_transcript, res.notes, res.verification = transcript, notes, verification
+        res.plan, res.limitations, res.followups = list(plan_txt or []), lim, suggest_followups(question, results, self.db)
         return res
 
     # ---------- 직렬화 ----------
@@ -176,6 +209,7 @@ class JejuAgent:
     def to_dict(res: AgentResult) -> dict:
         return {"question": res.question, "answer": res.answer, "mode": res.mode, "llm_calls": res.llm_calls, "tokens": res.tokens,
                 "elapsed": res.elapsed, "synthetic": res.synthetic, "verification": res.verification, "notes": res.notes,
+                "plan": res.plan, "limitations": res.limitations, "followups": res.followups,
                 "llm_transcript": res.llm_transcript,
                 "steps": [s.__dict__ for s in res.steps],
                 "results": [{"tool": r.name, "title": r.title, "params": r.params, "datasets": r.datasets, "method": r.method,

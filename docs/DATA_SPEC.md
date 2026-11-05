@@ -17,12 +17,12 @@
 이용조건: 제주데이터허브 공개 데이터(명세서상 "데이터 반출 가능"). 출처 표기 의무를 README·리포트 하단에 이행. 비반출 데이터는 사용하지 않음.
 
 ## 2. 수집
-- 제주데이터허브(jejudatahub.net) → 제주빅데이터센터 메뉴 → 해당 데이터 CSV 다운로드 → `data/raw/` 복사.
+- 제주데이터허브(jejudatahub.net) → 제주빅데이터센터 메뉴 → 해당 데이터 CSV 다운로드 → `data/raw/` 복사 → `python scripts/check_data.py`로 점검. 단계별 절차·대안 데이터·센터 방문 요령은 `docs/DATA_ACQUISITION.md`.
 - 파일명은 데이터명(한글)·코드·영문키(`wifi_ap_usage` 등) 어느 것으로 시작해도 자동 인식. 여러 기간 파일은 `data/raw/wifi_ap_usage/*.csv` 처럼 폴더에 모아도 됨.
 
 ## 3. 전처리 (`jeju_agent/data/loader.py`)
 1. 인코딩 자동 판별(utf-8-sig → cp949 → euc-kr).
-2. 헤더 표준화: 명세서의 컬럼명(영문)·컬럼명(한글) 모두 영문 표준명으로 매핑, 공백·괄호 무시.
+2. 헤더 표준화: ① 명세서의 컬럼명(영문)·컬럼명(한글) 정확 일치(공백·괄호 무시) → ② 비는 컬럼은 `config/column_aliases.yaml`의 별칭 포함 매칭(정류장명·승차인원수·기준일자 등) → ③ 그래도 없는 컬럼은 데이터셋별 기본값(예: 3-04 변형 자료의 get_on_off_type=승차)으로 채우고 적재 상태(provenance)와 답변 한계에 기록. CSV/TSV/XLSX, 쉼표·탭·세미콜론 구분자, 날짜 표기(2025-03-01·2025/3/1·20250301) 통일.
 3. 타입 캐스팅: 명세서 INT/BIGINT/DOUBLE + 위경도·user_count 등 STRING으로 표기된 숫자 컬럼을 숫자로.
 4. 파생 컬럼: `date`(YYYY-MM-DD), `ym`, `weekday`(0=월), `dow`(월~일), `is_weekend`, `hour`.
 5. 중복 정보성 테이블(노선·정류소 정보)은 ID 기준 `drop_duplicates`로 최신 1행만 사용.

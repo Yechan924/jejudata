@@ -14,12 +14,14 @@ import logging
 import re
 import sqlite3
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
+import yaml
 
 from .. import schemas
-from ..config import RAW_DIR, SYNTHETIC_DIR
+from ..config import CONFIG_DIR, RAW_DIR, SYNTHETIC_DIR
 
 try:  # DuckDB는 선택 의존성
     import duckdb  # type: ignore
@@ -29,12 +31,25 @@ except Exception:  # noqa: BLE001
 log = logging.getLogger(__name__)
 
 ENCODINGS = ("utf-8-sig", "cp949", "euc-kr", "utf-8")
+DATA_EXTS = (".csv", ".xlsx", ".xls", ".txt", ".tsv")
 NUMERIC_TYPES = {"INT", "BIGINT", "DOUBLE", "FLOAT", "INTEGER"}
 # 명세서상 STRING이지만 실제로는 숫자인 컬럼
 FORCE_NUMERIC = {"latitude", "longitude", "ap_latitude", "ap_longitude", "user_count",
                  "geton_station_longitude", "geton_station_latitude",
                  "getoff_station_longitude", "getoff_station_latitude"}
 DOW_KO = {0: "월", 1: "화", 2: "수", 3: "목", 4: "금", 5: "토", 6: "일"}
+# 정보성(마스터) 테이블: 일일 누적 업데이트라 같은 ID가 여러 날짜로 반복됨 → 최신 1행만
+INFO_TABLES = {"bus_route": "bus_route_id", "bus_station": "bus_station_id", "weather_station": "observatory_code", "wifi_ap": "manage_no"}
+# 분석 도구가 실제로 의존하는 컬럼 (실데이터 점검용)
+REQUIRED_COLUMNS = {
+    "wifi_ap_usage": ["base_date", "user_id", "ap_place", "ap_latitude", "ap_longitude", "nationality", "visit_type"],
+    "bus_station_usage": ["base_date", "base_hour", "bus_station_id", "bus_station_name", "get_on_off_type", "user_category", "user_count"],
+    "bus_route_usage": ["base_date", "base_hour", "bus_route_id", "bus_route_name", "get_on_off_type", "user_count"],
+    "bus_station": ["bus_station_id", "latitude", "longitude"],
+    "bus_route": ["bus_route_id", "bus_route_length"],
+    "weather_daily": ["base_date", "observatory_code", "daily_rainfall"],
+    "weather_station": ["observatory_code", "latitude", "longitude"],
+}
 
 
 def _norm(s: str) -> str:
@@ -50,6 +65,19 @@ class Provenance:
     note: str = ""
     date_min: str = ""
     date_max: str = ""
+    alias_mapped: dict = field(default_factory=dict)   # 표준컬럼 → 원본 헤더 (별칭 규칙으로 맞춘 것)
+    defaulted: dict = field(default_factory=dict)      # 표준컬럼 → 채운 기본값 (원본에 없던 것)
+    unmapped: list[str] = field(default_factory=list)  # 어떤 표준컬럼에도 대응되지 않은 원본 헤더
+
+
+@lru_cache(maxsize=1)
+def _aliases() -> dict:
+    p = CONFIG_DIR / "column_aliases.yaml"
+    if not p.exists():
+        return {"aliases": {}, "defaults": {}}
+    with open(p, encoding="utf-8") as f:
+        d = yaml.safe_load(f) or {}
+    return {"aliases": d.get("aliases") or {}, "defaults": d.get("defaults") or {}}
 
 
 class JejuDB:
@@ -82,8 +110,8 @@ class JejuDB:
                 n = _norm(sub.name)
                 for k in out:
                     if n in cls._targets(k):
-                        out[k] += sorted(sub.glob("*.csv"))
-        for f in base.glob("*.csv"):
+                        out[k] += sorted(p for ext in DATA_EXTS for p in sub.glob(f"*{ext}"))
+        for f in sorted(p for ext in DATA_EXTS for p in base.glob(f"*{ext}")):
             stem = _norm(f.stem)
             best, best_len = None, 0
             for k in out:
@@ -106,31 +134,82 @@ class JejuDB:
     # ---------- CSV 읽기 ----------
     @staticmethod
     def read_csv(path: Path) -> pd.DataFrame:
+        """CSV/TSV/TXT/XLSX 를 문자열 프레임으로 읽는다 (인코딩 자동 판별)."""
+        if path.suffix.lower() in (".xlsx", ".xls"):
+            return pd.read_excel(path, dtype=str)
         last_err: Exception | None = None
         for enc in ENCODINGS:
             try:
-                return pd.read_csv(path, dtype=str, encoding=enc, low_memory=False)
+                with open(path, encoding=enc) as fh:
+                    head = fh.readline()
+                sep = "\t" if head.count("\t") > head.count(",") else (";" if head.count(";") > head.count(",") else ",")
+                return pd.read_csv(path, dtype=str, encoding=enc, low_memory=False, sep=sep)
             except UnicodeDecodeError as e:
                 last_err = e
         raise last_err  # type: ignore[misc]
 
     @staticmethod
-    def standardize(df: pd.DataFrame, key: str) -> pd.DataFrame:
-        """헤더를 명세서 영문 컬럼명으로 맞추고 타입을 캐스팅한다."""
+    def standardize(df: pd.DataFrame, key: str, info: dict | None = None) -> pd.DataFrame:
+        """헤더를 명세서 영문 컬럼명으로 맞추고 타입을 캐스팅한다.
+
+        1) 명세서 영문/한글명 정확 일치 → 2) config/column_aliases.yaml 별칭 포함 매칭 → 3) 데이터셋별 기본값.
+        info(dict)를 주면 alias_mapped / defaulted / unmapped 를 채워 돌려준다.
+        """
+        info = info if info is not None else {}
         cols = schemas.dataset(key)["columns"]
+        df = df.copy()
+        df.columns = [str(c).strip() for c in df.columns]
         by_norm: dict[str, str] = {}
         for c in cols:
             by_norm[_norm(c["name"])] = c["name"]
             by_norm[_norm(c["kor"])] = c["name"]
         rename = {raw: by_norm[_norm(raw)] for raw in df.columns if _norm(raw) in by_norm}
         df = df.rename(columns=rename)
+
+        # 2) 별칭 매칭: 비어 있는 표준 컬럼만, 아직 쓰이지 않은 원본 헤더만
+        al = _aliases()["aliases"]
+        used = set(rename.values())
+        free = [c for c in df.columns if c not in used and c not in by_norm.values()]
+        alias_mapped: dict[str, str] = {}
+        for c in cols:
+            name = c["name"]
+            if name in df.columns or name not in al:
+                continue
+            for kw in sorted(al[name], key=len, reverse=True):
+                k = _norm(kw)
+                hit = next((h for h in free if k and k in _norm(h)), None)
+                if hit:
+                    df = df.rename(columns={hit: name})
+                    free.remove(hit)
+                    alias_mapped[name] = hit
+                    break
+
+        # 3) 기본값
+        defaults = _aliases()["defaults"].get(key, {})
+        defaulted: dict[str, str] = {}
         for c in cols:
             if c["name"] not in df.columns:
-                df[c["name"]] = None
+                if c["name"] in defaults:
+                    df[c["name"]] = defaults[c["name"]]
+                    defaulted[c["name"]] = defaults[c["name"]]
+                else:
+                    df[c["name"]] = None
         for c in cols:
             name = c["name"]
             if c["type"].upper() in NUMERIC_TYPES or name in FORCE_NUMERIC:
                 df[name] = pd.to_numeric(df[name].astype(str).str.replace(",", ""), errors="coerce")
+        # base_date: '2025-03-01', '2025/3/1', '20250301 00:00' 등을 YYYYMMDD 로 통일
+        if "base_date" in df.columns:
+            s = df["base_date"].astype(str).str.strip()
+            digits = s.str.replace(r"[^0-9]", "", regex=True)
+            ok8 = digits.str.len() >= 8
+            out = digits.str[:8].where(ok8)
+            rest = ~ok8 & s.ne("") & s.ne("None") & s.ne("nan")
+            if rest.any():  # '2019/3/2' 처럼 자릿수가 모자란 표기는 날짜 파서로
+                parsed = pd.to_datetime(s[rest], errors="coerce", format="mixed")
+                out[rest] = parsed.dt.strftime("%Y%m%d")
+            df["base_date"] = out.where(out.notna(), s)
+        info["alias_mapped"], info["defaulted"], info["unmapped"] = alias_mapped, defaulted, free
         return df
 
     @staticmethod
@@ -158,22 +237,46 @@ class JejuDB:
             p = Provenance(key, "missing", note="data/raw, data/synthetic 어디에도 파일 없음")
             self.provenance[key] = p
             return p
-        frames = []
+        frames, infos, errors = [], [], []
         for f in files:
             try:
-                frames.append(self.standardize(self.read_csv(f), key))
+                info: dict = {}
+                frames.append(self.standardize(self.read_csv(f), key, info))
+                infos.append(info)
             except Exception as e:  # noqa: BLE001
                 log.warning("%s 읽기 실패: %s", f, e)
+                errors.append(f"{f.name}: {type(e).__name__}")
         if not frames:
-            p = Provenance(key, "missing", [f.name for f in files], note="읽기 실패")
+            p = Provenance(key, "missing", [f.name for f in files], note="읽기 실패: " + "; ".join(errors))
             self.provenance[key] = p
             return p
-        df = self._add_derived(pd.concat(frames, ignore_index=True))
+        df = pd.concat(frames, ignore_index=True)
+        if key in INFO_TABLES:  # 정보성 테이블은 ID 기준 최신 1행만
+            id_col = INFO_TABLES[key]
+            if id_col in df.columns and "base_date" in df.columns and df[id_col].notna().mean() > 0.9:
+                df = df.sort_values("base_date", kind="stable").drop_duplicates(subset=[id_col], keep="last").reset_index(drop=True)
+        df = self._add_derived(df)
         self.frames[key] = df
         self._register(key, df)
         p = Provenance(key, source, [f.name for f in files], len(df))
         if "date" in df.columns and df["date"].notna().any():
             p.date_min, p.date_max = str(df["date"].min()), str(df["date"].max())
+        p.alias_mapped = {k: v for i in infos for k, v in i.get("alias_mapped", {}).items()}
+        p.defaulted = {k: v for i in infos for k, v in i.get("defaulted", {}).items()}
+        p.unmapped = sorted({c for i in infos for c in i.get("unmapped", [])})
+        notes = []
+        if p.alias_mapped:
+            notes.append("별칭 매핑 " + ", ".join(f"{k}←{v}" for k, v in p.alias_mapped.items()))
+        if p.defaulted:
+            notes.append("기본값 채움 " + ", ".join(f"{k}={v}" for k, v in p.defaulted.items()))
+        if errors:
+            notes.append("읽기 실패 " + "; ".join(errors))
+        if source == "raw":
+            req = REQUIRED_COLUMNS.get(key, [])
+            empty = [c for c in req if c in df.columns and df[c].isna().all()]
+            if empty:
+                notes.append("값이 전부 비어 있는 필수 컬럼: " + ", ".join(empty))
+        p.note = " / ".join(notes)
         self.provenance[key] = p
         return p
 

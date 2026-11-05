@@ -22,6 +22,7 @@ LLM_MODEL = os.getenv("LLM_MODEL", "")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 LLM_MAX_TOOL_CALLS = int(os.getenv("LLM_MAX_TOOL_CALLS", "6"))
 LLM_TIMEOUT = int(os.getenv("LLM_TIMEOUT", "60"))
+LLM_RETRIES = int(os.getenv("LLM_RETRIES", "2"))      # 429/5xx·네트워크 오류 재시도 횟수
 
 # 반출 게이트
 MIN_CELL_COUNT = int(os.getenv("EXPORT_MIN_CELL_COUNT", "10"))  # 이 미만 집계 셀은 마스킹 (센터 반출 정책 2026.09.01: 단순집계 10 미만 불포함)

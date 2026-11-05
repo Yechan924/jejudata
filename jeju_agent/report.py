@@ -57,7 +57,12 @@ def build_html(res: AgentResult) -> str:
              f"<p class='meta'>생성 {datetime.now():%Y-%m-%d %H:%M} · 모드 {html.escape(res.mode)} · 도구 {len(res.steps)}회 · 소요 {res.elapsed}s</p>"]
     if res.synthetic:
         parts.append("<p class='warn'>⚠️ 이 리포트는 개발용 합성 데이터로 생성되었습니다. 실제 제주 데이터가 아닙니다.</p>")
-    parts.append(f"<h2>질문</h2><p>{html.escape(res.question)}</p><h2>답변</h2>{_md_to_html(res.answer)}")
+    parts.append(f"<h2>질문</h2><p>{html.escape(res.question)}</p>")
+    if res.plan:
+        parts.append("<h2>Agent 실행 계획</h2><ol>" + "".join(f"<li>{html.escape(p)}</li>" for p in res.plan) + "</ol>")
+    parts.append(f"<h2>답변</h2>{_md_to_html(res.answer)}")
+    if res.followups:
+        parts.append("<p class='meta'>이어서 물어볼 만한 질문: " + " · ".join(html.escape(f) for f in res.followups) + "</p>")
     for i, r in enumerate(res.results, 1):
         parts.append(f"<h2>근거 {i}. {html.escape(r.title)}</h2>")
         parts.append(f"<p class='meta'>도구 {r.name} · 데이터 {', '.join(r.datasets)} · 인자 {html.escape(str(r.params))}<br>방법: {html.escape(r.method)}<br>반출 게이트: {html.escape(' / '.join(r.gate_log))}</p>")

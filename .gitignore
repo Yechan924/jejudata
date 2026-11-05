@@ -8,3 +8,4 @@ data/*.duckdb
 outputs/*
 !outputs/samples/
 .pytest_cache/
+dist/

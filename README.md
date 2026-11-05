@@ -10,6 +10,11 @@
 "비 오면 어디가 한산해지나?"    →  강우일/비강우일 이용 변화율 순위 → 해설
 ```
 
+## 화면
+<!-- screens:start -->
+`python scripts/capture_screens.py` 로 캡처한 화면이 `docs/screens/` 에 들어가면 여기에 자동 삽입됩니다 (`python scripts/make_submission.py`). 구성: 사이드바(적재 데이터·CSV 업로드·예시 질문·오프라인 토글) → 질문 → 🧭 실행 계획 → 4단 답변 → 이어서 물어보기 → 지도·차트·근거 표·방법/한계·실행 로그·LLM 전송 내용 탭 → HTML 리포트/PNG 다운로드.
+<!-- screens:end -->
+
 ## 왜 이 주제인가
 - 2026년 제주는 **내국인 관광객 감소·외국인 급증**, **버스 준공영제 효율 논란**, **관광지 쏠림(오버투어리즘)**이 동시에 현안입니다.
 - 유동인구·카드 데이터는 센터 밖 반출이 불가능하지만, **와이파이·버스·날씨 22종은 반출 가능**합니다. 이 서비스는 그 반출 가능 데이터만으로 혼잡과 이동을 진단하도록 설계되어 **누구나 집에서도, 센터 PC에서도 그대로 재현**할 수 있습니다.
@@ -26,12 +31,13 @@
 | 3-01 / 3-03 | 버스 노선·정류소 정보 | 노선거리·정류소 좌표 |
 | 5-02 / 5-01 | 일일 날씨·관측소 정보 | 강우 영향 |
 
-자세한 활용 내역·전처리·이용조건은 [docs/DATA_SPEC.md](docs/DATA_SPEC.md) 참고.
+자세한 활용 내역·전처리·이용조건은 [docs/DATA_SPEC.md](docs/DATA_SPEC.md), **실데이터를 받아 넣는 절차는 [docs/DATA_ACQUISITION.md](docs/DATA_ACQUISITION.md)** 참고. 넣은 뒤 `python scripts/check_data.py` 로 인식·헤더 매핑·기간을 점검합니다.
 
 ## 제출 문서
 - 기획서: [docs/AI_Agent_기획서_제주혼잡이동진단.pdf](docs/AI_Agent_기획서_제주혼잡이동진단.pdf) (원본 `docs/proposal.html`)
 - 결과 설명자료: [docs/RESULT_REPORT.md](docs/RESULT_REPORT.md) · 사용자 매뉴얼: [docs/USER_MANUAL.md](docs/USER_MANUAL.md) · 데이터 활용 명세: [docs/DATA_SPEC.md](docs/DATA_SPEC.md)
-- 샘플 실행 결과: `outputs/samples/` (합성 데이터, 오프라인 모드 14문항, 리포트 예시)
+- 샘플 실행 결과: `outputs/samples/` (합성 데이터, 오프라인 모드 14문항 `batch_offline.json`, LLM 모드 `batch_llm.json`(키로 실행 시), 리포트 예시)
+- 시연 대본·데모 배포·스크린샷: [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) · LLM 모드 검증표: `docs/LLM_EVAL.md` (`python scripts/llm_smoke.py` 로 생성)
 
 ## 설치·실행 (5분)
 Windows(센터 PC): `install.bat`(처음 한 번) → `run.bat`. macOS/Linux: `./install.sh` → `./run.sh`.
@@ -56,7 +62,9 @@ python -m jeju_agent.cli --offline --batch examples/questions.txt   # LLM 없이
 python -m jeju_agent.cli --status                        # 적재 데이터·LLM 상태 확인
 python -m jeju_agent.cli --brief 2025-05                 # 월간 브리핑 HTML 저장
 python -m jeju_agent.cli --offline --png "효율이 낮은 버스 노선은?"   # 차트를 PNG(반출용)로 저장
-pytest -q                                                # 테스트 26개
+python scripts/check_data.py                             # data/raw 실데이터 인식·매핑 점검
+python scripts/llm_smoke.py --limit 5                    # LLM 모드 실키 검증 (docs/LLM_EVAL.md 생성)
+pytest -q                                                # 테스트 43개 (API 키 불필요)
 ```
 
 ## 구조
@@ -68,7 +76,9 @@ pytest -q                                                # 테스트 26개
 ```
 | 모듈 | 역할 |
 |---|---|
-| `jeju_agent/data/loader.py` | CSV 자동 인식(한글/영문 헤더, 인코딩), DuckDB→sqlite 폴백, 파생 컬럼 |
+| `jeju_agent/data/loader.py` + `config/column_aliases.yaml` | CSV/XLSX 자동 인식(한글/영문 헤더, 별칭·기본값 규칙, 인코딩·구분자·날짜 포맷), DuckDB→sqlite 폴백, 파생 컬럼, 매핑 이력(provenance) |
+| `jeju_agent/insight.py` | **자동 점검**(데이터 출처·기간·게이트·표본을 코드가 확인해 한계로 기록) · **이어서 물어보기**(결과 기반 후속 질문) · 실행 계획 문장 |
+| `jeju_agent/llm_mock.py` | 시나리오 LLM — API 키 없이 LLM 모드 전체 경로를 테스트 |
 | `jeju_agent/data/synthetic.py` | 명세서 스키마 그대로의 개발용 합성 데이터 |
 | `jeju_agent/tools/` | 12개 분석 도구: `congestion_rank`, `place_profile`, `list_places`, `bus_station_rank`, `bus_route_efficiency`, `hourly_profile`, `place_access`, `weather_effect`, **`congestion_forecast`(주말 혼잡 예측)**, **`monthly_brief`(월간 브리핑)**, `run_sql`, `describe_data` |
 | `jeju_agent/verify.py` | LLM 답변의 숫자가 근거표에 있는지 검증, 불일치 시 템플릿 해설로 대체 |
@@ -78,9 +88,12 @@ pytest -q                                                # 테스트 26개
 | `jeju_agent/planner_rules.py` | LLM 없이 질문→도구 계획, 템플릿 답변 |
 | `jeju_agent/agent.py` | 오케스트레이션, 로그, 폴백 |
 | `jeju_agent/report.py` | 단일 HTML 리포트 |
-| `app.py` | Streamlit UI (지도·차트·근거표·방법/한계·실행 로그·**LLM 전송 내용 미리보기**·리포트/PNG 다운로드·올린 자료 삭제) |
+| `app.py` | Streamlit UI (🧭 실행 계획·4단 답변·이어서 물어보기·지도·차트·근거표·방법/한계·실행 로그·**LLM 전송 내용 미리보기**·리포트/PNG 다운로드·올린 자료 삭제·대화 맥락) |
+| `scripts/` | `check_data.py`(실데이터 점검) · `llm_smoke.py`(LLM 검증표) · `capture_screens.py`(스크린샷) · `make_submission.py`(ZIP·PDF 생성) |
 
 ## 신뢰성 장치 (심사 포인트)
+- **실행 계획 노출**: Agent가 어떤 데이터를 어떤 순서로 왜 봤는지(LLM 모드는 모델이 쓴 계획 문장, 오프라인은 규칙 선택 근거)를 답변 위 🧭 패널과 리포트에 남긴다.
+- **자동 점검(한계)**: 데이터 출처(실데이터/합성/기본값 채움), 요청 기간과 적재 범위의 차이, 소집단 마스킹, 표본 일수, 숫자 검증 결과를 **코드가** 모아 모든 답변 끝에 붙인다. LLM이 한계를 빠뜨려도 결과물에는 항상 남는다.
 - **LLM 전송 내용 미리보기**: 외부 LLM으로 나간 내용 전부를 탭에서 그대로 볼 수 있다. 원본 행·식별자는 없고 게이트 통과 집계표(≤40행)만 간다. 오프라인 모드는 전송 0건.
 - **숫자 검증**: LLM 해설의 숫자가 근거표·facts에 없으면 메모를 남기고, 20% 넘게 어긋나면 템플릿 해설로 대체한다.
 - **반출 게이트 = 센터 공식 기준**: 제주빅데이터센터 데이터 반출 정책(2026.09.01 개정)의 "단순집계 10 미만 불포함"에 맞춰 10 미만 셀 마스킹, 차트는 PNG로 반출.
@@ -91,6 +104,8 @@ pytest -q                                                # 테스트 26개
 - **스스로 결정**: 어떤 도구를 몇 번 쓸지(최대 6회), 예측·브리핑처럼 여러 데이터를 묶을지, 장소·노선명 해석, 기간 기본값, 오류 시 인자 수정 재시도, LLM 장애 시 오프라인 폴백.
 - **하지 않음**: 원본 행 열람, 식별자 컬럼 출력, 쓰기 SQL, 도구 결과에 없는 수치 생성(프롬프트로 금지 + 모든 수치가 로그에 남음).
 - 답변은 항상 **한 줄 결론 / 근거 / 해석·제안 / 한계** 4단 구조이며, 합성 데이터 사용 시 경고를 강제합니다.
+- **대화 맥락**: 최근 3턴을 함께 보내 "거기 가는 버스는?" 같은 후속 질문을 해석하며(오프라인 모드도 지시어 해석), 답변마다 결과에 맞춘 **이어서 물어보기** 3개를 제안합니다.
+- **LLM 장애 대응**: 429/5xx·네트워크 오류는 지수 백오프로 재시도하고, 그래도 실패하면 같은 질문을 규칙 플래너로 처리해 답을 냅니다(계획 패널에 폴백 사실 표시).
 
 ## 센터 운영 PC(i7-8700 / GTX 1060 6GB / 32GB)에서
 - 데이터 적재·분석은 CPU/메모리로 충분합니다(합성 80만 행 기준 적재 15초, 질문당 0.1~1초).

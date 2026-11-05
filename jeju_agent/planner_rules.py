@@ -95,24 +95,49 @@ def fuzzy_match_any(q: str, names: list[str]) -> str | None:
     return best
 
 
-def template_answer(question: str, results: list, synthetic: bool) -> str:
+SUGGESTION_BY_TOOL = {
+    "congestion_rank": "상위 장소는 주말 분산 안내(실시간 혼잡 알림·대체 관광지 추천)와 임시 주차·셔틀 검토 대상입니다.",
+    "place_profile": "붐비는 요일·시간을 피한 방문 권장 문구를 관광 안내에 반영하고, 피크일 전후로 인력·시설 운영을 조정할 수 있습니다.",
+    "place_access": "접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.",
+    "bus_station_rank": "상위 정류소는 승강장 확충·배차 조정 우선순위이며, 교통약자 비중이 높은 곳은 저상버스·안내 보강 대상입니다.",
+    "bus_route_efficiency": "저이용 시간대는 배차 간격 조정(탄력 운행) 검토, 효율 하위 노선은 수요응답형(DRT) 전환 후보입니다.",
+    "hourly_profile": "피크 시간대 전후 배차를 촘촘히 하고, 한산한 시간대는 간격을 늘려 운행 비용을 아낄 수 있습니다.",
+    "weather_effect": "비 오는 날 감소폭이 큰 야외 관광지는 실내 대체 코스 안내, 버스는 우천 시 수요 변화에 맞춘 배차가 가능합니다.",
+    "congestion_forecast": "예측 상위 장소는 주말 전 분산 안내·주차 관리 계획을 세울 근거가 됩니다(예측은 과거 패턴 기반).",
+    "monthly_brief": "월간 브리핑은 관광·교통 담당 부서의 정례 보고 초안으로 활용할 수 있습니다.",
+}
+
+
+def template_answer(question: str, results: list, synthetic: bool, limitations: list[str] | None = None) -> str:
     """LLM 없이 도구 결과의 facts로 답변을 조립한다."""
     if not results:
-        return "질문에 맞는 분석 도구를 찾지 못했습니다. 예: '주말에 가장 붐비는 관광지는?', '251번 노선 시간대별 이용', '비 오면 어디가 한산해지나?'"
+        return ("질문에 맞는 분석 도구를 찾지 못했습니다. 예: '주말에 가장 붐비는 관광지는?', '251번 노선 시간대별 이용', "
+                "'비 오면 어디가 한산해지나?' (복합 질문은 LLM 모드를 권장합니다)")
     lines = ["**한 줄 결론** — " + (results[0].facts[0] if results[0].facts else results[0].title) + ".", "", "**근거**"]
     for r in results:
         for f in r.facts:
             lines.append(f"- {f}")
         lines.append(f"- (사용 데이터: {', '.join(r.datasets)}" + (f", 기간 {r.params.get('date_from')}~{r.params.get('date_to')}" if r.params.get("date_from") else ", 전체 기간") + ")")
-    lines += ["", "**해석과 제안**", "- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.", "",
-              "**한계**"]
-    seen = set()
+    lines += ["", "**해석과 제안**"]
+    seen_s = set()
     for r in results:
-        for c in r.caveats:
-            if c not in seen:
-                lines.append(f"- {c}")
-                seen.add(c)
-    if synthetic:
-        lines.append("- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.")
+        s = SUGGESTION_BY_TOOL.get(r.name)
+        if s and s not in seen_s:
+            lines.append(f"- {s}")
+            seen_s.add(s)
+    if not seen_s:
+        lines.append("- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.")
+    lines += ["", "**한계**"]
+    if limitations:
+        lines += [f"- {x}" for x in limitations[:8]]
+    else:
+        seen = set()
+        for r in results:
+            for c in r.caveats:
+                if c not in seen:
+                    lines.append(f"- {c}")
+                    seen.add(c)
+        if synthetic:
+            lines.append("- ⚠️ 현재 적재된 데이터 일부/전체가 개발용 합성 데이터입니다. 실제 의사결정에 사용하지 마세요.")
     lines.append("- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)")
     return "\n".join(lines)

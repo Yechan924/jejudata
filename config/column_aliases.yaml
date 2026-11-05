@@ -1,0 +1,57 @@
+# 헤더 별칭(키워드) 매핑 — 제주데이터허브 원본 CSV의 헤더가 명세서 표기와 조금 다를 때 쓰는 보조 규칙.
+#
+# 적용 순서 (jeju_agent/data/loader.py: JejuDB.standardize)
+#   1. 명세서의 컬럼명(영문)·컬럼명(한글)과 정확히 일치(공백·괄호·기호 무시)하면 그대로 매핑
+#   2. 그래도 비는 표준 컬럼은 아래 별칭 중 하나를 '포함'하는 원본 헤더에 매핑 (긴 별칭 우선, 이미 쓴 헤더 제외)
+#   3. 그래도 비는 컬럼 중 defaults 에 값이 있으면 그 값으로 채우고 provenance.note 에 "기본값 채움"을 남김
+#
+# 별칭은 소문자·공백 제거 후 비교한다. 위험한(지나치게 짧은) 별칭은 넣지 않는다.
+aliases:
+  base_date: [기준일자, 수집일자, 일자, 날짜, 기준일, 년월일, basedate, ymd, date]
+  base_hour: [시간대, 시간구분, 시각, basehour, hour]
+  day_of_week: [요일, dayofweek, dow]
+  user_count: [이용자수, 이용자수합계, 승차인원수, 승차인원, 승객수, 이용건수, 이용인원, 인원수, 사용자수, usercount, passengers, cnt]
+  get_on_off_type: [승하차유형, 승하차구분, 승하차]
+  user_category: [이용자구분, 이용자유형, 승객구분, 이용자종류]
+  pay_type: [결제유형, 결제구분, 지불유형]
+  bus_station_id: [정류소아이디, 정류소id, 정류장id, 정류소번호, 정류장번호, stationid]
+  bus_station_name: [정류소명칭, 정류소명, 정류장명, 정류소이름, 정류장이름, stationname]
+  bus_route_id: [노선아이디, 노선id, 노선번호id, routeid]
+  bus_route_name: [노선명칭, 노선명, 노선이름, routename]
+  bus_route_number: [노선번호, routenumber]
+  bus_route_length: [노선거리, 노선길이, 운행거리, routelength]
+  bus_station_count: [정류소수, 정류장수, stationcount]
+  bus_city_type: [시내시외구분, 시내외구분, 시내시외, citytype]
+  ap_place: [ap장소, 장소명칭, 장소명, 설치장소명, 설치장소, 장소]
+  ap_place_detail: [ap상세장소, 상세장소]
+  ap_category: [ap카테고리, 카테고리, 분류]
+  ap_latitude: [ap위도, 위도, latitude, lat]
+  ap_longitude: [ap경도, 경도, longitude, lon, lng]
+  latitude: [위도, latitude, lat]
+  longitude: [경도, longitude, lon, lng]
+  nationality: [국적, nationality]
+  visit_type: [방문유형, 방문형태, 방문구분, visittype]
+  gender: [성별, gender]
+  age: [연령대, 연령, 나이, age]
+  user_id: [사용자아이디, 사용자id, 이용자id, userid]
+  observatory_code: [관측소코드, 지점코드, 관측지점, stationcode]
+  observatory_name: [관측소명, 지점명]
+  daily_rainfall: [일강수량, 강수량, 강우량, rainfall]
+  average_temperature: [평균기온, 평균온도, avgtemp]
+  ap_group_name: [장소명칭, 장소명, 그룹명]
+  category: [카테고리, 분류]
+
+# 원본에 아예 없을 때 채우는 값 (데이터셋별). 채운 사실은 적재 상태(provenance)에 기록된다.
+defaults:
+  bus_station_usage:
+    get_on_off_type: 승차        # 공공데이터포털 '일별 시간대별 버스 승차 인원' 류는 승차만 있음
+    user_category: 일반
+    pay_type: 카드
+  bus_route_usage:
+    get_on_off_type: 승차
+    user_category: 일반
+    pay_type: 카드
+  wifi_ap_usage:
+    nationality: 대한민국
+    visit_type: 미상
+    ap_category: 미분류

@@ -61,8 +61,13 @@ def main(argv=None):
     for q in questions:
         res = agent.run(q)
         print("=" * 80)
-        print(f"Q: {q}\n[{res.mode}, {res.elapsed}s, 도구 {len(res.steps)}회, LLM {res.llm_calls}회]\n")
+        print(f"Q: {q}\n[{res.mode}, {res.elapsed}s, 도구 {len(res.steps)}회, LLM {res.llm_calls}회]")
+        for i, p in enumerate(res.plan, 1):
+            print(f"  계획 {i}. {p}")
+        print()
         print(res.answer)
+        if res.followups:
+            print("\n이어서 물어보기: " + " · ".join(res.followups))
         if a.show_tables:
             for r in res.results:
                 print(f"\n--- {r.title} ({r.name})\n{df_to_md(r.table, 20)}")
