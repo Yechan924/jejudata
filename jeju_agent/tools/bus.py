@@ -55,6 +55,8 @@ def bus_station_rank(db, date_from=None, date_to=None, sort_by="boardings", asce
         g = g.merge(st, on="bus_station_id", how="left")
         if city_type:
             g = g[g["bus_city_type"] == city_type]
+    if sort_by == "senior_share" and "경로" not in b["user_category"].unique():
+        sort_by = "vulnerable_share"   # 허브 API 집계본에는 '경로' 구분이 없음 → 교통약자(기타 포함) 비중으로 대체
     key = {"boardings": "daily_boardings", "vulnerable_share": "vulnerable_share", "senior_share": "senior_share", "weekend_ratio": "weekend_ratio"}[sort_by]
     has_wk, has_wd = b["is_weekend"].eq(1).any(), b["is_weekend"].eq(0).any()
     if sort_by == "weekend_ratio" and not (has_wk and has_wd):
@@ -166,6 +168,9 @@ def hourly_profile(db, station, date_from=None, date_to=None, user_category=None
     if not name:
         raise ValueError(f"'{station}' 정류소를 찾을 수 없습니다.")
     s = b[b["bus_station_name"] == name]
+    if s["hour"].isna().all():
+        raise ValueError(f"현재 적재된 버스 데이터(허브 공개 API 집계본)에는 시간대(base_hour)가 없어 '{name}'의 시간대별 패턴을 볼 수 없습니다. "
+                         "일 단위 승차 수요는 bus_station_rank, 정류소 위치·수요는 place_access 로 확인할 수 있고, 시간대 분석은 센터 원본 3-04 적재 시 활성화됩니다.")
     if user_category:
         s = s[s["user_category"] == user_category]
     wd_days = max(s[s.is_weekend == 0]["date"].nunique(), 1)

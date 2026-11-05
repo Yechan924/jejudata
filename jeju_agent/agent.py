@@ -87,6 +87,16 @@ class JejuAgent:
         routes = sorted(self.db.table("bus_route_usage")["bus_route_name"].dropna().unique().tolist()) if self.db.has("bus_route_usage") else []
         return places, stations, routes
 
+    def _caps(self) -> dict:
+        """적재 데이터로 가능한 분석 능력 (집계본이면 국적·시간대 없음)."""
+        caps = {"nationality": True, "hour": True, "weather": self.db.has("weather_daily")}
+        if self.db.has("wifi_ap_usage"):
+            u = self.db.table("wifi_ap_usage")
+            caps["nationality"] = bool(u["nationality"].notna().any() and u["nationality"].nunique() > 1)
+        if self.db.has("bus_station_usage"):
+            caps["hour"] = bool(self.db.table("bus_station_usage")["hour"].notna().any())
+        return caps
+
     def _data_range(self) -> tuple[str, str]:
         ps = [p for k, p in self.db.provenance.items() if p.date_min and k not in INFO_TABLES]
         return (min(p.date_min for p in ps), max(p.date_max for p in ps)) if ps else ("", "")
@@ -108,7 +118,13 @@ class JejuAgent:
             if ref:
                 q_eff = f"{ref} {question}"
                 plan_txt.append(f"지시어를 직전 대화의 '{ref}'(으)로 해석")
-        planned = rule_plan(q_eff, places, stations, routes, dmin, dmax)
+        caps = self._caps()
+        planned = rule_plan(q_eff, places, stations, routes, dmin, dmax, caps)
+        qn = question.replace(" ", "")
+        if not caps["nationality"] and any(k in qn for k in ("외국인", "중국인", "해외")):
+            plan_txt.append("적재 데이터에 국적 정보가 없어(허브 집계본) 전체 이용자 기준 순위로 대체")
+        if not caps["hour"] and any(k in qn for k in ("몇시", "시간대", "출근", "퇴근")):
+            plan_txt.append("적재 데이터에 시간대가 없어(허브 집계본) 일 단위 승차 순위로 대체")
         plan_txt.append("규칙 플래너: 질문의 키워드로 도구를 골랐습니다 → " + " → ".join(describe_step(n, a) for n, a in planned))
         for name, args in planned:
             if args.get("place") == "__TOP1__":

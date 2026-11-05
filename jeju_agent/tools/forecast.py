@@ -45,6 +45,11 @@ def congestion_forecast(db, target_date=None, place=None, top_n=10) -> ToolResul
     wd = tgt.weekday()
     daily["d"] = pd.to_datetime(daily["date"])
     hist = daily[daily["d"] <= pd.Timestamp(last)]
+    cats = _coords(db)[["ap_place", "category"]]
+    hist = hist.merge(cats, on="ap_place", how="left")
+    if not place:
+        hist = hist[~hist["category"].isin(["버스정류소", "전기차충전소"])]
+    total_days = max(int(hist["date"].nunique()), 1)
     rows = []
     for nm, g in hist.groupby("ap_place"):
         if place and place.replace(" ", "") not in nm.replace(" ", ""):
@@ -52,6 +57,9 @@ def congestion_forecast(db, target_date=None, place=None, top_n=10) -> ToolResul
         same = g[g["d"].dt.weekday == wd].sort_values("d").tail(4)
         if len(same) < 2:
             continue
+        recent14 = g[g["d"] > pd.Timestamp(last) - pd.Timedelta(days=14)]
+        if not place and (len(recent14) < 9 or recent14["users"].mean() < 20 or len(same) < 3):
+            continue   # 최근 2주 관측 9일 미만 또는 일평균 20명 미만인 소표본 장소는 예측 순위에서 제외
         recent = g[g["d"] > pd.Timestamp(last) - pd.Timedelta(days=28)]["users"].mean()
         prior = g[(g["d"] <= pd.Timestamp(last) - pd.Timedelta(days=28)) & (g["d"] > pd.Timestamp(last) - pd.Timedelta(days=56))]["users"].mean()
         trend = float(min(max(recent / prior, 0.7), 1.5)) if prior and pd.notna(prior) and pd.notna(recent) else 1.0
@@ -75,7 +83,8 @@ def congestion_forecast(db, target_date=None, place=None, top_n=10) -> ToolResul
         facts.append(f"예상 혼잡지수 1.5 이상(평일의 1.5배 초과) 장소 {int((out.predicted_congestion_index >= 1.5).sum())}곳 → 분산 안내 후보")
     mp = out.rename(columns={"ap_place": "label", "predicted_congestion_index": "value"})[["label", "lat", "lon", "value"]]
     return ToolResult("congestion_forecast", f"{tgt}({dow}) 예상 혼잡", out.drop(columns=["lat", "lon", "category"], errors="ignore"), facts,
-                      [CAVEAT_WIFI, "공휴일·행사·날씨 예보를 반영하지 않은 요일 패턴 기반 단순 추정입니다. 구간(최근 같은 요일 최소~최대)과 함께 보세요."],
+                      [CAVEAT_WIFI, "공휴일·행사·날씨 예보를 반영하지 않은 요일 패턴 기반 단순 추정입니다. 구간(최근 같은 요일 최소~최대)과 함께 보세요.",
+                       "최근 2주 관측 9일 미만이거나 일평균 20명 미만인 장소와 정류소·충전소 AP는 제외했습니다."],
                       chart={"type": "bar", "x": "ap_place", "y": "predicted_congestion_index", "title": f"{tgt} 예상 혼잡지수"}, map_points=mp,
                       method="최근 4회 같은 요일 이용자 중앙값 × 추세계수(최근4주/이전4주, 0.7~1.5) ÷ 평일 중앙값",
                       params=dict(target_date=str(tgt), place=place, top_n=top_n), datasets=["wifi_ap_usage"])

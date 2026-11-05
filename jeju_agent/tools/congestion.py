@@ -39,17 +39,21 @@ def _daily_users(db, date_from=None, date_to=None, visit_type=None, foreign_only
 CAVEAT_AGG = "현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화)."
 
 
+BASELINE_FLOOR = 10   # 평일 중앙값이 이보다 작으면 이 값을 기준선으로 (이용자 2명 → 80명 같은 소표본 폭등을 '40배'로 읽지 않기 위해)
+
+
 def _with_index(daily: pd.DataFrame) -> pd.DataFrame:
     base = (daily[daily["is_weekend"] == 0].groupby("ap_place")["users"].median().rename("baseline"))
     daily = daily.merge(base, on="ap_place", how="left")
-    daily["congestion_index"] = (daily["users"] / daily["baseline"].replace(0, pd.NA)).astype(float)
+    daily["baseline"] = daily["baseline"].fillna(0).clip(lower=BASELINE_FLOOR)
+    daily["congestion_index"] = (daily["users"] / daily["baseline"]).astype(float)
     return daily
 
 
-TOURIST_CATS = {"관광지", "해변", "해수욕장", "전통시장", "시장", "올레코스", "숲길", "한라산", "공원", "테마거리", "문화시설", "항만", "공항/터미널/대합실", "공항", "터미널", "교통"}
+TOURIST_CATS = {"관광지", "해변", "해수욕장", "전통시장", "시장", "올레코스", "숲길", "한라산", "공원", "테마거리", "문화시설"}   # 공항·터미널·항만은 '교통' 질문에서만
 _NAME_CAT = [("버스정류소", "버스정류소"), ("정류장", "버스정류소"), ("정류소", "버스정류소"), ("전기차충전소", "전기차충전소"),
              ("해변", "해변"), ("해수욕장", "해변"), ("시장", "전통시장"), ("올레", "올레코스"), ("숲길", "숲길"), ("오름", "관광지"), ("폭포", "관광지"),
-             ("일출봉", "관광지"), ("박물관", "문화시설"), ("미술관", "문화시설"), ("도서관", "공공기관"), ("주민센터", "공공기관"), ("사무소", "공공기관"),
+             ("일출봉", "관광지"), ("박물관", "문화시설"), ("미술관", "문화시설"), ("도서관", "공공기관"), ("지하상가", "전통시장"), ("체육센터", "체육시설"), ("주민센터", "공공기관"), ("사무소", "공공기관"),
              ("초등학교", "교육기관"), ("중학교", "교육기관"), ("고등학교", "교육기관"), ("대학", "교육기관"), ("공항", "공항/터미널/대합실"), ("터미널", "공항/터미널/대합실"),
              ("항", "항만"), ("공원", "공원"), ("축구장", "체육시설"), ("체육관", "체육시설"), ("야영장", "관광지"), ("거리", "테마거리"), ("관광단지", "관광지"), ("테마", "관광지")]
 
@@ -135,7 +139,7 @@ def congestion_rank(db, date_from=None, date_to=None, weekend_only=False, foreig
         if len(out) > 1 and not wifi_is_aggregated(db.table("wifi_ap_usage")):
             facts.append(f"상위 {len(out)}곳 중 관광 비중 최고는 {out.loc[out.tourist_share.idxmax(), 'ap_place']}({out.tourist_share.max():.0%}), 외국인 비중 최고는 {out.loc[out.foreign_share.idxmax(), 'ap_place']}({out.foreign_share.max():.0%})")
     mp = out.rename(columns={"avg_congestion_index": "value", "ap_place": "label"})[["label", "lat", "lon", "value"]]
-    cav = [CAVEAT_WIFI, "혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값",
+    cav = [CAVEAT_WIFI, f"혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 {BASELINE_FLOOR}명)",
            f"표본 기준: 관측 {md}일 이상·일평균 {min_users}명 이상인 장소만 순위에 포함({dropped}곳 제외)" + (" · " + " · ".join(excluded) if excluded else "")] \
           + ([CAVEAT_AGG] if wifi_is_aggregated(db.table("wifi_ap_usage")) else [])
     return ToolResult("congestion_rank", f"장소별 혼잡도 순위 ({'주말' if weekend_only else '전체'}{', 외국인' if foreign_only else ''})",

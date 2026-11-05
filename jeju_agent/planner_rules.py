@@ -28,12 +28,15 @@ def parse_period(q: str, data_min: str, data_max: str) -> tuple[str | None, str 
     return None, None
 
 
-def plan(question: str, places: list[str], stations: list[str], routes: list[str], data_min: str, data_max: str) -> list[tuple[str, dict]]:
+def plan(question: str, places: list[str], stations: list[str], routes: list[str], data_min: str, data_max: str,
+         caps: dict | None = None) -> list[tuple[str, dict]]:
+    """caps: 적재 데이터의 능력 {"nationality": bool, "hour": bool, "weather": bool} — 없는 능력은 가장 가까운 도구로 대체."""
+    caps = caps or {}
     q = question.replace(" ", "")
     df, dt = parse_period(question, data_min, data_max)
     period = {k: v for k, v in (("date_from", df), ("date_to", dt)) if v}
     weekend = any(k in q for k in ("주말", "토요일", "일요일"))
-    foreign = any(k in q for k in ("외국인", "중국인", "해외"))
+    foreign = any(k in q for k in ("외국인", "중국인", "해외")) and caps.get("nationality", True)
     senior = any(k in q for k in ("경로", "어르신", "노인", "고령", "교통약자", "노년"))
     rain = any(k in q for k in ("비오", "비가", "우천", "강우", "날씨", "비올", "장마"))
     bus_q = any(k in q for k in ("버스", "노선", "정류소", "정류장", "승차", "환승", "배차", "준공영"))
@@ -43,6 +46,8 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
     if any(k in q for k in ("어떤데이터", "무슨데이터", "데이터목록", "데이터있")):
         return [("describe_data", {})]
     if any(k in q for k in ("브리핑", "상황요약", "월간", "지난달어땠", "한달정리")):
+        if "해변" in q or "해수욕장" in q:
+            pass
         m = MONTH.search(question)
         return [("monthly_brief", {"month": f"{int(m.group(1)) if m.group(1) else int(data_max[:4])}-{int(m.group(2)):02d}"} if m else {})]
     if any(k in q for k in ("예상", "예측", "다음주말", "이번주말", "다음토요일", "연휴", "붐빌까", "붐빌것")):
@@ -67,13 +72,17 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
             steps.append(("hourly_profile", {"station": station, "user_category": "경로", **period}))
         return steps
     if station and bus_q and any(k in q for k in ("몇시", "시간대", "언제", "출근", "퇴근")):
-        return [("hourly_profile", {"station": station, **period})]
+        if caps.get("hour", True):
+            return [("hourly_profile", {"station": station, **period})]
+        return [("bus_station_rank", {"sort_by": "boardings", "top_n": 10, **period})]
     if place and any(k in q for k in ("정류소", "정류장", "버스", "가는", "접근", "대중교통")):
         return [("place_access", {"place": place, **period})]
     if place:
         return [("place_profile", {"place": place, **period}), ("place_access", {"place": place, **period})]
     if station and any(k in q for k in ("몇시", "시간대", "언제", "출근", "퇴근")):
-        return [("hourly_profile", {"station": station, **period})]
+        if caps.get("hour", True):
+            return [("hourly_profile", {"station": station, **period})]
+        return [("bus_station_rank", {"sort_by": "boardings", "top_n": 10, **period})]
     if bus_q:
         asc = any(k in q for k in ("적은", "한산", "적게", "낮은"))
         return [("bus_station_rank", {"sort_by": "weekend_ratio" if weekend else "boardings", "ascending": asc, "top_n": 10, **period})]
