@@ -49,7 +49,8 @@ def bus_station_rank(db, date_from=None, date_to=None, sort_by="boardings", asce
     g["daily_boardings"] = (g["total"] / days).round(1)
     g["vulnerable_share"] = (g["vulnerable"] / g["total"]).round(3)
     g["senior_share"] = (g["senior"] / g["total"]).round(3)
-    g["weekend_ratio"] = ((g["weekend_total"] / wk_days) / ((g["total"] - g["weekend_total"]) / wd_days).replace(0, pd.NA)).astype(float).round(2)
+    wd_avg = ((g["total"] - g["weekend_total"]) / wd_days).astype(float)
+    g["weekend_ratio"] = ((g["weekend_total"] / wk_days) / wd_avg.where(wd_avg > 0)).astype(float).round(2)
     if db.has("bus_station"):
         st = db.table("bus_station").drop_duplicates("bus_station_id")[["bus_station_id", "bus_city_type", "latitude", "longitude"]]
         g = g.merge(st, on="bus_station_id", how="left")
