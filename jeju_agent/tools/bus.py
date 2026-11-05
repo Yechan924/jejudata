@@ -12,8 +12,10 @@ import pandas as pd
 
 from .base import PERIOD_PARAMS, ToolResult, fuzzy_match, haversine_km, period_filter, register, wifi_users_agg
 
-VULNERABLE = ["경로", "어린이", "장애 일반", "장애 동반", "유공 일반", "유공 동반"]
+VULNERABLE = ["경로", "어린이", "장애 일반", "장애 동반", "유공 일반", "유공 동반",
+              "기타"]   # 허브 공개 API(일일 정류소별)는 요금제를 일반/청소년/어린이/기타 4종으로만 제공 → '기타'(경로·장애·유공 등 감면)를 교통약자로 간주
 CAVEAT_BUS = "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다."
+CAVEAT_CAT = "허브 공개 API는 이용자구분을 일반/청소년/어린이/기타로만 제공하므로 '기타'(경로·장애·유공 감면)를 교통약자로 간주했습니다. 경로 단독 비중은 센터 원본(3-04) 적재 시 계산됩니다."
 
 
 def _boardings(db, date_from, date_to, key="bus_station_usage"):
@@ -30,10 +32,11 @@ def _boardings(db, date_from, date_to, key="bus_station_usage"):
         "sort_by": {"type": "string", "enum": ["boardings", "vulnerable_share", "senior_share", "weekend_ratio"], "description": "정렬 기준(기본 boardings)"},
         "ascending": {"type": "boolean", "description": "오름차순(적은 순)으로 볼지"},
         "city_type": {"type": "string", "enum": ["시내", "시외"], "description": "시내/시외 정류소 필터"},
+        "min_boardings": {"type": "integer", "description": "비중 순위에 넣을 최소 일평균 승차(기본 20) — 승차 1~2명 정류소의 100% 비중 같은 소표본 왜곡 방지"},
         "top_n": {"type": "integer", "description": "상위 몇 개(기본 10)"},
     }},
 )
-def bus_station_rank(db, date_from=None, date_to=None, sort_by="boardings", ascending=False, city_type=None, top_n=10) -> ToolResult:
+def bus_station_rank(db, date_from=None, date_to=None, sort_by="boardings", ascending=False, city_type=None, top_n=10, min_boardings=20) -> ToolResult:
     b = _boardings(db, date_from, date_to)
     days = max(b["date"].nunique(), 1)
     g = b.groupby(["bus_station_id", "bus_station_name"], as_index=False).agg(total=("user_count", "sum"))
@@ -53,6 +56,12 @@ def bus_station_rank(db, date_from=None, date_to=None, sort_by="boardings", asce
         if city_type:
             g = g[g["bus_city_type"] == city_type]
     key = {"boardings": "daily_boardings", "vulnerable_share": "vulnerable_share", "senior_share": "senior_share", "weekend_ratio": "weekend_ratio"}[sort_by]
+    has_wk, has_wd = b["is_weekend"].eq(1).any(), b["is_weekend"].eq(0).any()
+    if sort_by == "weekend_ratio" and not (has_wk and has_wd):
+        raise ValueError(f"분석 기간({days}일)에 주말과 평일이 모두 포함되어야 주말/평일 비율을 계산할 수 있습니다. 기간을 넓히세요.")
+    dropped = 0
+    if key != "daily_boardings" or ascending:
+        n0 = len(g); g = g[g["daily_boardings"] >= (min_boardings or 0)]; dropped = n0 - len(g)
     g = g.sort_values(key, ascending=ascending).head(top_n).reset_index(drop=True)
     g.insert(0, "rank", range(1, len(g) + 1))
     cols = ["rank", "bus_station_name", "daily_boardings", "vulnerable_share", "senior_share", "weekend_ratio"] + [c for c in ["bus_city_type", "latitude", "longitude"] if c in g.columns]
@@ -60,7 +69,9 @@ def bus_station_rank(db, date_from=None, date_to=None, sort_by="boardings", asce
     facts = []
     if len(out):
         t = out.iloc[0]
-        facts.append(f"{sort_by} 기준 1위 {t.bus_station_name}: 일평균 승차 {t.daily_boardings:,.0f}명, 교통약자 비중 {t.vulnerable_share:.0%}(경로 {t.senior_share:.0%}), 주말/평일 {t.weekend_ratio}배")
+        wr = f", 주말/평일 {t.weekend_ratio}배" if pd.notna(t.weekend_ratio) and has_wk and has_wd else ""
+        sr = f"(경로 {t.senior_share:.0%})" if "경로" in b["user_category"].unique() else ""
+        facts.append(f"{sort_by} 기준 1위 {t.bus_station_name}: 일평균 승차 {t.daily_boardings:,.0f}명, 교통약자 비중 {t.vulnerable_share:.0%}{sr}{wr}")
         facts.append(f"분석기간 {days}일, 전체 정류소 교통약자 평균 비중 {(b[b.user_category.isin(VULNERABLE)].user_count.sum() / b.user_count.sum()):.0%}")
     mp = None
     if "latitude" in out.columns:

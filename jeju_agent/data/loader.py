@@ -311,9 +311,30 @@ class JejuDB:
     def load_all(self, keys: list[str] | None = None) -> dict[str, Provenance]:
         for k in keys or schemas.CORE_DATASETS:
             self.load_dataset(k)
+        self._enrich_bus_station_ids()
         self._enrich_wifi()
         self._enrich_bus_route()
         return self.provenance
+
+    def _enrich_bus_station_ids(self) -> None:
+        """허브 API 3-04 의 정류소 ID(7자리 내부ID)는 3-03 정류소 정보(9자리)와 체계가 다르다.
+        ID 교집합이 거의 없으면 정류소명으로 3-03 ID를 붙여 교체하고, 원본 ID는 bus_station_id_src 에 보존한다."""
+        if not (self.has("bus_station_usage") and self.has("bus_station")):
+            return
+        u, st = self.frames["bus_station_usage"], self.frames["bus_station"]
+        ids_u, ids_s = set(u["bus_station_id"].dropna().astype(str)), set(st["bus_station_id"].dropna().astype(str))
+        if not ids_u or len(ids_u & ids_s) / len(ids_u) > 0.5:
+            return
+        ref = st.dropna(subset=["bus_station_id", "bus_station_name"]).drop_duplicates("bus_station_name").set_index("bus_station_name")["bus_station_id"].astype(str)
+        mapped = u["bus_station_name"].map(ref)
+        u["bus_station_id_src"] = u["bus_station_id"]
+        u["bus_station_id"] = mapped.where(mapped.notna(), "N_" + u["bus_station_name"].astype(str))
+        rate = mapped.notna().mean()
+        self.frames["bus_station_usage"] = u
+        self._register("bus_station_usage", u)
+        p = self.provenance.get("bus_station_usage")
+        if p:
+            p.note = (p.note + " / " if p.note else "") + f"정류소ID 체계가 3-03과 달라 정류소명으로 3-03 ID 매핑({rate:.0%}), 미일치는 이름을 ID로 사용"
 
     def _enrich_bus_route(self) -> None:
         """허브 API 노선 이용(3-02 대체)에는 bus_route_id 가 없다 → 노선 정보(3-01)의 노선번호로 ID를 붙이고, 없으면 노선명을 ID로 쓴다."""
