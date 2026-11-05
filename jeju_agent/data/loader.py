@@ -355,12 +355,24 @@ class JejuDB:
         u["ap_longitude"] = u["ap_longitude"].fillna(m["_lon"])
         if "ap_category" in u.columns:
             u["ap_category"] = u["ap_category"].where(u["ap_category"].notna() & (u["ap_category"] != "미분류"), m["_cat"])
+        hit_ap = u["ap_latitude"].notna().mean()
+        # 2차: '버스정류소_…_[405000301]' 처럼 장소명에 정류소 ID가 있으면 3-03 정류소 정보 좌표로 보완
+        hit_bus = 0.0
+        if self.has("bus_station") and u["ap_latitude"].isna().any():
+            sid = u["ap_place"].astype(str).str.extract(r"\[(\d{6,})\]")[0]
+            st = self.frames["bus_station"].dropna(subset=["latitude", "longitude"]).drop_duplicates("bus_station_id").set_index("bus_station_id")
+            st.index = st.index.astype(str)
+            lat2, lon2 = sid.map(st["latitude"]), sid.map(st["longitude"])
+            fill = u["ap_latitude"].isna() & lat2.notna()
+            u.loc[fill, "ap_latitude"], u.loc[fill, "ap_longitude"] = lat2[fill], lon2[fill]
+            if "ap_category" in u.columns:
+                u.loc[fill & u["ap_category"].isin([None, "미분류"]), "ap_category"] = "버스정류소"
+            hit_bus = u["ap_latitude"].notna().mean() - hit_ap
         self.frames["wifi_ap_usage"] = u
         self._register("wifi_ap_usage", u)
-        hit = u["ap_latitude"].notna().mean()
         p = self.provenance.get("wifi_ap_usage")
         if p:
-            p.note = (p.note + " / " if p.note else "") + f"좌표·카테고리를 4-01에서 장소명으로 보완({hit:.0%} 일치)"
+            p.note = (p.note + " / " if p.note else "") + f"좌표·카테고리를 4-01 장소명({hit_ap:.0%})" + (f"·3-03 정류소ID({hit_bus:.0%})" if hit_bus else "") + "로 보완"
 
     # ---------- 조회 ----------
     def table(self, key: str) -> pd.DataFrame:
