@@ -38,7 +38,7 @@
 ## 제출 문서
 - 기획서: [docs/AI_Agent_기획서_제주혼잡이동진단.pdf](docs/AI_Agent_기획서_제주혼잡이동진단.pdf) (원본 `docs/proposal.html`)
 - 결과 설명자료: [docs/RESULT_REPORT.md](docs/RESULT_REPORT.md) · 사용자 매뉴얼: [docs/USER_MANUAL.md](docs/USER_MANUAL.md) · 데이터 활용 명세: [docs/DATA_SPEC.md](docs/DATA_SPEC.md)
-- 샘플 실행 결과: `outputs/samples/` (합성 데이터, 오프라인 모드 14문항 `batch_offline.json`, LLM 모드 `batch_llm.json`(키로 실행 시), 리포트 예시)
+- 샘플 실행 결과: `outputs/samples/` (**허브 공개 API 실데이터 2025-09**, 오프라인 모드 14문항 `batch_offline.json`, LLM 모드 `batch_llm.json`(키로 실행 시), 리포트 예시)
 - 시연 대본·데모 배포·스크린샷: [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) · LLM 모드 검증표: `docs/LLM_EVAL.md` (`python scripts/llm_smoke.py` 로 생성)
 
 ## 설치·실행 (5분)
@@ -67,7 +67,7 @@ python -m jeju_agent.cli --offline --png "효율이 낮은 버스 노선은?"   
 python scripts/fetch_hub.py --from 2025-08-01 --to 2025-09-30   # 허브 공개 API → data/raw (.env 에 JEJUHUB_PROJECT_KEY)
 python scripts/check_data.py                             # data/raw 실데이터 인식·매핑·비활성 기능 점검
 python scripts/llm_smoke.py --limit 5                    # LLM 모드 실키 검증 (docs/LLM_EVAL.md 생성)
-pytest -q                                                # 테스트 43개 (API 키 불필요)
+pytest -q                                                # 테스트 44개 (API 키 불필요, 합성 데이터로 격리 실행)
 ```
 
 ## 구조

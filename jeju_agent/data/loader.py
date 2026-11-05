@@ -345,10 +345,13 @@ class JejuDB:
             return
         filled = 0
         if self.has("bus_route") and "bus_route_number" in u.columns and u["bus_route_number"].notna().any():
-            r = self.frames["bus_route"].dropna(subset=["bus_route_id"]).drop_duplicates("bus_route_number")[["bus_route_number", "bus_route_id"]]
-            m = u[["bus_route_number"]].merge(r, on="bus_route_number", how="left")
-            m.index = u.index
-            u["bus_route_id"] = u["bus_route_id"].fillna(m["bus_route_id"])
+            r = self.frames["bus_route"].dropna(subset=["bus_route_id"])
+            # 3-02 의 routeName('641-1') 은 3-01 의 bus_route_name('641-1') 과 같은 체계, routeNumber('641') 와는 다름 → 이름 우선, 번호 보조
+            by_name = r.drop_duplicates("bus_route_name").set_index("bus_route_name")["bus_route_id"]
+            by_num = r.drop_duplicates("bus_route_number").set_index("bus_route_number")["bus_route_id"]
+            key = u["bus_route_number"].astype(str)
+            mapped = key.map(by_name).fillna(key.map(by_num))
+            u["bus_route_id"] = u["bus_route_id"].fillna(mapped)
             filled = int(u["bus_route_id"].notna().sum())
         u["bus_route_id"] = u["bus_route_id"].fillna(u["bus_route_name"])
         self.frames["bus_route_usage"] = u

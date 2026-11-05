@@ -42,7 +42,8 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
     bus_q = any(k in q for k in ("버스", "노선", "정류소", "정류장", "승차", "환승", "배차", "준공영"))
     place = fuzzy_match_any(q, places)
     station = fuzzy_match_any(q, stations)
-    route = next((r for r in ROUTE.findall(question) if any(r == n.split("(")[0] for n in routes)), None)
+    route = next((r for r in ROUTE.findall(question)
+                  if any(n.split("(")[0] == r or n.split("(")[0].split("-")[0] == r for n in routes)), None)
     if any(k in q for k in ("어떤데이터", "무슨데이터", "데이터목록", "데이터있")):
         return [("describe_data", {})]
     if any(k in q for k in ("브리핑", "상황요약", "월간", "지난달어땠", "한달정리")):
@@ -50,6 +51,8 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
             pass
         m = MONTH.search(question)
         return [("monthly_brief", {"month": f"{int(m.group(1)) if m.group(1) else int(data_max[:4])}-{int(m.group(2)):02d}"} if m else {})]
+    if route:
+        return [("bus_route_efficiency", {"route": route, **period})]
     if any(k in q for k in ("예상", "예측", "다음주말", "이번주말", "다음토요일", "연휴", "붐빌까", "붐빌것")):
         args = {"top_n": 10}
         if place:
@@ -62,8 +65,6 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
         if bus_q:
             return [("weather_effect", {"target": "bus_station", **({"place": station} if station else {}), **period})]
         return [("weather_effect", {"target": "wifi", **({"place": place} if place else {}), **period})]
-    if route:
-        return [("bus_route_efficiency", {"route": route, **period})]
     if any(k in q for k in ("효율", "비효율", "텅", "빈차", "적자", "준공영", "저이용")) and bus_q:
         return [("bus_route_efficiency", {"ascending": True, "top_n": 10, **period})]
     if senior:
@@ -74,7 +75,7 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
     if station and bus_q and any(k in q for k in ("몇시", "시간대", "언제", "출근", "퇴근")):
         if caps.get("hour", True):
             return [("hourly_profile", {"station": station, **period})]
-        return [("bus_station_rank", {"sort_by": "boardings", "top_n": 10, **period})]
+        return [("bus_station_rank", {"sort_by": "boardings", "top_n": 10, "station_name": station, **period})]
     if place and any(k in q for k in ("정류소", "정류장", "버스", "가는", "접근", "대중교통")):
         return [("place_access", {"place": place, **period})]
     if place:
@@ -82,7 +83,7 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
     if station and any(k in q for k in ("몇시", "시간대", "언제", "출근", "퇴근")):
         if caps.get("hour", True):
             return [("hourly_profile", {"station": station, **period})]
-        return [("bus_station_rank", {"sort_by": "boardings", "top_n": 10, **period})]
+        return [("bus_station_rank", {"sort_by": "boardings", "top_n": 10, "station_name": station, **period})]
     if bus_q:
         asc = any(k in q for k in ("적은", "한산", "적게", "낮은"))
         return [("bus_station_rank", {"sort_by": "weekend_ratio" if weekend else "boardings", "ascending": asc, "top_n": 10, **period})]

@@ -32,12 +32,19 @@ def _boardings(db, date_from, date_to, key="bus_station_usage"):
         "sort_by": {"type": "string", "enum": ["boardings", "vulnerable_share", "senior_share", "weekend_ratio"], "description": "정렬 기준(기본 boardings)"},
         "ascending": {"type": "boolean", "description": "오름차순(적은 순)으로 볼지"},
         "city_type": {"type": "string", "enum": ["시내", "시외"], "description": "시내/시외 정류소 필터"},
+        "station_name": {"type": "string", "description": "특정 정류소만(부분 일치) — 그 정류소의 일평균 승차·교통약자·주말 비율을 볼 때"},
         "min_boardings": {"type": "integer", "description": "비중 순위에 넣을 최소 일평균 승차(기본 20) — 승차 1~2명 정류소의 100% 비중 같은 소표본 왜곡 방지"},
         "top_n": {"type": "integer", "description": "상위 몇 개(기본 10)"},
     }},
 )
-def bus_station_rank(db, date_from=None, date_to=None, sort_by="boardings", ascending=False, city_type=None, top_n=10, min_boardings=20) -> ToolResult:
+def bus_station_rank(db, date_from=None, date_to=None, sort_by="boardings", ascending=False, city_type=None, top_n=10, min_boardings=20, station_name=None) -> ToolResult:
     b = _boardings(db, date_from, date_to)
+    if station_name:
+        key_ = station_name.replace(" ", "")
+        b = b[b["bus_station_name"].astype(str).str.replace(" ", "").str.contains(key_, regex=False)]
+        if b.empty:
+            raise ValueError(f"'{station_name}' 정류소를 찾을 수 없습니다.")
+        min_boardings = 0
     days = max(b["date"].nunique(), 1)
     g = b.groupby(["bus_station_id", "bus_station_name"], as_index=False).agg(total=("user_count", "sum"))
     vul = b[b["user_category"].isin(VULNERABLE)].groupby("bus_station_id")["user_count"].sum().rename("vulnerable")
@@ -95,18 +102,50 @@ def bus_station_rank(db, date_from=None, date_to=None, sort_by="boardings", asce
         "route": {"type": "string", "description": "노선 번호 또는 이름 일부(예: 251). 생략 시 전체 노선 순위"},
         "ascending": {"type": "boolean", "description": "효율 낮은 순(기본 true)"},
         "top_n": {"type": "integer", "description": "상위 몇 개(기본 10)"},
+        "min_boardings": {"type": "integer", "description": "순위에 넣을 최소 일평균 승차(기본 20) — 임시·통학 노선 제외"},
     }},
 )
-def bus_route_efficiency(db, date_from=None, date_to=None, route=None, ascending=True, top_n=10) -> ToolResult:
+def bus_route_efficiency(db, date_from=None, date_to=None, route=None, ascending=True, top_n=10, min_boardings=20) -> ToolResult:
     b = _boardings(db, date_from, date_to, key="bus_route_usage")
     days = max(b["date"].nunique(), 1)
     routes = db.table("bus_route").drop_duplicates("bus_route_id")[["bus_route_id", "bus_route_number", "bus_route_length", "bus_station_count"]] if db.has("bus_route") else None
     if route:
         names = sorted(b["bus_route_name"].dropna().unique().tolist())
-        name = fuzzy_match(route, names) or next((n for n in names if n.split("(")[0] == route), None)
+        rt = str(route).replace(" ", "").replace("번", "")
+        exact = [n for n in names if n.split("(")[0] == rt]
+        pref = [n for n in names if n.split("(")[0].split("-")[0] == rt]
+        if exact:
+            name = exact[0]
+        elif pref:
+            # '251' 처럼 가지번호 없이 물으면 251-1, 251-2 … 중 승차가 가장 많은 노선을 대표로 (답변에 전체 목록 표시)
+            tot = b[b["bus_route_name"].isin(pref)].groupby("bus_route_name")["user_count"].sum()
+            name = str(tot.idxmax())
+        else:
+            name = fuzzy_match(route, names)
         if not name:
             raise ValueError(f"'{route}' 노선을 찾을 수 없습니다. 노선 목록: {', '.join(n.split('(')[0] for n in names[:30])}")
         s = b[b["bus_route_name"] == name]
+        if s["hour"].isna().all():
+            # 시간대 없음(허브 집계본) → 일 단위 요약으로 대체
+            days_s = max(s["date"].nunique(), 1)
+            total_daily = s["user_count"].sum() / days_s
+            wk = s[s.is_weekend == 1]["user_count"].sum() / max(s[s.is_weekend == 1]["date"].nunique(), 1)
+            wd = s[s.is_weekend == 0]["user_count"].sum() / max(s[s.is_weekend == 0]["date"].nunique(), 1)
+            cat = s.groupby("user_category")["user_count"].sum().sort_values(ascending=False)
+            daily_tbl = s.groupby(["date", "dow"], as_index=False)["user_count"].sum().rename(columns={"user_count": "boardings"})
+            facts = [f"{name}: 일평균 승차 {total_daily:,.0f}명 (평일 {wd:,.0f}명, 주말 {wk:,.0f}명, 주말/평일 {wk / wd if wd else 0:.2f}배)",
+                     f"이용자 구성: " + ", ".join(f"{k} {v / cat.sum():.0%}" for k, v in cat.head(4).items())]
+            if len(pref) > 1:
+                facts.append(f"'{rt}' 계열 노선 {len(pref)}개 중 승차 최다인 {name.split('(')[0]}을(를) 표시 (" + ", ".join(n.split("(")[0] for n in pref[:8]) + ")")
+            if routes is not None:
+                r = routes[routes.bus_route_id == s["bus_route_id"].iloc[0]]
+                if len(r) and pd.notna(r.bus_route_length.iloc[0]) and r.bus_route_length.iloc[0] > 0:
+                    facts.append(f"노선거리 {r.bus_route_length.iloc[0] / 1000:.1f}km, 정류소 {int(r.bus_station_count.iloc[0])}개 → {total_daily / (r.bus_route_length.iloc[0] / 1000):.1f}명/km/일")
+            return ToolResult("bus_route_efficiency", f"{name} 일별 이용", daily_tbl, facts,
+                              [CAVEAT_BUS, "현재 적재된 노선 데이터(허브 공개 API 집계본)에는 시간대가 없어 시간대별 프로필·저이용 시간대는 센터 원본(3-02) 적재 시 활성화됩니다."],
+                              chart={"type": "line", "x": "date", "y": "boardings", "title": f"{name} 일별 승차"},
+                              method="bus_route_usage 승차 행을 날짜별 합산 ÷ 일수 (시간대 없음)",
+                              params=dict(route=name, date_from=date_from, date_to=date_to), datasets=["bus_route_usage", "bus_route"])
         prof = s.groupby("hour")["user_count"].sum().reindex(range(5, 24), fill_value=0) / days
         prof = prof.round(1).reset_index().rename(columns={"user_count": "avg_boardings"})
         peak = prof["avg_boardings"].max()
@@ -141,6 +180,11 @@ def bus_route_efficiency(db, date_from=None, date_to=None, route=None, ascending
         g["boardings_per_km"] = (g["daily_boardings"] / (g["bus_route_length"] / 1000)).round(2)
         g["boardings_per_station"] = (g["daily_boardings"] / g["bus_station_count"]).round(1)
     key = "boardings_per_km" if "boardings_per_km" in g.columns else "daily_boardings"
+    n0 = len(g)
+    g = g[g["daily_boardings"] >= min_boardings]          # 임시·통학 등 하루 몇 명뿐인 노선은 효율 순위에서 제외
+    if key == "boardings_per_km":
+        g = g[g["boardings_per_km"].notna()]              # 노선거리 미확인 노선 제외
+    dropped = n0 - len(g)
     g = g.sort_values(key, ascending=ascending).head(top_n).reset_index(drop=True)
     g.insert(0, "rank", range(1, len(g) + 1))
     cols = ["rank", "bus_route_name", "daily_boardings"] + [c for c in ["boardings_per_km", "boardings_per_station", "bus_route_length"] if c in g.columns] + ["n_low_hours", "low_hours"]
@@ -148,9 +192,12 @@ def bus_route_efficiency(db, date_from=None, date_to=None, route=None, ascending
     facts = []
     if len(out):
         t = out.iloc[0]
-        facts.append(f"효율 {'최저' if ascending else '최고'} 노선 {t.bus_route_name}: 일평균 승차 {t.daily_boardings:,.0f}명" + (f", {t.boardings_per_km}명/km/일" if "boardings_per_km" in out.columns else "") + f", 저이용 시간대 {t.n_low_hours}개({t.low_hours or '없음'})")
+        low_txt = f", 저이용 시간대 {t.n_low_hours}개({t.low_hours or '없음'})" if not b["hour"].isna().all() else ""
+        facts.append(f"효율 {'최저' if ascending else '최고'} 노선 {t.bus_route_name}: 일평균 승차 {t.daily_boardings:,.0f}명" + (f", {t.boardings_per_km}명/km/일" if "boardings_per_km" in out.columns else "") + low_txt)
         facts.append(f"분석 노선 {b['bus_route_id'].nunique()}개, 전체 일평균 승차 {b.user_count.sum() / days:,.0f}명")
-    return ToolResult("bus_route_efficiency", f"노선 효율 순위 ({'낮은 순' if ascending else '높은 순'})", out, facts, [CAVEAT_BUS],
+    cav = [CAVEAT_BUS] + ([f"일평균 승차 {min_boardings}명 미만 또는 노선거리 미확인 노선 {dropped}개는 순위에서 제외"] if dropped else []) \
+          + (["현재 노선 데이터(허브 집계본)에는 시간대가 없어 저이용 시간대는 계산되지 않습니다."] if b["hour"].isna().all() else [])
+    return ToolResult("bus_route_efficiency", f"노선 효율 순위 ({'낮은 순' if ascending else '높은 순'})", out, facts, cav,
                       chart={"type": "bar", "x": "bus_route_name", "y": key, "title": "노선별 승객/km/일"},
                       method="bus_route_usage 승차 합산 ÷ 일수 ÷ 노선거리(km); 저이용 시간대 = 시간대 승차가 피크의 15% 미만",
                       params=dict(date_from=date_from, date_to=date_to, ascending=ascending, top_n=top_n), datasets=["bus_route_usage", "bus_route"])
