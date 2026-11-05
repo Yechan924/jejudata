@@ -100,6 +100,23 @@ def fuzzy_match(name: str, candidates: list[str]) -> str | None:
     return sorted(part, key=len)[0] if part else None
 
 
+def wifi_is_aggregated(df: pd.DataFrame) -> bool:
+    """4-05 원본(행=접속 1건, user_id 있음)인지, 허브 API 집계본(행=장소×일, user_count 있음)인지."""
+    return ("user_count" in df.columns and df["user_count"].notna().any()) and not ("user_id" in df.columns and df["user_id"].notna().any())
+
+
+def wifi_users_agg(df: pd.DataFrame):
+    """groupby().agg 에 넣을 '이용자 수' 집계 스펙. 원본이면 고유 user_id 수, 집계본이면 user_count 합."""
+    return ("user_count", "sum") if wifi_is_aggregated(df) else ("user_id", "nunique")
+
+
+def wifi_users_count(df: pd.DataFrame) -> int:
+    """부분집합의 이용자 수(원본: 고유 user_id, 집계본: user_count 합)."""
+    if wifi_is_aggregated(df):
+        return int(pd.to_numeric(df["user_count"], errors="coerce").fillna(0).sum())
+    return int(df["user_id"].nunique())
+
+
 PERIOD_PARAMS = {
     "date_from": {"type": "string", "description": "시작일 YYYY-MM-DD (생략 시 데이터 전체)"},
     "date_to": {"type": "string", "description": "종료일 YYYY-MM-DD (생략 시 데이터 전체)"},

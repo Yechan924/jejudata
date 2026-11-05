@@ -13,7 +13,7 @@ from datetime import date, timedelta
 
 import pandas as pd
 
-from .base import PERIOD_PARAMS, ToolResult, register
+from .base import PERIOD_PARAMS, ToolResult, register, wifi_is_aggregated, wifi_users_agg, wifi_users_count
 from .bus import VULNERABLE
 from .congestion import CAVEAT_WIFI, _coords, _daily_users, _with_index
 
@@ -95,13 +95,17 @@ def monthly_brief(db, month=None) -> ToolResult:
     pre = u[u["ym"] == prev]
     if cur.empty:
         raise ValueError(f"{month} 데이터가 없습니다. 데이터 범위: {u['ym'].min()}~{u['ym'].max()}")
+    agg_mode = wifi_is_aggregated(u)
     def stats(df):
-        users = df["user_id"].nunique()
+        users = wifi_users_count(df)
+        if agg_mode:
+            return users, float("nan"), float("nan")
         return users, (df["nationality"] != "대한민국").sum() / max(len(df), 1), (df["visit_type"] == "관광").sum() / max(len(df), 1)
     cu, cf, ct = stats(cur)
     pu, pf, pt = stats(pre) if not pre.empty else (None, None, None)
-    top = cur.groupby("ap_place")["user_id"].nunique().sort_values(ascending=False).head(5)
-    top_f = cur[cur["nationality"] != "대한민국"].groupby("ap_place")["user_id"].nunique().sort_values(ascending=False).head(3)
+    top = cur.groupby("ap_place").agg(v=wifi_users_agg(u))["v"].sort_values(ascending=False).head(5)
+    top_f = (cur[cur["nationality"] != "대한민국"].groupby("ap_place")["user_id"].nunique().sort_values(ascending=False).head(3)
+             if not agg_mode else pd.Series(dtype=float))
     rows = [{"지표": "와이파이 고유 이용자", "값": f"{cu:,}", "전월": f"{pu:,}" if pu else "-", "변화": f"{(cu / pu - 1):+.1%}" if pu else "-"},
             {"지표": "외국인 비중", "값": f"{cf:.1%}", "전월": f"{pf:.1%}" if pf is not None else "-", "변화": f"{(cf - pf) * 100:+.1f}%p" if pf is not None else "-"},
             {"지표": "관광 방문 비중", "값": f"{ct:.1%}", "전월": f"{pt:.1%}" if pt is not None else "-", "변화": f"{(ct - pt) * 100:+.1f}%p" if pt is not None else "-"},

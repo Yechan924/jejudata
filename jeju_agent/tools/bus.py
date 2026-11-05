@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from .base import PERIOD_PARAMS, ToolResult, fuzzy_match, haversine_km, period_filter, register
+from .base import PERIOD_PARAMS, ToolResult, fuzzy_match, haversine_km, period_filter, register, wifi_users_agg
 
 VULNERABLE = ["경로", "어린이", "장애 일반", "장애 동반", "유공 일반", "유공 동반"]
 CAVEAT_BUS = "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다."
@@ -196,7 +196,7 @@ def place_access(db, place, radius_km=1.5, date_from=None, date_to=None) -> Tool
     peak = b.groupby(["bus_station_id", "hour"])["user_count"].sum().reset_index().sort_values("user_count", ascending=False).drop_duplicates("bus_station_id")[["bus_station_id", "hour"]].rename(columns={"hour": "peak_hour"})
     g = g.merge(peak, on="bus_station_id", how="left").merge(near[["bus_station_id", "dist_km", "latitude", "longitude"]], on="bus_station_id").sort_values("dist_km")
     g["dist_km"] = g["dist_km"].round(2)
-    daily_place = u[u.ap_place == name].groupby("date")["user_id"].nunique()
+    daily_place = u[u.ap_place == name].groupby("date").agg(v=wifi_users_agg(u))["v"]
     facts = [f"{name} 반경 {radius_km}km 내 정류소 {len(near)}개, 합산 일평균 승차 {g.daily_boardings.sum():,.0f}명 (와이파이 일평균 이용자 {daily_place.mean():.0f}명)"]
     if len(g):
         facts.append(f"가장 가까운 정류소 {g.iloc[0].bus_station_name}({g.iloc[0].dist_km}km), 피크 {int(g.iloc[0].peak_hour) if pd.notna(g.iloc[0].peak_hour) else '-'}시")

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from .base import PERIOD_PARAMS, ToolResult, fuzzy_match, haversine_km, period_filter, register
+from .base import PERIOD_PARAMS, ToolResult, fuzzy_match, haversine_km, period_filter, register, wifi_users_agg
 
 CAVEAT_WX = "강우일/비강우일 단순 비교이며 공휴일·행사 등 다른 요인은 통제되지 않았습니다(상관 관계)."
 
@@ -47,7 +47,7 @@ def _rain_days(db, code: str, date_from, date_to, threshold=1.0) -> pd.DataFrame
 def weather_effect(db, target="wifi", place=None, date_from=None, date_to=None, rain_mm=1.0) -> ToolResult:
     if target == "wifi":
         u = period_filter(db.table("wifi_ap_usage"), date_from, date_to)
-        daily = u.groupby(["ap_place", "date", "is_weekend"], as_index=False).agg(value=("user_id", "nunique"), lat=("ap_latitude", "first"), lon=("ap_longitude", "first"))
+        daily = u.groupby(["ap_place", "date", "is_weekend"], as_index=False).agg(value=wifi_users_agg(u), lat=("ap_latitude", "first"), lon=("ap_longitude", "first"))
         label, ds = "ap_place", ["wifi_ap_usage", "weather_daily"]
     elif target == "bus_station":
         b = period_filter(db.table("bus_station_usage"), date_from, date_to)

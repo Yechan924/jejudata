@@ -31,7 +31,9 @@
 | 3-01 / 3-03 | 버스 노선·정류소 정보 | 노선거리·정류소 좌표 |
 | 5-02 / 5-01 | 일일 날씨·관측소 정보 | 강우 영향 |
 
-자세한 활용 내역·전처리·이용조건은 [docs/DATA_SPEC.md](docs/DATA_SPEC.md), **실데이터를 받아 넣는 절차는 [docs/DATA_ACQUISITION.md](docs/DATA_ACQUISITION.md)** 참고. 넣은 뒤 `python scripts/check_data.py` 로 인식·헤더 매핑·기간을 점검합니다.
+자세한 활용 내역·전처리·이용조건은 [docs/DATA_SPEC.md](docs/DATA_SPEC.md), **실데이터를 받아 넣는 절차는 [docs/DATA_ACQUISITION.md](docs/DATA_ACQUISITION.md)** 참고.
+
+> **실데이터 경로 2가지** — 원본 4-05·3-04 CSV는 센터 분석실에서만 받을 수 있습니다("데이터검색" 메뉴는 분석실 전용). 집에서는 같은 제공처의 **허브 공개 API 6종**을 `python scripts/fetch_hub.py` 로 수집해 `data/raw/`에 넣으면 됩니다(2025년 최신, 10분). 국적·방문유형·시간대처럼 API에 없는 컬럼은 해당 기능만 비활성화되고, 센터 원본을 넣으면 자동 활성화됩니다. 넣은 뒤 `python scripts/check_data.py` 로 점검.
 
 ## 제출 문서
 - 기획서: [docs/AI_Agent_기획서_제주혼잡이동진단.pdf](docs/AI_Agent_기획서_제주혼잡이동진단.pdf) (원본 `docs/proposal.html`)
@@ -62,7 +64,8 @@ python -m jeju_agent.cli --offline --batch examples/questions.txt   # LLM 없이
 python -m jeju_agent.cli --status                        # 적재 데이터·LLM 상태 확인
 python -m jeju_agent.cli --brief 2025-05                 # 월간 브리핑 HTML 저장
 python -m jeju_agent.cli --offline --png "효율이 낮은 버스 노선은?"   # 차트를 PNG(반출용)로 저장
-python scripts/check_data.py                             # data/raw 실데이터 인식·매핑 점검
+python scripts/fetch_hub.py --from 2025-08-01 --to 2025-09-30   # 허브 공개 API → data/raw (.env 에 JEJUHUB_PROJECT_KEY)
+python scripts/check_data.py                             # data/raw 실데이터 인식·매핑·비활성 기능 점검
 python scripts/llm_smoke.py --limit 5                    # LLM 모드 실키 검증 (docs/LLM_EVAL.md 생성)
 pytest -q                                                # 테스트 43개 (API 키 불필요)
 ```
@@ -89,7 +92,7 @@ pytest -q                                                # 테스트 43개 (API 
 | `jeju_agent/agent.py` | 오케스트레이션, 로그, 폴백 |
 | `jeju_agent/report.py` | 단일 HTML 리포트 |
 | `app.py` | Streamlit UI (🧭 실행 계획·4단 답변·이어서 물어보기·지도·차트·근거표·방법/한계·실행 로그·**LLM 전송 내용 미리보기**·리포트/PNG 다운로드·올린 자료 삭제·대화 맥락) |
-| `scripts/` | `check_data.py`(실데이터 점검) · `llm_smoke.py`(LLM 검증표) · `capture_screens.py`(스크린샷) · `make_submission.py`(ZIP·PDF 생성) |
+| `scripts/` | `fetch_hub.py`(허브 공개 API 수집) · `check_data.py`(실데이터 점검) · `llm_smoke.py`(LLM 검증표) · `capture_screens.py`(스크린샷) · `make_submission.py`(ZIP·PDF 생성) |
 
 ## 신뢰성 장치 (심사 포인트)
 - **실행 계획 노출**: Agent가 어떤 데이터를 어떤 순서로 왜 봤는지(LLM 모드는 모델이 쓴 계획 문장, 오프라인은 규칙 선택 근거)를 답변 위 🧭 패널과 리포트에 남긴다.

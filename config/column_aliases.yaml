@@ -17,8 +17,8 @@ aliases:
   bus_station_id: [정류소아이디, 정류소id, 정류장id, 정류소번호, 정류장번호, stationid]
   bus_station_name: [정류소명칭, 정류소명, 정류장명, 정류소이름, 정류장이름, stationname]
   bus_route_id: [노선아이디, 노선id, 노선번호id, routeid]
-  bus_route_name: [노선명칭, 노선명, 노선이름, routename]
-  bus_route_number: [노선번호, routenumber]
+  bus_route_name: [노선명칭, 노선명, 노선이름, routesubname, routename]
+  bus_route_number: [노선번호, routenumber, routename]
   bus_route_length: [노선거리, 노선길이, 운행거리, routelength]
   bus_station_count: [정류소수, 정류장수, stationcount]
   bus_city_type: [시내시외구분, 시내외구분, 시내시외, citytype]
@@ -38,7 +38,7 @@ aliases:
   observatory_name: [관측소명, 지점명]
   daily_rainfall: [일강수량, 강수량, 강우량, rainfall]
   average_temperature: [평균기온, 평균온도, avgtemp]
-  ap_group_name: [장소명칭, 장소명, 그룹명]
+  ap_group_name: [장소명칭, 장소명, 그룹명, apgroupname]
   category: [카테고리, 분류]
 
 # 원본에 아예 없을 때 채우는 값 (데이터셋별). 채운 사실은 적재 상태(provenance)에 기록된다.

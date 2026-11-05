@@ -42,14 +42,20 @@ DOW_KO = {0: "월", 1: "화", 2: "수", 3: "목", 4: "금", 5: "토", 6: "일"}
 INFO_TABLES = {"bus_route": "bus_route_id", "bus_station": "bus_station_id", "weather_station": "observatory_code", "wifi_ap": "manage_no"}
 # 분석 도구가 실제로 의존하는 컬럼 (실데이터 점검용)
 REQUIRED_COLUMNS = {
-    "wifi_ap_usage": ["base_date", "user_id", "ap_place", "ap_latitude", "ap_longitude", "nationality", "visit_type"],
-    "bus_station_usage": ["base_date", "base_hour", "bus_station_id", "bus_station_name", "get_on_off_type", "user_category", "user_count"],
-    "bus_route_usage": ["base_date", "base_hour", "bus_route_id", "bus_route_name", "get_on_off_type", "user_count"],
+    "wifi_ap_usage": ["base_date", "ap_place", "ap_latitude", "ap_longitude"],   # user_id 또는 user_count 중 하나 (아래 ANY_OF)
+    "bus_station_usage": ["base_date", "bus_station_id", "bus_station_name", "get_on_off_type", "user_count"],
+    "bus_route_usage": ["base_date", "bus_route_name", "get_on_off_type", "user_count"],
     "bus_station": ["bus_station_id", "latitude", "longitude"],
     "bus_route": ["bus_route_id", "bus_route_length"],
     "weather_daily": ["base_date", "observatory_code", "daily_rainfall"],
     "weather_station": ["observatory_code", "latitude", "longitude"],
 }
+# 둘 중 하나만 있으면 되는 컬럼 묶음 (원본 4-05 는 user_id, 허브 API 집계본은 user_count)
+ANY_OF_COLUMNS = {"wifi_ap_usage": [["user_id", "user_count"]]}
+# 있으면 좋지만 없어도 핵심 기능이 도는 컬럼 → 없으면 해당 기능만 비활성(점검 스크립트가 안내)
+OPTIONAL_COLUMNS = {"wifi_ap_usage": {"nationality": "외국인 비중", "visit_type": "관광객 비중", "user_id": "고유 이용자(중복 제거)"},
+                    "bus_station_usage": {"base_hour": "시간대 프로필·피크 시간", "user_category": "교통약자 비중"},
+                    "bus_route_usage": {"base_hour": "저이용 시간대 탐지", "bus_route_id": "노선 정보(거리) 조인 — 없으면 노선번호로 조인"}}
 
 
 def _norm(s: str) -> str:
@@ -94,10 +100,24 @@ class JejuDB:
             self.con = sqlite3.connect(":memory:", check_same_thread=False)
 
     # ---------- 파일 탐색 ----------
-    @staticmethod
-    def _targets(key: str) -> set[str]:
+    FILE_ALIASES = {"wifi_ap": ["와이파이 AP 현황", "와이파이AP현황", "공공와이파이 AP 정보"],
+                    "bus_station": ["버스 정류소 기본 정보"], "bus_route": ["버스 노선 기본 정보"],
+                    "bus_station_usage": ["일일 정류소별 버스 이용자 정보"], "bus_route_usage": ["일일 노선별 버스 이용자 정보"],
+                    "wifi_ap_usage": ["와이파이 AP그룹별 일일 사용량"]}
+
+    @classmethod
+    def _targets(cls, key: str) -> set[str]:
         d = schemas.dataset(key)
-        return {_norm(key), _norm(d["name"]), _norm(d["code"] + d["name"]), _norm(d["code"] + "_" + d["name"])}
+        base = d["name"].split("(")[0].strip()
+        t = {_norm(key), _norm(d["name"]), _norm(base), _norm(d["code"] + d["name"]), _norm(d["code"] + "_" + d["name"]), _norm(d["code"] + base)}
+        t |= {_norm(a) for a in cls.FILE_ALIASES.get(key, [])}
+        # 괄호 안 꼬리표 조합: '와이파이 AP 현황(고정형)' 처럼 일부만 쓴 파일명
+        import re as _re
+        for part in _re.findall(r"\(([^)]*)\)", d["name"]):
+            for piece in part.split(","):
+                if piece.strip():
+                    t.add(_norm(base + piece.strip()))
+        return t
 
     @classmethod
     def assign_files(cls, base: Path) -> dict[str, list[Path]]:
@@ -118,8 +138,9 @@ class JejuDB:
                 for t in cls._targets(k):
                     if len(t) >= 4 and stem.startswith(t) and len(t) > best_len:
                         rest = stem[len(t):]
-                        # 뒤에 붙는 건 기간/버전/번호 정도만 허용 (다른 데이터명의 접두어로 오인 방지)
-                        if rest == "" or re.fullmatch(r"[0-9v~]*", rest):
+                        # 뒤에 붙는 건 기간/버전/출처 꼬리표만 허용. 한글이 바로 이어지면 다른 데이터명의 접두어(예: '와이파이 AP 현황' vs
+                        # '와이파이 AP별 이용 현황')일 수 있어 제외하되, 숫자·영문·'허브'로 시작하는 꼬리표는 허용한다.
+                        if rest == "" or re.fullmatch(r"[0-9v~]*", rest) or re.match(r"^(허브|api|hub|[0-9a-z])", rest):
                             best, best_len = k, len(t)
             if best:
                 out[best].append(f)
@@ -194,10 +215,9 @@ class JejuDB:
                     defaulted[c["name"]] = defaults[c["name"]]
                 else:
                     df[c["name"]] = None
-        for c in cols:
-            name = c["name"]
-            if c["type"].upper() in NUMERIC_TYPES or name in FORCE_NUMERIC:
-                df[name] = pd.to_numeric(df[name].astype(str).str.replace(",", ""), errors="coerce")
+        numeric = {c["name"] for c in cols if c["type"].upper() in NUMERIC_TYPES} | (FORCE_NUMERIC & set(df.columns))
+        for name in numeric:
+            df[name] = pd.to_numeric(df[name].astype(str).str.replace(",", ""), errors="coerce")
         # base_date: '2025-03-01', '2025/3/1', '20250301 00:00' 등을 YYYYMMDD 로 통일
         if "base_date" in df.columns:
             s = df["base_date"].astype(str).str.strip()
@@ -291,7 +311,56 @@ class JejuDB:
     def load_all(self, keys: list[str] | None = None) -> dict[str, Provenance]:
         for k in keys or schemas.CORE_DATASETS:
             self.load_dataset(k)
+        self._enrich_wifi()
+        self._enrich_bus_route()
         return self.provenance
+
+    def _enrich_bus_route(self) -> None:
+        """허브 API 노선 이용(3-02 대체)에는 bus_route_id 가 없다 → 노선 정보(3-01)의 노선번호로 ID를 붙이고, 없으면 노선명을 ID로 쓴다."""
+        if not self.has("bus_route_usage"):
+            return
+        u = self.frames["bus_route_usage"]
+        if u["bus_route_id"].notna().mean() > 0.5:
+            return
+        filled = 0
+        if self.has("bus_route") and "bus_route_number" in u.columns and u["bus_route_number"].notna().any():
+            r = self.frames["bus_route"].dropna(subset=["bus_route_id"]).drop_duplicates("bus_route_number")[["bus_route_number", "bus_route_id"]]
+            m = u[["bus_route_number"]].merge(r, on="bus_route_number", how="left")
+            m.index = u.index
+            u["bus_route_id"] = u["bus_route_id"].fillna(m["bus_route_id"])
+            filled = int(u["bus_route_id"].notna().sum())
+        u["bus_route_id"] = u["bus_route_id"].fillna(u["bus_route_name"])
+        self.frames["bus_route_usage"] = u
+        self._register("bus_route_usage", u)
+        p = self.provenance.get("bus_route_usage")
+        if p:
+            p.note = (p.note + " / " if p.note else "") + f"bus_route_id 를 3-01 노선번호로 보완({filled / max(len(u), 1):.0%}), 나머지는 노선명 사용"
+
+    def _enrich_wifi(self) -> None:
+        """허브 API 집계본(4-05 대체)은 좌표·카테고리가 없다 → 4-01(AP 현황)에서 장소명으로 채운다."""
+        if not self.has("wifi_ap_usage") or not self.has("wifi_ap"):
+            return
+        u = self.frames["wifi_ap_usage"]
+        if u["ap_latitude"].notna().mean() > 0.5:
+            return
+        ap = self.frames["wifi_ap"]
+        if "ap_group_name" not in ap.columns:
+            return
+        ref = (ap.dropna(subset=["latitude", "longitude"])
+                 .groupby("ap_group_name", as_index=False)
+                 .agg(_lat=("latitude", "median"), _lon=("longitude", "median"), _cat=("category", "first")))
+        m = u[["ap_place"]].merge(ref, left_on="ap_place", right_on="ap_group_name", how="left")
+        m.index = u.index
+        u["ap_latitude"] = u["ap_latitude"].fillna(m["_lat"])
+        u["ap_longitude"] = u["ap_longitude"].fillna(m["_lon"])
+        if "ap_category" in u.columns:
+            u["ap_category"] = u["ap_category"].where(u["ap_category"].notna() & (u["ap_category"] != "미분류"), m["_cat"])
+        self.frames["wifi_ap_usage"] = u
+        self._register("wifi_ap_usage", u)
+        hit = u["ap_latitude"].notna().mean()
+        p = self.provenance.get("wifi_ap_usage")
+        if p:
+            p.note = (p.note + " / " if p.note else "") + f"좌표·카테고리를 4-01에서 장소명으로 보완({hit:.0%} 일치)"
 
     # ---------- 조회 ----------
     def table(self, key: str) -> pd.DataFrame:

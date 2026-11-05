@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from jeju_agent import schemas  # noqa: E402
 from jeju_agent.config import RAW_DIR  # noqa: E402
-from jeju_agent.data.loader import REQUIRED_COLUMNS, JejuDB  # noqa: E402
+from jeju_agent.data.loader import ANY_OF_COLUMNS, OPTIONAL_COLUMNS, REQUIRED_COLUMNS, JejuDB  # noqa: E402
 from jeju_agent.tools.base import df_to_md  # noqa: E402
 
 REQUIRED = ["wifi_ap_usage", "bus_station_usage"]   # 대회 필수 데이터 1종 이상 — 이 서비스는 2종을 필수로 쓴다
@@ -52,7 +52,12 @@ def main() -> int:
             print(f"  ✗ {d['code']} {d['name']}: 실데이터 없음 (현재 {p.source if p else 'missing'})")
             ok = False
             continue
-        missing = [c for c in REQUIRED_COLUMNS[k] if c not in db.table(k).columns or db.table(k)[c].isna().all()]
+        t = db.table(k)
+        has = lambda c: c in t.columns and t[c].notna().any()  # noqa: E731
+        missing = [c for c in REQUIRED_COLUMNS[k] if not has(c)]
+        for group in ANY_OF_COLUMNS.get(k, []):
+            if not any(has(c) for c in group):
+                missing.append(" 또는 ".join(group))
         if missing:
             print(f"  ✗ {d['code']} {d['name']}: 값이 비어 있는 필수 컬럼 {missing}")
             ok = False
@@ -62,6 +67,9 @@ def main() -> int:
             print(f"     · 매핑되지 않은 원본 헤더: {p.unmapped[:10]}")
         if p.defaulted:
             print(f"     · 기본값으로 채운 컬럼: {p.defaulted}  (원본에 없던 값 — 해석 시 주의)")
+        off = [f"{c}({why})" for c, why in OPTIONAL_COLUMNS.get(k, {}).items() if not has(c) or c in p.defaulted]
+        if off:
+            print(f"     · 없어서 비활성화되는 기능: {', '.join(off)}")
 
     print("\n[보조 데이터]")
     for k in schemas.CORE_DATASETS:

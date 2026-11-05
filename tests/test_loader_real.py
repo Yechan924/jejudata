@@ -61,3 +61,30 @@ def test_info_table_dedup(tmp_path, monkeypatch):
 def test_base_date_normalization(v, exp):
     out = JejuDB.standardize(pd.DataFrame({"날짜": [v]}), "weather_daily")
     assert out["base_date"].iloc[0] == exp
+
+
+def test_hub_api_aggregated_wifi_end_to_end(tmp_path, monkeypatch):
+    """허브 공개 API 집계본(장소×일 user_count, user_id·국적 없음)으로도 혼잡 도구가 동작하고 caveat 를 단다."""
+    import jeju_agent.data.loader as L
+    from jeju_agent.tools import call_tool
+    raw = tmp_path / "raw"; (raw / "wifi_ap_usage").mkdir(parents=True)
+    rows = ["base_date,ap_place,user_count,upload,download"]
+    import itertools
+    for d, (pl, base) in itertools.product(range(1, 29), [("성산일출봉", 50), ("함덕해수욕장", 30)]):
+        wk = 2 if (d % 7) in (0, 6) else 1
+        rows.append(f"202509{d:02d},{pl},{base * wk},1,1")
+    (raw / "wifi_ap_usage" / "와이파이 AP별 이용 현황_허브API_202509.csv").write_text("\n".join(rows), encoding="utf-8")
+    (raw / "와이파이 AP 현황_허브API.csv").write_text(
+        "base_date,ap_group_name,category,latitude,longitude\n20250901,성산일출봉,관광지,33.458,126.942\n20250901,함덕해수욕장,해변,33.543,126.669\n", encoding="utf-8")
+    monkeypatch.setattr(L, "RAW_DIR", raw)
+    monkeypatch.setattr(L, "SYNTHETIC_DIR", tmp_path / "none")
+    db = L.JejuDB(); db.load_all(["wifi_ap_usage", "wifi_ap"])
+    assert db.provenance["wifi_ap_usage"].source == "raw"
+    assert db.table("wifi_ap_usage")["ap_latitude"].notna().all()  # 4-01 에서 좌표 보완
+    r = call_tool(db, "congestion_rank", {"weekend_only": True})
+    assert r.table.iloc[0]["ap_place"] == "성산일출봉" and abs(r.table.iloc[0]["avg_congestion_index"] - 2.0) < 0.05
+    assert any("집계본" in c for c in r.caveats)
+    pr = call_tool(db, "place_profile", {"place": "함덕"})
+    assert pr.facts and not any("국적" in f for f in pr.facts)
+    with pytest.raises(ValueError):
+        call_tool(db, "congestion_rank", {"foreign_only": True})
