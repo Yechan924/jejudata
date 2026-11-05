@@ -80,8 +80,11 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
     # 기본: 혼잡 순위 → 1위 장소 접근성
     many = any(k in q for k in ("많이", "많은", "인기"))
     sort_by = "users" if many else ("foreign_share" if foreign and "비중" in q else "congestion_index")
-    return [("congestion_rank", {"weekend_only": weekend, "foreign_only": foreign and "비중" not in q, "sort_by": sort_by, "top_n": 10, **period}),
-            ("place_access", {"place": "__TOP1__", **period})]
+    cat = "관광지" if any(k in q for k in ("관광지", "관광객", "명소", "놀러")) else ("해변" if any(k in q for k in ("해변", "해수욕장", "바다")) else ("전통시장" if "시장" in q else None))
+    args = {"weekend_only": weekend, "foreign_only": foreign and "비중" not in q, "sort_by": sort_by, "top_n": 10, **period}
+    if cat:
+        args["category"] = cat
+    return [("congestion_rank", args), ("place_access", {"place": "__TOP1__", **period})]
 
 def fuzzy_match_any(q: str, names: list[str]) -> str | None:
     """질문 안에 이름(또는 3글자 이상 접두어)이 포함된 후보를 찾는다. 긴 이름 우선."""

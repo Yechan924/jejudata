@@ -46,10 +46,29 @@ def _with_index(daily: pd.DataFrame) -> pd.DataFrame:
     return daily
 
 
+TOURIST_CATS = {"관광지", "해변", "해수욕장", "전통시장", "시장", "올레코스", "숲길", "한라산", "공원", "테마거리", "문화시설", "항만", "공항/터미널/대합실", "공항", "터미널", "교통"}
+_NAME_CAT = [("버스정류소", "버스정류소"), ("정류장", "버스정류소"), ("정류소", "버스정류소"), ("전기차충전소", "전기차충전소"),
+             ("해변", "해변"), ("해수욕장", "해변"), ("시장", "전통시장"), ("올레", "올레코스"), ("숲길", "숲길"), ("오름", "관광지"), ("폭포", "관광지"),
+             ("일출봉", "관광지"), ("박물관", "문화시설"), ("미술관", "문화시설"), ("도서관", "공공기관"), ("주민센터", "공공기관"), ("사무소", "공공기관"),
+             ("초등학교", "교육기관"), ("중학교", "교육기관"), ("고등학교", "교육기관"), ("대학", "교육기관"), ("공항", "공항/터미널/대합실"), ("터미널", "공항/터미널/대합실"),
+             ("항", "항만"), ("공원", "공원"), ("축구장", "체육시설"), ("체육관", "체육시설"), ("야영장", "관광지"), ("거리", "테마거리"), ("관광단지", "관광지"), ("테마", "관광지")]
+
+
+def infer_category(name: str) -> str:
+    n = str(name)
+    for kw, cat in _NAME_CAT:
+        if kw in n:
+            return cat
+    return "기타"
+
+
 def _coords(db) -> pd.DataFrame:
     u = db.table("wifi_ap_usage")
     c = (u.groupby("ap_place", as_index=False).agg(lat=("ap_latitude", "first"), lon=("ap_longitude", "first"),
                                                     category=("ap_category", "first")))
+    miss = c["category"].isna() | (c["category"].astype(str) == "미분류")
+    if miss.any():
+        c.loc[miss, "category"] = c.loc[miss, "ap_place"].map(infer_category)
     return c
 
 
@@ -63,22 +82,44 @@ def _coords(db) -> pd.DataFrame:
         "foreign_only": {"type": "boolean", "description": "외국인(대한민국 외 국적) 이용자만 볼지"},
         "sort_by": {"type": "string", "enum": ["congestion_index", "users", "foreign_share", "tourist_share"],
                     "description": "정렬 기준 (기본 congestion_index)"},
+        "category": {"type": "string", "description": "카테고리 필터(부분 일치): 관광지, 해변, 전통시장, 버스정류소, 공원, 공항/터미널 등. '관광지'는 버스정류소·공공기관·학교 등을 제외한 방문지 전체"},
+        "exclude_bus_stops": {"type": "boolean", "description": "버스정류소·전기차충전소 AP를 제외할지 (기본 True — 관광지 질문에는 정류소가 섞이지 않게)"},
+        "min_days": {"type": "integer", "description": "순위에 넣을 최소 관측 일수 (기본: 기간의 2/3)"},
+        "min_users": {"type": "integer", "description": "순위에 넣을 최소 일평균 이용자 (기본 20) — 표본이 작은 장소의 과장된 혼잡지수를 걸러냄"},
         "top_n": {"type": "integer", "description": "상위 몇 개 (기본 10)"},
     }},
 )
 def congestion_rank(db, date_from=None, date_to=None, weekend_only=False, foreign_only=False,
-                    sort_by="congestion_index", top_n=10) -> ToolResult:
+                    sort_by="congestion_index", top_n=10, category=None, exclude_bus_stops=True, min_days=None, min_users=20) -> ToolResult:
     if (foreign_only or sort_by in ("foreign_share", "tourist_share")) and wifi_is_aggregated(db.table("wifi_ap_usage")):
         raise ValueError("현재 적재된 와이파이 데이터(허브 API 집계본)에는 국적·방문유형이 없어 외국인/관광객 기준 분석이 불가합니다. "
                          "sort_by=congestion_index 또는 users 로 다시 호출하세요.")
     daily = _with_index(_daily_users(db, date_from, date_to, foreign_only=foreign_only))
+    cats = _coords(db)[["ap_place", "category"]]
+    daily = daily.merge(cats, on="ap_place", how="left")
+    excluded = []
+    if exclude_bus_stops and not (category and ("정류" in category or "충전" in category)):
+        daily = daily[~daily["category"].isin(["버스정류소", "전기차충전소"])]
+        excluded.append("버스정류소·전기차충전소 AP 제외")
+    if category:
+        key_cat = category.replace(" ", "")
+        if key_cat in ("관광지", "방문지", "관광"):
+            daily = daily[daily["category"].isin(TOURIST_CATS)]
+        else:
+            daily = daily[daily["category"].astype(str).str.contains(key_cat, regex=False) | daily["ap_place"].astype(str).str.replace(" ", "").str.contains(key_cat, regex=False)]
+        excluded.append(f"카테고리 '{category}'만")
     sub = daily[daily["is_weekend"] == 1] if weekend_only else daily
+    total_days = max(int(sub["date"].nunique()), 1)
+    md = min_days if min_days is not None else max(2, int(total_days * 2 / 3))
     agg = (sub.groupby("ap_place", as_index=False)
              .agg(days=("date", "nunique"), avg_daily_users=("users", "mean"), total_users=("users", "sum"),
                   tourists=("tourists", "sum"), foreigners=("foreigners", "sum"),
                   avg_congestion_index=("congestion_index", "mean"), peak_congestion_index=("congestion_index", "max")))
     agg["tourist_share"] = (agg["tourists"] / agg["total_users"]).round(3)
     agg["foreign_share"] = (agg["foreigners"] / agg["total_users"]).round(3)
+    n_before = len(agg)
+    agg = agg[(agg["days"] >= md) & (agg["avg_daily_users"] >= (min_users or 0))]
+    dropped = n_before - len(agg)
     key = {"congestion_index": "avg_congestion_index", "users": "avg_daily_users",
            "foreign_share": "foreign_share", "tourist_share": "tourist_share"}[sort_by]
     agg = agg.sort_values(key, ascending=False).head(top_n).reset_index(drop=True)
@@ -94,12 +135,15 @@ def congestion_rank(db, date_from=None, date_to=None, weekend_only=False, foreig
         if len(out) > 1 and not wifi_is_aggregated(db.table("wifi_ap_usage")):
             facts.append(f"상위 {len(out)}곳 중 관광 비중 최고는 {out.loc[out.tourist_share.idxmax(), 'ap_place']}({out.tourist_share.max():.0%}), 외국인 비중 최고는 {out.loc[out.foreign_share.idxmax(), 'ap_place']}({out.foreign_share.max():.0%})")
     mp = out.rename(columns={"avg_congestion_index": "value", "ap_place": "label"})[["label", "lat", "lon", "value"]]
-    cav = [CAVEAT_WIFI, "혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값"] + ([CAVEAT_AGG] if wifi_is_aggregated(db.table("wifi_ap_usage")) else [])
+    cav = [CAVEAT_WIFI, "혼잡지수 = 일일 고유 이용자수 ÷ 평일 중앙값",
+           f"표본 기준: 관측 {md}일 이상·일평균 {min_users}명 이상인 장소만 순위에 포함({dropped}곳 제외)" + (" · " + " · ".join(excluded) if excluded else "")] \
+          + ([CAVEAT_AGG] if wifi_is_aggregated(db.table("wifi_ap_usage")) else [])
     return ToolResult("congestion_rank", f"장소별 혼잡도 순위 ({'주말' if weekend_only else '전체'}{', 외국인' if foreign_only else ''})",
                       out, facts, cav,
                       chart={"type": "bar", "x": "ap_place", "y": key, "title": "장소별 혼잡도"}, map_points=mp,
                       method="wifi_ap_usage를 ap_place×date로 고유 user_id 집계 → 평일 중앙값 대비 비율 평균",
-                      params=dict(date_from=date_from, date_to=date_to, weekend_only=weekend_only, foreign_only=foreign_only, sort_by=sort_by, top_n=top_n),
+                      params=dict(date_from=date_from, date_to=date_to, weekend_only=weekend_only, foreign_only=foreign_only, sort_by=sort_by, top_n=top_n,
+                                  category=category, exclude_bus_stops=exclude_bus_stops, min_days=md, min_users=min_users),
                       datasets=["wifi_ap_usage"])
 
 
