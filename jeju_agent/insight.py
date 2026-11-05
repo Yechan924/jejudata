@@ -75,6 +75,20 @@ def auto_limitations(db, results: list[ToolResult], verification: dict | None = 
                 out.append(f"요청 기간 중 적재 범위({dmin}~{dmax}) 밖은 집계에 포함되지 않았습니다.")
         else:
             out.append(f"기간을 지정하지 않아 적재된 전체 기간({dmin}~{dmax})으로 계산했습니다.")
+    # 2-1) 날짜 공백 (허브 API 에 비어 있는 날이 있음)
+    for k in used:
+        if k in INFO_TABLES or k not in db.frames or "date" not in db.frames[k].columns:
+            continue
+        d = db.frames[k]["date"].dropna()
+        if d.empty:
+            continue
+        import pandas as _pd
+        full = _pd.date_range(d.min(), d.max(), freq="D").strftime("%Y-%m-%d")
+        gaps = sorted(set(full) - set(d.unique()))
+        if 0 < len(gaps) <= 10:
+            out.append(f"{schemas.dataset(k)['code']}에 데이터가 없는 날짜: {', '.join(x[5:] for x in gaps)} (제공처 공백, 집계에서 제외)")
+        elif len(gaps) > 10:
+            out.append(f"{schemas.dataset(k)['code']}에 데이터가 없는 날짜가 {len(gaps)}일 있습니다(제공처 공백, 집계에서 제외)")
     # 3) 게이트
     masked = [g for r in results for g in r.gate_log if "마스킹" in g]
     if masked:
