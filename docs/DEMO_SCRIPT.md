@@ -24,17 +24,17 @@
 
 1. https://share.streamlit.io 에 GitHub 계정으로 로그인 → **New app**
 2. Repository `Yechan924/jejudata` · Branch `main` · Main file path `app.py` · App URL은 `jeju-congestion-agent` 같은 짧은 이름
-3. **Advanced settings** → Python version `3.11` → Secrets에 (선택) 아래 입력. 비워 두면 오프라인 모드로 동작하며, 합성 데이터는 첫 실행 때 자동 생성됩니다(약 30초).
+3. **Advanced settings** → Python version `3.11` → Secrets에 (선택) 아래 입력. 비워 두면 오프라인 모드로 동작합니다. 데이터는 저장소에 동봉된 `data/demo/*.csv.gz`(허브 공개 API 2025-09 집계본, 2.5MB)를 자동으로 읽으므로 **데모도 실데이터로** 동작합니다(날씨만 합성).
    ```toml
    ANTHROPIC_API_KEY = "sk-ant-..."
    LLM_MODEL = "claude-haiku-5-5"   # 공개 데모는 비용이 적은 모델 권장
    LLM_MAX_TOOL_CALLS = "4"
    ```
 4. Deploy → 2~3분 후 URL 발급. 제출 화면 "데모 URL" 칸에 붙여 넣기.
-5. 주의: 공개 데모에는 **실데이터를 올리지 마세요**(반출 정책). `data/raw/`는 `.gitignore`에 있어 저장소에 포함되지 않습니다. 데모는 합성 데이터임을 사이드바 경고가 자동으로 알립니다.
+5. 주의: 센터 분석실에서 반출한 **원본 데이터는 저장소·데모에 올리지 마세요**(반출 정책). `data/raw/`는 `.gitignore`에 있습니다. `data/demo/`의 축약본은 누구나 받을 수 있는 허브 공개 API의 집계 결과(개인정보 없음)라 공개 저장소에 두어도 됩니다.
 6. 무료 플랜은 7일간 접속이 없으면 잠듭니다. 평가 기간(11/23~27) 시작 전날 한 번 열어 깨워 두세요.
 
-실데이터로 데모를 보이고 싶다면: 영상에서만 보이고, URL 데모는 합성 데이터로 두는 것이 안전합니다.
+
 
 ## 3. 스크린샷 체크리스트 (README·기획서용)
 

@@ -33,6 +33,8 @@
 
 자세한 활용 내역·전처리·이용조건은 [docs/DATA_SPEC.md](docs/DATA_SPEC.md), **실데이터를 받아 넣는 절차는 [docs/DATA_ACQUISITION.md](docs/DATA_ACQUISITION.md)** 참고.
 
+> **데이터**: 저장소에 허브 공개 API 2025-09 축약본(`data/demo/*.csv.gz`, 2.5MB)이 동봉되어 있어 **설치 직후부터 실데이터로 동작**합니다. `data/raw/`에 파일을 넣으면 그쪽이 우선됩니다.
+>
 > **실데이터 경로 2가지** — 원본 4-05·3-04 CSV는 센터 분석실에서만 받을 수 있습니다("데이터검색" 메뉴는 분석실 전용). 집에서는 같은 제공처의 **허브 공개 API 6종**을 `python scripts/fetch_hub.py` 로 수집해 `data/raw/`에 넣으면 됩니다(2025년 최신, 10분). 국적·방문유형·시간대처럼 API에 없는 컬럼은 해당 기능만 비활성화되고, 센터 원본을 넣으면 자동 활성화됩니다. 넣은 뒤 `python scripts/check_data.py` 로 점검.
 
 ## 제출 문서

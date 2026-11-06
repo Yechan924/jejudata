@@ -6,7 +6,8 @@ import pytest
 def _isolate_raw_dir(tmp_path_factory):
     import jeju_agent.data.loader as L
     empty = tmp_path_factory.mktemp("raw_empty")
-    original = L.RAW_DIR
+    original, orig_demo = L.RAW_DIR, L.DEMO_DIR
     L.RAW_DIR = empty
+    L.DEMO_DIR = tmp_path_factory.mktemp("demo_empty")
     yield
-    L.RAW_DIR = original
+    L.RAW_DIR, L.DEMO_DIR = original, orig_demo

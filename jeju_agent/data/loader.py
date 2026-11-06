@@ -21,7 +21,7 @@ import pandas as pd
 import yaml
 
 from .. import schemas
-from ..config import CONFIG_DIR, RAW_DIR, SYNTHETIC_DIR
+from ..config import CONFIG_DIR, DEMO_DIR, RAW_DIR, SYNTHETIC_DIR
 
 try:  # DuckDB는 선택 의존성
     import duckdb  # type: ignore
@@ -31,7 +31,7 @@ except Exception:  # noqa: BLE001
 log = logging.getLogger(__name__)
 
 ENCODINGS = ("utf-8-sig", "cp949", "euc-kr", "utf-8")
-DATA_EXTS = (".csv", ".xlsx", ".xls", ".txt", ".tsv")
+DATA_EXTS = (".csv", ".csv.gz", ".xlsx", ".xls", ".txt", ".tsv")
 NUMERIC_TYPES = {"INT", "BIGINT", "DOUBLE", "FLOAT", "INTEGER"}
 # 명세서상 STRING이지만 실제로는 숫자인 컬럼
 FORCE_NUMERIC = {"latitude", "longitude", "ap_latitude", "ap_longitude", "user_count",
@@ -132,7 +132,7 @@ class JejuDB:
                     if n in cls._targets(k):
                         out[k] += sorted(p for ext in DATA_EXTS for p in sub.glob(f"*{ext}"))
         for f in sorted(p for ext in DATA_EXTS for p in base.glob(f"*{ext}")):
-            stem = _norm(f.stem)
+            stem = _norm(f.name.split(".")[0])
             best, best_len = None, 0
             for k in out:
                 for t in cls._targets(k):
@@ -158,6 +158,8 @@ class JejuDB:
         """CSV/TSV/TXT/XLSX 를 문자열 프레임으로 읽는다 (인코딩 자동 판별)."""
         if path.suffix.lower() in (".xlsx", ".xls"):
             return pd.read_excel(path, dtype=str)
+        if path.name.lower().endswith(".csv.gz"):
+            return pd.read_csv(path, dtype=str, encoding="utf-8-sig", compression="gzip", low_memory=False)
         last_err: Exception | None = None
         for enc in ENCODINGS:
             try:
@@ -250,11 +252,16 @@ class JejuDB:
     def load_dataset(self, key: str) -> Provenance:
         files = self.find_files(key, RAW_DIR)
         source = "raw"
+        if not files and DEMO_DIR.exists():
+            files = self.find_files(key, DEMO_DIR)
+            source = "raw" if files else source        # 동봉 축약본도 실데이터(허브 공개 API)
+            if files:
+                self._demo_used = True
         if not files:
             files = self.find_files(key, SYNTHETIC_DIR)
             source = "synthetic" if files else "missing"
         if not files:
-            p = Provenance(key, "missing", note="data/raw, data/synthetic 어디에도 파일 없음")
+            p = Provenance(key, "missing", note="data/raw, data/demo, data/synthetic 어디에도 파일 없음")
             self.provenance[key] = p
             return p
         frames, infos, errors = [], [], []
@@ -296,6 +303,8 @@ class JejuDB:
             empty = [c for c in req if c in df.columns and df[c].isna().all()]
             if empty:
                 notes.append("값이 전부 비어 있는 필수 컬럼: " + ", ".join(empty))
+        if source == "raw" and files and DEMO_DIR.exists() and files[0].parent == DEMO_DIR:
+            notes.insert(0, "저장소 동봉 축약본(data/demo)")
         p.note = " / ".join(notes)
         self.provenance[key] = p
         return p

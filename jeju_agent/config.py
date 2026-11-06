@@ -13,6 +13,7 @@ CONFIG_DIR = ROOT / "config"
 DATA_DIR = Path(os.getenv("JEJU_DATA_DIR", ROOT / "data"))
 RAW_DIR = DATA_DIR / "raw"            # 제주데이터허브에서 받은 원본 CSV를 넣는 곳
 SYNTHETIC_DIR = DATA_DIR / "synthetic"  # 명세서 기반 개발용 합성 데이터
+DEMO_DIR = DATA_DIR / "demo"            # 저장소에 동봉한 허브 공개 API 축약본(.csv.gz) — data/raw 가 비어 있을 때 사용(데모 배포용)
 OUTPUT_DIR = Path(os.getenv("JEJU_OUTPUT_DIR", ROOT / "outputs"))
 DB_PATH = Path(os.getenv("JEJU_DB_PATH", DATA_DIR / "jeju.duckdb"))
 
