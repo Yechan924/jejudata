@@ -62,7 +62,7 @@ cp .env.example .env   # ANTHROPIC_API_KEY 또는 OPENAI_API_KEY 또는 로컬 O
 # 4) 실행
 streamlit run app.py                                    # 웹 UI
 python -m jeju_agent.cli "주말에 가장 붐비는 관광지는?"     # CLI
-python -m jeju_agent.cli --offline --batch examples/questions.txt   # LLM 없이 시연 질문 12개 일괄 실행
+python -m jeju_agent.cli --offline --batch examples/questions.txt   # LLM 없이 시연 질문 14개 일괄 실행
 python -m jeju_agent.cli --status                        # 적재 데이터·LLM 상태 확인
 python -m jeju_agent.cli --brief 2025-05                 # 월간 브리핑 HTML 저장
 python -m jeju_agent.cli --offline --png "효율이 낮은 버스 노선은?"   # 차트를 PNG(반출용)로 저장
@@ -76,7 +76,7 @@ pytest -q                                                # 테스트 44개 (API 
 ```
 질문 ─► 플래너 ──────────────► 도구 호출 ─► 반출 게이트 ─► 해설 ─► UI/리포트
         │ LLM(도구호출)            │ pandas/SQL 집계      │ 식별자 제거      │ LLM 또는
-        └ 규칙 기반(오프라인 폴백)  └ 원본 행 접근 없음    │ <5 마스킹        └ 템플릿
+        └ 규칙 기반(오프라인 폴백)  └ 원본 행 접근 없음    │ <10 마스킹       └ 템플릿
                                                         └ 행 수 상한
 ```
 | 모듈 | 역할 |
