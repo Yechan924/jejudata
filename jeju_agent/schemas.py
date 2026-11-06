@@ -35,12 +35,15 @@ def column_names(key: str) -> list[str]:
     return [c["name"] for c in dataset(key)["columns"]]
 
 
-def describe_for_llm(keys: list[str] | None = None) -> str:
-    """LLM 시스템 프롬프트에 넣을 압축 스키마 설명."""
+def describe_for_llm(keys: list[str] | None = None, compact: bool = False) -> str:
+    """LLM 시스템 프롬프트에 넣을 압축 스키마 설명. compact=True 면 컬럼 목록을 생략(로컬 소형 모델의 컨텍스트 절약용)."""
     keys = keys or CORE_DATASETS
     lines = []
     for k in keys:
         d = dataset(k)
+        if compact:
+            lines.append(f"- {k} [{d['code']} {d['name']}]")
+            continue
         cols = ", ".join(f"{c['name']}({c['kor']})" for c in d["columns"])
         lines.append(f"- {k} [{d['code']} {d['name']}]: {cols}")
     return "\n".join(lines)

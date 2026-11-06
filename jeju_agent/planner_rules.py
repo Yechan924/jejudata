@@ -51,6 +51,22 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
             pass
         m = MONTH.search(question)
         return [("monthly_brief", {"month": f"{int(m.group(1)) if m.group(1) else int(data_max[:4])}-{int(m.group(2)):02d}"} if m else {})]
+    compare = any(k in q for k in ("비교", "달라졌", "달라지", "늘었", "줄었", "늘어난", "줄어든", "변화", "전후", "차이", "전반", "후반", "증가", "감소"))
+    if compare and not any(k in q for k in ("효율", "비효율")):
+        target = "bus_route" if any(k in q for k in ("노선",)) else ("bus_station" if bus_q else "wifi")
+        if any(k in q for k in ("평일", "주말")) and any(k in q for k in ("평일", "주말", "요일")):
+            split = "weekday_weekend"
+        else:
+            split = "halves"
+        args = {"target": target, "split": split, **period}
+        ranges = re.findall(r"(\d{4}-\d{2}-\d{2})\s*[~부터]\s*(\d{4}-\d{2}-\d{2})", question)
+        if len(ranges) >= 2:
+            args.update(split="custom", a_from=ranges[0][0], a_to=ranges[0][1], b_from=ranges[1][0], b_to=ranges[1][1])
+            args.pop("date_from", None); args.pop("date_to", None)
+        ref = route or station or place
+        if ref:
+            args["place"] = ref
+        return [("compare_periods", args)]
     if route:
         return [("bus_route_efficiency", {"route": route, **period})]
     if any(k in q for k in ("예상", "예측", "다음주말", "이번주말", "다음토요일", "연휴", "붐빌까", "붐빌것")):
@@ -118,6 +134,7 @@ SUGGESTION_BY_TOOL = {
     "weather_effect": "비 오는 날 감소폭이 큰 야외 관광지는 실내 대체 코스 안내, 버스는 우천 시 수요 변화에 맞춘 배차가 가능합니다.",
     "congestion_forecast": "예측 상위 장소는 주말 전 분산 안내·주차 관리 계획을 세울 근거가 됩니다(예측은 과거 패턴 기반).",
     "monthly_brief": "월간 브리핑은 관광·교통 담당 부서의 정례 보고 초안으로 활용할 수 있습니다.",
+    "compare_periods": "크게 늘어난 곳은 원인(행사·개통·계절) 확인과 선제 분산 안내, 크게 줄어든 곳은 운영·홍보 점검 대상입니다.",
 }
 
 

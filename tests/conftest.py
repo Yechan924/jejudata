@@ -1,5 +1,9 @@
 """테스트는 data/raw 의 실데이터와 무관하게 합성 데이터만으로 돈다 (실데이터 유무·기간에 따라 결과가 달라지지 않도록)."""
+import os
+
 import pytest
+
+os.environ.setdefault("LLM_EXTRAS", "none")   # 기존 LLM 경로 테스트는 호출 횟수를 세므로 부가 단계는 개별 테스트에서만 켠다
 
 
 @pytest.fixture(autouse=True, scope="session")

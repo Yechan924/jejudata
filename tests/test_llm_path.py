@@ -106,3 +106,48 @@ def test_offline_resolves_pronoun_from_history(db):
     res = ag.run("거기 가는 버스 정류소는?", history=history)
     assert res.steps and res.steps[0].tool == "place_access" and "성산일출봉" in res.steps[0].args["place"]
     assert any("지시어" in p for p in res.plan) and res.followups
+
+
+def test_ollama_native_request_and_parse(monkeypatch):
+    """Ollama 네이티브 /api/chat 요청 형식(num_ctx·tools·tool 메시지)과 응답 파싱을 가짜 서버로 확인."""
+    import jeju_agent.llm as L
+    seen = {}
+
+    class R:
+        status_code, ok = 200, True
+        def json(self):
+            return {"message": {"role": "assistant", "content": "", "tool_calls": [{"function": {"name": "congestion_rank", "arguments": {"weekend_only": True, "top_n": 5}}}]},
+                    "prompt_eval_count": 1200, "eval_count": 40}
+
+    def fake_post(url, json=None, headers=None, timeout=None):
+        seen.update(url=url, body=json, timeout=timeout)
+        return R()
+
+    monkeypatch.setattr(L.requests, "post", fake_post)
+    llm = L.LLM("ollama", "qwen2.5:7b")
+    msgs = [{"role": "user", "content": "q"},
+            {"role": "assistant", "content": "", "tool_calls": [{"id": "c1", "name": "list_places", "args": {}}]},
+            {"role": "tool", "tool_call_id": "c1", "content": "| a |"}]
+    rep = llm.chat("sys", msgs, [{"name": "congestion_rank", "description": "d", "parameters": {"type": "object", "properties": {}}}], max_tokens=300)
+    assert seen["url"].endswith("/api/chat") and seen["body"]["stream"] is False
+    assert seen["body"]["options"]["num_ctx"] == L.OLLAMA_NUM_CTX and seen["body"]["options"]["num_predict"] == 300
+    assert seen["body"]["messages"][0] == {"role": "system", "content": "sys"}
+    assert seen["body"]["messages"][2]["tool_calls"][0]["function"] == {"name": "list_places", "arguments": {}}
+    assert seen["body"]["messages"][3] == {"role": "tool", "content": "| a |"}
+    assert seen["body"]["tools"][0]["function"]["name"] == "congestion_rank"
+    assert rep.tool_calls[0].name == "congestion_rank" and rep.tool_calls[0].args == {"weekend_only": True, "top_n": 5}
+    assert rep.usage == {"prompt_tokens": 1200, "completion_tokens": 40}
+
+
+def test_ollama_tools_unsupported_message(monkeypatch):
+    import jeju_agent.llm as L
+
+    class R:
+        status_code, ok = 400, False
+        text = '{"error":"registry.ollama.ai/library/gemma:2b does not support tools"}'
+        def json(self):
+            return {"error": {"message": "gemma:2b does not support tools"}} if False else {"error": "gemma:2b does not support tools"}
+
+    monkeypatch.setattr(L.requests, "post", lambda *a, **k: R())
+    with pytest.raises(RuntimeError, match="도구 호출을 지원하지 않습니다"):
+        L.LLM("ollama", "gemma:2b").chat("s", [{"role": "user", "content": "q"}], [{"name": "t", "description": "d", "parameters": {}}])

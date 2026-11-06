@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -38,6 +39,8 @@ EXAMPLES = [
     "251번 노선 시간대별 이용 현황 알려줘",
     "어르신이 많이 타는 정류소는?",
     "성산일출봉 가는 버스 정류소는 얼마나 붐비나?",
+    "9월 전반과 후반에 어디가 늘고 줄었어?",
+    "평일과 주말 차이가 큰 정류소는?",
     "이번 주말 어디가 붐빌까?",
     "9월 월간 브리핑 보여줘",
 ]
@@ -69,6 +72,12 @@ with st.sidebar:
     agent = get_agent(offline)
     db = agent.db
     st.markdown(f"**분석 엔진** `{db.engine}` · **LLM** `{agent.llm.provider}`" + (f" `{agent.llm.model}`" if agent.llm.available else ""))
+    if agent.llm.available:
+        _ex = os.getenv("LLM_EXTRAS", "followups")
+        c1, c2 = st.columns(2)
+        fu = c1.checkbox("후속 질문 LLM 제안", value="followups" in _ex, help="답변 뒤 LLM이 결과를 보고 다음 질문을 제안(호출 1회 추가)")
+        rv = c2.checkbox("답변 자기 점검", value="review" in _ex, help="LLM이 자기 답변을 근거표와 대조해 과장·인과 표현을 지적(호출 1회 추가)")
+        os.environ["LLM_EXTRAS"] = ",".join([k for k, on in (("followups", fu), ("review", rv)) if on]) or "none"
     if db.uses_synthetic():
         st.warning("⚠️ 개발용 합성 데이터가 포함되어 있습니다. data/raw 에 실제 CSV를 넣고 '다시 읽기'를 누르세요.", icon="⚠️")
     with st.expander("적재 데이터", expanded=False):

@@ -45,6 +45,9 @@ def _rain_days(db, code: str, date_from, date_to, threshold=1.0) -> pd.DataFrame
     }},
 )
 def weather_effect(db, target="wifi", place=None, date_from=None, date_to=None, rain_mm=1.0) -> ToolResult:
+    if not db.has("weather_daily"):
+        note = db.provenance["weather_daily"].note if "weather_daily" in db.provenance else ""
+        raise ValueError("날씨 데이터(5-02)가 적재되지 않아 강우 영향을 계산할 수 없습니다. " + (note or "scripts/fetch_weather.py 로 수집하세요.") + " 이 질문은 다른 도구로 대체하지 말고 사용자에게 그대로 안내하세요.")
     if target == "wifi":
         u = period_filter(db.table("wifi_ap_usage"), date_from, date_to)
         daily = u.groupby(["ap_place", "date", "is_weekend"], as_index=False).agg(value=wifi_users_agg(u), lat=("ap_latitude", "first"), lon=("ap_longitude", "first"))

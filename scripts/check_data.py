@@ -67,6 +67,8 @@ def main() -> int:
             print(f"     · 매핑되지 않은 원본 헤더: {p.unmapped[:10]}")
         if p.defaulted:
             print(f"     · 기본값으로 채운 컬럼: {p.defaulted}  (원본에 없던 값 — 해석 시 주의)")
+        if p.unmatched:
+            print(f"     · 이름으로 이어 붙이지 못한 장소·정류소(이용량 순): {p.unmatched[:10]}")
         off = [f"{c}({why})" for c, why in OPTIONAL_COLUMNS.get(k, {}).items() if not has(c) or c in p.defaulted]
         if off:
             print(f"     · 없어서 비활성화되는 기능: {', '.join(off)}")

@@ -62,6 +62,23 @@ def _norm(s: str) -> str:
     return re.sub(r"[\s_\-()（）,./·]", "", str(s)).lower()
 
 
+def name_key(s: str) -> str:
+    """장소·정류소명 비교용 키: 공백·괄호·구분기호·방향 꼬리표([동]/[서]…)·일련번호(#2-2, 1-2)를 제거한다.
+    '저지리 수동'=='저지리수동', '제주대학교[남]'=='제주대학교', '지하상가 1-2'=='지하상가'."""
+    t = str(s)
+    t = re.sub(r"\[(동|서|남|북)\]", "", t)
+    t = re.sub(r"#?\s*\d+(-\d+)?\s*$", "", t)
+    return re.sub(r"[\s\(\)（）\[\]·,\./\-_#]", "", t).lower()
+
+
+def _unique_contains(key: str, index: dict[str, str], min_len: int = 4) -> str | None:
+    """key 가 사전 키에 포함되거나 사전 키를 포함하는 항목이 '정확히 하나'면 그것을 돌려준다 (짧은 쪽 4자 이상)."""
+    if len(key) < min_len:
+        return None
+    hits = [k for k in index if len(k) >= min_len and (key in k or k in key)]
+    return index[hits[0]] if len(hits) == 1 else None
+
+
 @dataclass
 class Provenance:
     key: str
@@ -74,6 +91,7 @@ class Provenance:
     alias_mapped: dict = field(default_factory=dict)   # 표준컬럼 → 원본 헤더 (별칭 규칙으로 맞춘 것)
     defaulted: dict = field(default_factory=dict)      # 표준컬럼 → 채운 기본값 (원본에 없던 것)
     unmapped: list[str] = field(default_factory=list)  # 어떤 표준컬럼에도 대응되지 않은 원본 헤더
+    unmatched: list[str] = field(default_factory=list) # 다른 테이블과 이름으로 이어 붙이지 못한 장소·정류소명 (이용량 순 상위)
 
 
 @lru_cache(maxsize=1)
@@ -140,7 +158,7 @@ class JejuDB:
                         rest = stem[len(t):]
                         # 뒤에 붙는 건 기간/버전/출처 꼬리표만 허용. 한글이 바로 이어지면 다른 데이터명의 접두어(예: '와이파이 AP 현황' vs
                         # '와이파이 AP별 이용 현황')일 수 있어 제외하되, 숫자·영문·'허브'로 시작하는 꼬리표는 허용한다.
-                        if rest == "" or re.fullmatch(r"[0-9v~]*", rest) or re.match(r"^(허브|api|hub|[0-9a-z])", rest):
+                        if rest == "" or re.fullmatch(r"[0-9v~]*", rest) or re.match(r"^(허브|api|hub|기상청|openmeteo|[0-9a-z])", rest):
                             best, best_len = k, len(t)
             if best:
                 out[best].append(f)
@@ -320,10 +338,47 @@ class JejuDB:
     def load_all(self, keys: list[str] | None = None) -> dict[str, Provenance]:
         for k in keys or schemas.CORE_DATASETS:
             self.load_dataset(k)
+        self._reconcile_weather()
         self._enrich_bus_station_ids()
         self._enrich_wifi()
         self._enrich_bus_route()
         return self.provenance
+
+    WEATHER_HINT = "날씨 실데이터는 python scripts/fetch_weather.py 로 수집(기상청 CSV 변환 / Open-Meteo / 기상청 API허브)"
+
+    def _reconcile_weather(self) -> None:
+        """합성 데이터 정합성 (실데이터와 섞이지 않게).
+        1) 핵심 데이터(4-05·3-04)가 실데이터인데 어떤 일별 데이터셋(날씨·4-06 등)이 합성이고 기간이 겹치지 않으면 → 내려서 '없음'으로 둔다.
+           (기간이 다른 합성 강수량을 실데이터에 붙이면 강우 효과가 통째로 가짜가 된다.)
+        2) 일일 날씨가 실데이터인데 관측소 정보가 없거나 합성이면 → config/weather_stations_jeju.csv(기상청 ASOS 제주 4개 지점)로 대체."""
+        core = [self.provenance[k] for k in ("wifi_ap_usage", "bus_station_usage") if self.provenance.get(k) and self.provenance[k].source == "raw" and self.provenance[k].date_min]
+        if core:
+            for k, pv in list(self.provenance.items()):
+                if pv.source != "synthetic" or not pv.date_min or k in INFO_TABLES:
+                    continue
+                if any(p.date_min <= pv.date_max and pv.date_min <= p.date_max for p in core):
+                    continue
+                drop = [k] + (["weather_station"] if k == "weather_daily" else [])
+                for d in drop:
+                    self.frames.pop(d, None)
+                    try:
+                        self.con.execute(f"DROP TABLE IF EXISTS {d}")
+                    except Exception:  # noqa: BLE001
+                        pass
+                note = f"합성({pv.date_min}~{pv.date_max})은 실데이터 기간과 겹치지 않아 적재하지 않음"
+                if k == "weather_daily":
+                    note += f" — 강우 영향 기능 비활성. {self.WEATHER_HINT}"
+                    self.provenance["weather_station"] = Provenance("weather_station", "missing", note="일일 날씨와 함께 비활성")
+                self.provenance[k] = Provenance(k, "missing", note=note)
+        pw = self.provenance.get("weather_daily")
+        ps = self.provenance.get("weather_station")
+        if pw and pw.source == "raw" and (ps is None or ps.source != "raw"):
+            p = CONFIG_DIR / "weather_stations_jeju.csv"
+            if p.exists():
+                df = self._add_derived(self.standardize(self.read_csv(p), "weather_station"))
+                self.frames["weather_station"] = df
+                self._register("weather_station", df)
+                self.provenance["weather_station"] = Provenance("weather_station", "raw", [p.name], len(df), note="내장 기상청 ASOS 제주 4개 지점(config/weather_stations_jeju.csv)")
 
     def _enrich_bus_station_ids(self) -> None:
         """허브 API 3-04 의 정류소 ID(7자리 내부ID)는 3-03 정류소 정보(9자리)와 체계가 다르다.
@@ -334,16 +389,42 @@ class JejuDB:
         ids_u, ids_s = set(u["bus_station_id"].dropna().astype(str)), set(st["bus_station_id"].dropna().astype(str))
         if not ids_u or len(ids_u & ids_s) / len(ids_u) > 0.5:
             return
+        # 0차: 허브 API 일부 행은 정류소명이 비어 있다 → 같은 원본 ID가 다른 날짜에 가진 이름으로 채운다
+        filled_names = 0
+        if u["bus_station_name"].isna().any():
+            id2name = u.dropna(subset=["bus_station_name"]).drop_duplicates("bus_station_id").set_index("bus_station_id")["bus_station_name"]
+            fill = u["bus_station_name"].isna()
+            u.loc[fill, "bus_station_name"] = u.loc[fill, "bus_station_id"].map(id2name)
+            filled_names = int(fill.sum() - u["bus_station_name"].isna().sum())
         ref = st.dropna(subset=["bus_station_id", "bus_station_name"]).drop_duplicates("bus_station_name").set_index("bus_station_name")["bus_station_id"].astype(str)
-        mapped = u["bus_station_name"].map(ref)
-        u["bus_station_id_src"] = u["bus_station_id"]
-        u["bus_station_id"] = mapped.where(mapped.notna(), "N_" + u["bus_station_name"].astype(str))
+        mapped = u["bus_station_name"].map(ref).astype(object)                   # 1차: 이름 정확 일치
+        exact = mapped.notna().mean()
+        ref_key = {name_key(n): i for n, i in ref.items()}
+        ref_key.pop("", None)
+        mapped2 = u["bus_station_name"].astype(str).map(lambda n: ref_key.get(name_key(n))).astype(object)   # 2차: 공백·괄호·꼬리표 무시
+        mapped = mapped.where(mapped.notna(), mapped2)
         rate = mapped.notna().mean()
+        u["bus_station_id_src"] = u["bus_station_id"]
+        u["bus_station_id"] = mapped.where(mapped.notna(), "N_" + u["bus_station_name"].astype(str)).astype(str)
         self.frames["bus_station_usage"] = u
         self._register("bus_station_usage", u)
         p = self.provenance.get("bus_station_usage")
         if p:
-            p.note = (p.note + " / " if p.note else "") + f"정류소ID 체계가 3-03과 달라 정류소명으로 3-03 ID 매핑({rate:.0%}), 미일치는 이름을 ID로 사용"
+            p.note = (p.note + " / " if p.note else "") + f"정류소ID 체계가 3-03과 달라 정류소명으로 3-03 ID 매핑({rate:.0%}: 정확 {exact:.0%}+정규화 {rate - exact:.0%}), 미일치는 이름을 ID로 사용"
+            if filled_names:
+                p.note += f" / 정류소명이 빈 {filled_names:,}행은 같은 원본ID의 이름으로 채움"
+            noname = int(u["bus_station_name"].isna().sum())
+            if noname:
+                p.note += f" / 정류소명·좌표 없는 {noname:,}행({noname / len(u):.1%})은 정류소 순위에서 제외"
+            p.unmatched = self._top_unmatched(u[mapped.isna()], "bus_station_name", "user_count")
+
+    @staticmethod
+    def _top_unmatched(df: pd.DataFrame, name_col: str, weight_col: str, n: int = 15) -> list[str]:
+        """매핑에 실패한 이름을 이용량 순으로 (자동 점검·check_data 표시용)."""
+        if df.empty or name_col not in df.columns:
+            return []
+        w = pd.to_numeric(df[weight_col], errors="coerce").fillna(0) if weight_col in df.columns else pd.Series(1, index=df.index)
+        return df.assign(_w=w).groupby(name_col)["_w"].sum().sort_values(ascending=False).head(n).index.astype(str).tolist()
 
     def _enrich_bus_route(self) -> None:
         """허브 API 노선 이용(3-02 대체)에는 bus_route_id 가 없다 → 노선 정보(3-01)의 노선번호로 ID를 붙이고, 없으면 노선명을 ID로 쓴다."""
@@ -384,15 +465,26 @@ class JejuDB:
                  .agg(_lat=("latitude", "median"), _lon=("longitude", "median"), _cat=("category", "first")))
         m = u[["ap_place"]].merge(ref, left_on="ap_place", right_on="ap_group_name", how="left")
         m.index = u.index
+        # 1-b: 이름 정규화(공백·괄호·방향·일련번호 무시) → 1-c: 유일한 포함 관계
+        ref_key = {name_key(r.ap_group_name): i for i, r in ref.iterrows() if name_key(r.ap_group_name)}
+        miss = m["_lat"].isna()
+        if miss.any():
+            keys = u.loc[miss, "ap_place"].astype(str).map(name_key)
+            idx = keys.map(lambda k: ref_key.get(k))
+            idx2 = keys[idx.isna()].map(lambda k: _unique_contains(k, ref_key))
+            idx = idx.fillna(idx2)
+            ok = idx.notna()
+            for col, src in (("_lat", "_lat"), ("_lon", "_lon"), ("_cat", "_cat")):
+                m.loc[ok[ok].index, col] = ref.loc[idx[ok].astype(int), src].values
         u["ap_latitude"] = u["ap_latitude"].fillna(m["_lat"])
         u["ap_longitude"] = u["ap_longitude"].fillna(m["_lon"])
         if "ap_category" in u.columns:
             u["ap_category"] = u["ap_category"].where(u["ap_category"].notna() & (u["ap_category"] != "미분류"), m["_cat"])
         hit_ap = u["ap_latitude"].notna().mean()
-        # 2차: '버스정류소_…_[405000301]' 처럼 장소명에 정류소 ID가 있으면 3-03 정류소 정보 좌표로 보완
+        # 2차: '버스정류소_…_[405000301]' 처럼 장소명에 정류소 ID가 있으면 3-03 정류소 정보 좌표로 보완, 3차: 정류소명과 정규화 일치
         hit_bus = 0.0
         if self.has("bus_station") and u["ap_latitude"].isna().any():
-            sid = u["ap_place"].astype(str).str.extract(r"\[(\d{6,})\]")[0]
+            sid = u["ap_place"].astype(str).str.extract(r"[\[(](\d{6,})[\])]")[0]
             st = self.frames["bus_station"].dropna(subset=["latitude", "longitude"]).drop_duplicates("bus_station_id").set_index("bus_station_id")
             st.index = st.index.astype(str)
             lat2, lon2 = sid.map(st["latitude"]), sid.map(st["longitude"])
@@ -400,12 +492,22 @@ class JejuDB:
             u.loc[fill, "ap_latitude"], u.loc[fill, "ap_longitude"] = lat2[fill], lon2[fill]
             if "ap_category" in u.columns:
                 u.loc[fill & u["ap_category"].isin([None, "미분류"]), "ap_category"] = "버스정류소"
+            st_name = self.frames["bus_station"].dropna(subset=["latitude", "longitude", "bus_station_name"]).drop_duplicates("bus_station_name")
+            st_key = {name_key(n): i for i, n in zip(st_name.index, st_name["bus_station_name"]) if name_key(n)}
+            miss = u["ap_latitude"].isna()
+            if miss.any():
+                keys = u.loc[miss, "ap_place"].astype(str).str.replace(r"^(버스정류소|전기차충전소)_", "", regex=True).map(name_key)
+                idx = keys.map(lambda k: st_key.get(k))
+                ok = idx.notna()
+                u.loc[ok[ok].index, "ap_latitude"] = st_name.loc[idx[ok], "latitude"].values
+                u.loc[ok[ok].index, "ap_longitude"] = st_name.loc[idx[ok], "longitude"].values
             hit_bus = u["ap_latitude"].notna().mean() - hit_ap
         self.frames["wifi_ap_usage"] = u
         self._register("wifi_ap_usage", u)
         p = self.provenance.get("wifi_ap_usage")
         if p:
-            p.note = (p.note + " / " if p.note else "") + f"좌표·카테고리를 4-01 장소명({hit_ap:.0%})" + (f"·3-03 정류소ID({hit_bus:.0%})" if hit_bus else "") + "로 보완"
+            p.note = (p.note + " / " if p.note else "") + f"좌표·카테고리를 4-01 장소명({hit_ap:.0%})" + (f"·3-03 정류소({hit_bus:.0%})" if hit_bus else "") + "로 보완"
+            p.unmatched = self._top_unmatched(u[u["ap_latitude"].isna()], "ap_place", "user_count")
 
     # ---------- 조회 ----------
     def table(self, key: str) -> pd.DataFrame:

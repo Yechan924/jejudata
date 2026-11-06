@@ -7,7 +7,7 @@
 #
 # 별칭은 소문자·공백 제거 후 비교한다. 위험한(지나치게 짧은) 별칭은 넣지 않는다.
 aliases:
-  base_date: [기준일자, 수집일자, 일자, 날짜, 기준일, 년월일, basedate, ymd, date]
+  base_date: [기준일자, 수집일자, 일자, 날짜, 기준일, 년월일, 일시, basedate, ymd, date]
   base_hour: [시간대, 시간구분, 시각, basehour, hour]
   day_of_week: [요일, dayofweek, dow]
   user_count: [이용자수, 이용자수합계, 승차인원수, 승차인원, 승객수, 이용건수, 이용인원, 인원수, 사용자수, usercount, passengers, cnt]
@@ -34,10 +34,18 @@ aliases:
   gender: [성별, gender]
   age: [연령대, 연령, 나이, age]
   user_id: [사용자아이디, 사용자id, 이용자id, userid]
-  observatory_code: [관측소코드, 지점코드, 관측지점, stationcode]
+  observatory_code: [관측소코드, 지점코드, 관측지점, 지점번호, stationcode, 지점]   # '지점'은 기상자료개방포털 ASOS CSV 헤더
   observatory_name: [관측소명, 지점명]
-  daily_rainfall: [일강수량, 강수량, 강우량, rainfall]
-  average_temperature: [평균기온, 평균온도, avgtemp]
+  daily_rainfall: [일강수량, 강수량, 강우량, rainfall, rnday, precipitation]
+  average_temperature: [평균기온, 평균온도, avgtemp, taavg]
+  lowest_temperature_time: [최저기온시각, tamintm]
+  lowest_temperature: [최저기온, tamin]
+  highest_temperature_time: [최고기온시각, tamaxtm]
+  highest_temperature: [최고기온, tamax]
+  maximum_wind_speed_direction: [최대순간풍속풍향, wdins]
+  maximum_wind_speed_time: [최대순간풍속시각, wsinstm]
+  maximum_wind_speed: [최대순간풍속, wsins]
+  average_wind_speed: [평균풍속, wsavg]
   ap_group_name: [장소명칭, 장소명, 그룹명, apgroupname]
   category: [카테고리, 분류]
 

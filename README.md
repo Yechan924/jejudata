@@ -36,11 +36,13 @@
 > **데이터**: 저장소에 허브 공개 API 2025-09 축약본(`data/demo/*.csv.gz`, 2.5MB)이 동봉되어 있어 **설치 직후부터 실데이터로 동작**합니다. `data/raw/`에 파일을 넣으면 그쪽이 우선됩니다.
 >
 > **실데이터 경로 2가지** — 원본 4-05·3-04 CSV는 센터 분석실에서만 받을 수 있습니다("데이터검색" 메뉴는 분석실 전용). 집에서는 같은 제공처의 **허브 공개 API 6종**을 `python scripts/fetch_hub.py` 로 수집해 `data/raw/`에 넣으면 됩니다(2025년 최신, 10분). 국적·방문유형·시간대처럼 API에 없는 컬럼은 해당 기능만 비활성화되고, 센터 원본을 넣으면 자동 활성화됩니다. 넣은 뒤 `python scripts/check_data.py` 로 점검.
+>
+> **날씨(5-02·5-01)** 는 허브에 없어 `python scripts/fetch_weather.py` 로 받습니다 — 기상청 기상자료개방포털 CSV 변환(관측값, 권장) / Open-Meteo(키 없음) / 기상청 API허브. 날씨가 없으면 강우 영향 기능만 비활성이며, 기간이 다른 합성 날씨는 실데이터에 섞지 않습니다.
 
 ## 제출 문서
 - 기획서: [docs/AI_Agent_기획서_제주혼잡이동진단.pdf](docs/AI_Agent_기획서_제주혼잡이동진단.pdf) (원본 `docs/proposal.html`)
 - 결과 설명자료: [docs/RESULT_REPORT.md](docs/RESULT_REPORT.md) · 사용자 매뉴얼: [docs/USER_MANUAL.md](docs/USER_MANUAL.md) · 데이터 활용 명세: [docs/DATA_SPEC.md](docs/DATA_SPEC.md)
-- 샘플 실행 결과: `outputs/samples/` (**허브 공개 API 실데이터 2025-09**, 오프라인 모드 14문항 `batch_offline.json`, LLM 모드 `batch_llm.json`(키로 실행 시), 리포트 예시)
+- 샘플 실행 결과: `outputs/samples/` (**허브 공개 API 실데이터 2025-09**, 오프라인 모드 16문항 `batch_offline.json`, LLM 모드 `batch_llm.json`(키로 실행 시), 리포트 예시)
 - 시연 대본·데모 배포·스크린샷: [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) · LLM 모드 검증표: `docs/LLM_EVAL.md` (`python scripts/llm_smoke.py` 로 생성)
 
 ## 설치·실행 (5분)
@@ -57,17 +59,19 @@ pip install -r requirements.txt
 #   b. 개발용 합성데이터: python -m jeju_agent.data.synthetic      (명세서 구조만 따른 가짜 데이터, 약 20초)
 
 # 3) (선택) LLM 설정 — 없으면 오프라인 규칙 기반으로 동작
-cp .env.example .env   # ANTHROPIC_API_KEY 또는 OPENAI_API_KEY 또는 로컬 Ollama
+cp .env.example .env   # ANTHROPIC_API_KEY 또는 OPENAI_API_KEY 또는 로컬 Ollama(센터 PC: python scripts/ollama_check.py 로 점검)
 
 # 4) 실행
 streamlit run app.py                                    # 웹 UI
 python -m jeju_agent.cli "주말에 가장 붐비는 관광지는?"     # CLI
-python -m jeju_agent.cli --offline --batch examples/questions.txt   # LLM 없이 시연 질문 14개 일괄 실행
+python -m jeju_agent.cli --offline --batch examples/questions.txt   # LLM 없이 시연 질문 16개 일괄 실행
 python -m jeju_agent.cli --status                        # 적재 데이터·LLM 상태 확인
 python -m jeju_agent.cli --brief 2025-05                 # 월간 브리핑 HTML 저장
 python -m jeju_agent.cli --offline --png "효율이 낮은 버스 노선은?"   # 차트를 PNG(반출용)로 저장
 python scripts/fetch_hub.py --from 2025-08-01 --to 2025-09-30   # 허브 공개 API → data/raw (.env 에 JEJUHUB_PROJECT_KEY)
 python scripts/check_data.py                             # data/raw 실데이터 인식·매핑·비활성 기능 점검
+python scripts/fetch_weather.py --kma-csv OBS_ASOS_DD.csv  # 기상청 CSV → data/raw 날씨 (또는 --open-meteo --from 2025-09-01 --to 2025-09-30)
+python scripts/ollama_check.py                           # 센터 PC 오프라인 LLM(Ollama) 서버·모델·도구호출 점검
 python scripts/llm_smoke.py --limit 5                    # LLM 모드 실키 검증 (docs/LLM_EVAL.md 생성)
 pytest -q                                                # 테스트 44개 (API 키 불필요, 합성 데이터로 격리 실행)
 ```
@@ -85,16 +89,16 @@ pytest -q                                                # 테스트 44개 (API 
 | `jeju_agent/insight.py` | **자동 점검**(데이터 출처·기간·게이트·표본을 코드가 확인해 한계로 기록) · **이어서 물어보기**(결과 기반 후속 질문) · 실행 계획 문장 |
 | `jeju_agent/llm_mock.py` | 시나리오 LLM — API 키 없이 LLM 모드 전체 경로를 테스트 |
 | `jeju_agent/data/synthetic.py` | 명세서 스키마 그대로의 개발용 합성 데이터 |
-| `jeju_agent/tools/` | 12개 분석 도구: `congestion_rank`, `place_profile`, `list_places`, `bus_station_rank`, `bus_route_efficiency`, `hourly_profile`, `place_access`, `weather_effect`, **`congestion_forecast`(주말 혼잡 예측)**, **`monthly_brief`(월간 브리핑)**, `run_sql`, `describe_data` |
+| `jeju_agent/tools/` | 13개 분석 도구: `congestion_rank`, `place_profile`, `list_places`, `bus_station_rank`, `bus_route_efficiency`, `hourly_profile`, `place_access`, `weather_effect`, **`congestion_forecast`(주말 혼잡 예측)**, **`monthly_brief`(월간 브리핑)**, **`compare_periods`(전반/후반·평일/주말·두 기간 비교)**, `run_sql`, `describe_data` |
 | `jeju_agent/verify.py` | LLM 답변의 숫자가 근거표에 있는지 검증, 불일치 시 템플릿 해설로 대체 |
 | `jeju_agent/charts.py` | PNG 차트(반출 정책: 그림파일만) — 리포트 내장·다운로드 |
 | `jeju_agent/gate.py` + `config/export_rules.yaml` | 반출 게이트 |
-| `jeju_agent/llm.py` | Anthropic / OpenAI / Ollama 도구호출 (requests만 사용) |
+| `jeju_agent/llm.py` | Anthropic / OpenAI / Ollama(네이티브 /api/chat, num_ctx 지정) 도구호출 (requests만 사용) |
 | `jeju_agent/planner_rules.py` | LLM 없이 질문→도구 계획, 템플릿 답변 |
-| `jeju_agent/agent.py` | 오케스트레이션, 로그, 폴백 |
+| `jeju_agent/agent.py` | 오케스트레이션, 로그, 폴백, **LLM 부가 단계**(답변-근거 대조 자기 점검 `review`, 결과 기반 후속 질문 `followups` — `LLM_EXTRAS`) |
 | `jeju_agent/report.py` | 단일 HTML 리포트 |
 | `app.py` | Streamlit UI (🧭 실행 계획·4단 답변·이어서 물어보기·지도·차트·근거표·방법/한계·실행 로그·**LLM 전송 내용 미리보기**·리포트/PNG 다운로드·올린 자료 삭제·대화 맥락) |
-| `scripts/` | `fetch_hub.py`(허브 공개 API 수집) · `check_data.py`(실데이터 점검) · `llm_smoke.py`(LLM 검증표) · `capture_screens.py`(스크린샷) · `make_submission.py`(ZIP·PDF 생성) |
+| `scripts/` | `fetch_hub.py`(허브 공개 API 수집) · `fetch_weather.py`(날씨 5-02·5-01 수집·변환) · `check_data.py`(실데이터 점검) · `ollama_check.py`(로컬 LLM 점검) · `llm_smoke.py`(LLM 검증표) · `capture_screens.py`(스크린샷) · `make_submission.py`(ZIP·PDF 생성) |
 
 ## 신뢰성 장치 (심사 포인트)
 - **실행 계획 노출**: Agent가 어떤 데이터를 어떤 순서로 왜 봤는지(LLM 모드는 모델이 쓴 계획 문장, 오프라인은 규칙 선택 근거)를 답변 위 🧭 패널과 리포트에 남긴다.
@@ -106,7 +110,8 @@ pytest -q                                                # 테스트 44개 (API 
 - **규정 근거 등급**: `docs/DATA_SPEC.md` §7에 [확인]/[확인 필요] 꼬리표로 적었다.
 
 ## Agent의 판단·자율 범위
-- **스스로 결정**: 어떤 도구를 몇 번 쓸지(최대 6회), 예측·브리핑처럼 여러 데이터를 묶을지, 장소·노선명 해석, 기간 기본값, 오류 시 인자 수정 재시도, LLM 장애 시 오프라인 폴백.
+- **스스로 결정**: 어떤 도구를 몇 번 쓸지(최대 6회), 예측·브리핑·기간 비교처럼 여러 데이터를 묶을지, 장소·노선명 해석, 기간 기본값, 오류 시 인자 수정 재시도, LLM 장애 시 오프라인 폴백.
+- **자기 점검·후속 제안(LLM 모드)**: 답변을 쓴 뒤 LLM이 자기 답변을 근거표와 대조해 과장·인과 표현을 지적하고(`review`, 자동 점검에 "LLM 자기 점검"으로 표시), 결과를 보고 다음 질문 3개를 제안합니다(`followups`). 둘 다 JSON 파싱 실패·장애 시 규칙 기반으로 대체되며 사이드바에서 끄고 켤 수 있습니다.
 - **하지 않음**: 원본 행 열람, 식별자 컬럼 출력, 쓰기 SQL, 도구 결과에 없는 수치 생성(프롬프트로 금지 + 모든 수치가 로그에 남음).
 - 답변은 항상 **한 줄 결론 / 근거 / 해석·제안 / 한계** 4단 구조이며, 합성 데이터 사용 시 경고를 강제합니다.
 - **대화 맥락**: 최근 3턴을 함께 보내 "거기 가는 버스는?" 같은 후속 질문을 해석하며(오프라인 모드도 지시어 해석), 답변마다 결과에 맞춘 **이어서 물어보기** 3개를 제안합니다.
@@ -115,13 +120,14 @@ pytest -q                                                # 테스트 44개 (API 
 ## 센터 운영 PC(i7-8700 / GTX 1060 6GB / 32GB)에서
 - 데이터 적재·분석은 CPU/메모리로 충분합니다(합성 80만 행 기준 적재 15초, 질문당 0.1~1초).
 - 외부망이 있으면 Anthropic/OpenAI API, 없으면 **Ollama + qwen2.5:7b(4bit)** 로 로컬 실행 가능하며, 둘 다 없어도 오프라인 규칙 모드로 핵심 기능이 동작합니다.
+- **오프라인 LLM 절차**: Ollama 설치 → `ollama pull qwen2.5:7b` → `python scripts/ollama_check.py`(서버·모델·도구 호출·Agent 질문 1개를 순서대로 점검) → `.env`에 `LLM_PROVIDER=ollama`. 시스템 프롬프트+도구 스키마가 약 8k 토큰이라 컨텍스트를 `OLLAMA_NUM_CTX=12288`(기본)로 보내고, 로컬 모델에는 컬럼 목록을 생략한 압축 프롬프트를 씁니다. 6GB VRAM에서 7b는 질문당 30~90초, 빠른 응답이 필요하면 `LLM_MODEL=qwen2.5:3b`.
 - 외부 서비스 의존성: LLM API(선택) 외에는 없습니다. 지도는 pydeck 기본 타일(인터넷 필요) → 없으면 Streamlit 기본 지도로 폴백.
 
 ## 알려진 제약
 - 와이파이 이용자는 방문객의 표본이며 AP 설치 수에 따라 편향됩니다 → **절대 방문객 수가 아닌 상대 지표**로만 해석.
 - 4-05에는 시각 컬럼이 없어 와이파이 기준 '시간대별 혼잡'은 불가능합니다(시간대는 버스 데이터로 봄).
 - 버스 효율은 배차 횟수가 없어 **승차 수요 기준**입니다. 현금 승차는 제외됩니다.
-- 날씨 효과는 공휴일·행사를 통제하지 않은 단순 비교(상관)입니다.
+- 날씨 효과·기간 비교는 공휴일·행사를 통제하지 않은 단순 비교(상관)입니다. Open-Meteo 날씨는 재분석 격자값(관측소 실측 아님)이므로 가능하면 기상청 CSV를 쓰세요.
 - 오프라인 모드는 정해진 질문 패턴만 이해합니다. 복합 질문은 LLM 모드를 권장합니다.
 
 ## 사용한 AI·오픈소스

@@ -17,6 +17,7 @@ IT 비전문가인 제주 도민·공무원·관광객이 이해할 수 있는 �
 | 정류소 시간대별, 출퇴근 | `hourly_profile` |
 | 비·날씨 영향 | `weather_effect` (target=wifi 또는 bus_station) |
 | 이번/다음 주말·연휴 예상 | `congestion_forecast` |
+| 전반/후반·평일/주말·두 기간 비교, 어디가 늘고 줄었나 | `compare_periods` (split=halves/weekday_weekend/custom, target=wifi/bus_station/bus_route) |
 | 월간 브리핑·한 달 정리 | `monthly_brief` |
 | 어떤 데이터가 있나, 컬럼 | `describe_data` · 장소명 모르면 `list_places` |
 | 위 도구로 못 푸는 맞춤 집계 | `run_sql` (GROUP BY 집계만, 식별자 컬럼 금지) |

@@ -1,12 +1,12 @@
 [
  {
   "question": "주말에 가장 붐비는 관광지는 어디야?",
-  "answer": "**한 줄 결론** — 주말 기준 혼잡지수 1위는 19코스(평균 혼잡지수 2.03, 일평균 39명).\n\n**근거**\n- 주말 기준 혼잡지수 1위는 19코스(평균 혼잡지수 2.03, 일평균 39명)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 19코스 반경 1.5km 내 정류소 28개, 합산 일평균 승차 975명 (와이파이 일평균 이용자 39명)\n- 가장 가까운 정류소 함덕농협지소(0.76km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 상위 장소는 주말 분산 안내(실시간 혼잡 알림·대체 관광지 추천)와 임시 주차·셔틀 검토 대상입니다.\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- '장소별 혼잡도 순위 (주말)'의 일부 항목은 8일치만 있어 변동이 큽니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)\n- 표본 기준: 관측 5일 이상·일평균 20명 이상인 장소만 순위에 포함(278곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만\n- 현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "answer": "**한 줄 결론** — 주말 기준 혼잡지수 1위는 19코스(평균 혼잡지수 2.03, 일평균 39명).\n\n**근거**\n- 주말 기준 혼잡지수 1위는 19코스(평균 혼잡지수 2.03, 일평균 39명)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 19코스 반경 1.5km 내 정류소 28개, 합산 일평균 승차 1,262명 (와이파이 일평균 이용자 39명)\n- 가장 가까운 정류소 함덕농협지소(0.76km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 상위 장소는 주말 분산 안내(실시간 혼잡 알림·대체 관광지 추천)와 임시 주차·셔틀 검토 대상입니다.\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- '장소별 혼잡도 순위 (주말)'의 일부 항목은 8일치만 있어 변동이 큽니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)\n- 표본 기준: 관측 5일 이상·일평균 20명 이상인 장소만 순위에 포함(281곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만\n- 현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 0.19,
-  "synthetic": true,
+  "elapsed": 0.16,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -19,7 +19,7 @@
    "'장소별 혼잡도 순위 (주말)'의 일부 항목은 8일치만 있어 변동이 큽니다.",
    "와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.",
    "혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)",
-   "표본 기준: 관측 5일 이상·일평균 20명 이상인 장소만 순위에 포함(278곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
+   "표본 기준: 관측 5일 이상·일평균 20명 이상인 장소만 순위에 포함(281곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
    "현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).",
    "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.",
    "정류소-관광지 거리는 직선거리입니다."
@@ -41,7 +41,7 @@
      "category": "관광지"
     },
     "ok": true,
-    "seconds": 0.07,
+    "seconds": 0.06,
     "rows": 10,
     "gate": [
      "게이트 통과"
@@ -55,7 +55,7 @@
     },
     "ok": true,
     "seconds": 0.06,
-    "rows": 9,
+    "rows": 15,
     "gate": [
      "게이트 통과"
     ],
@@ -88,7 +88,7 @@
     "caveats": [
      "와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.",
      "혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)",
-     "표본 기준: 관측 5일 이상·일평균 20명 이상인 장소만 순위에 포함(278곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
+     "표본 기준: 관측 5일 이상·일평균 20명 이상인 장소만 순위에 포함(281곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
      "현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화)."
     ],
     "gate": [
@@ -171,8 +171,8 @@
       "peak_congestion_index": 2.04,
       "tourist_share": 0.0,
       "foreign_share": 0.0,
-      "lat": null,
-      "lon": null
+      "lat": 33.51,
+      "lon": 126.53
      },
      {
       "rank": 7,
@@ -244,7 +244,7 @@
     ],
     "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
     "facts": [
-     "19코스 반경 1.5km 내 정류소 28개, 합산 일평균 승차 975명 (와이파이 일평균 이용자 39명)",
+     "19코스 반경 1.5km 내 정류소 28개, 합산 일평균 승차 1,262명 (와이파이 일평균 이용자 39명)",
      "가장 가까운 정류소 함덕농협지소(0.76km), 피크 -시"
     ],
     "caveats": [
@@ -254,12 +254,12 @@
     "gate": [
      "게이트 통과"
     ],
-    "rows": 9,
+    "rows": 15,
     "table": [
      {
       "bus_station_name": "함덕농협지소",
       "dist_km": 0.76,
-      "daily_boardings": 143.7,
+      "daily_boardings": 131.6,
       "peak_hour": null,
       "latitude": 33.54235,
       "longitude": 126.664167
@@ -267,15 +267,23 @@
      {
       "bus_station_name": "함덕비석거리",
       "dist_km": 0.78,
-      "daily_boardings": 126.1,
+      "daily_boardings": 116.4,
       "peak_hour": null,
       "latitude": 33.543217,
       "longitude": 126.661667
      },
      {
+      "bus_station_name": "함덕리3구",
+      "dist_km": 0.79,
+      "daily_boardings": 162.9,
+      "peak_hour": null,
+      "latitude": 33.541764,
+      "longitude": 126.665745
+     },
+     {
       "bus_station_name": "함덕환승정류장(함덕해수욕장)",
       "dist_km": 0.89,
-      "daily_boardings": 603.1,
+      "daily_boardings": 566.5,
       "peak_hour": null,
       "latitude": 33.541007,
       "longitude": 126.668767
@@ -283,7 +291,7 @@
      {
       "bus_station_name": "해양연구소",
       "dist_km": 0.91,
-      "daily_boardings": 74.9,
+      "daily_boardings": 68.9,
       "peak_hour": null,
       "latitude": 33.543809,
       "longitude": 126.658961
@@ -291,7 +299,15 @@
      {
       "bus_station_name": "함덕리(4구)",
       "dist_km": 1.22,
-      "daily_boardings": 15.1,
+      "daily_boardings": 14.6,
+      "peak_hour": null,
+      "latitude": 33.54011,
+      "longitude": 126.674739
+     },
+     {
+      "bus_station_name": "함덕리4구",
+      "dist_km": 1.22,
+      "daily_boardings": 59.7,
       "peak_hour": null,
       "latitude": 33.54011,
       "longitude": 126.674739
@@ -307,18 +323,50 @@
      {
       "bus_station_name": "신흥리",
       "dist_km": 1.35,
-      "daily_boardings": 0.5,
+      "daily_boardings": 0.4,
       "peak_hour": null,
       "latitude": 33.543829,
       "longitude": 126.653428
      },
      {
+      "bus_station_name": "신흥리(마을입구),함덕고등학교",
+      "dist_km": 1.36,
+      "daily_boardings": 71.8,
+      "peak_hour": null,
+      "latitude": 33.543415,
+      "longitude": 126.653501
+     },
+     {
+      "bus_station_name": "신흥리복지회관",
+      "dist_km": 1.38,
+      "daily_boardings": 2.1,
+      "peak_hour": null,
+      "latitude": 33.546769,
+      "longitude": 126.652002
+     },
+     {
+      "bus_station_name": "함덕광명샤인빌앞",
+      "dist_km": 1.39,
+      "daily_boardings": 53.1,
+      "peak_hour": null,
+      "latitude": 33.538233,
+      "longitude": 126.674617
+     },
+     {
       "bus_station_name": "911의원",
       "dist_km": 1.39,
-      "daily_boardings": 10.2,
+      "daily_boardings": 9.3,
       "peak_hour": null,
       "latitude": 33.540685,
       "longitude": 126.678082
+     },
+     {
+      "bus_station_name": "신흥리포구",
+      "dist_km": 1.47,
+      "daily_boardings": 2.7,
+      "peak_hour": null,
+      "latitude": 33.548741,
+      "longitude": 126.650802
      },
      {
       "bus_station_name": "사장교차로",
@@ -334,12 +382,12 @@
  },
  {
   "question": "외국인 관광객이 많이 가는 곳은?",
-  "answer": "**한 줄 결론** — 전체 기준 이용자 수 1위는 제주동문시장(평균 혼잡지수 1.02, 일평균 359명).\n\n**근거**\n- 전체 기준 이용자 수 1위는 제주동문시장(평균 혼잡지수 1.02, 일평균 359명)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 제주동문시장 반경 1.5km 내 정류소 109개, 합산 일평균 승차 10,596명 (와이파이 일평균 이용자 359명)\n- 가장 가까운 정류소 일도초등학교(0.22km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 상위 장소는 주말 분산 안내(실시간 혼잡 알림·대체 관광지 추천)와 임시 주차·셔틀 검토 대상입니다.\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)\n- 표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(306곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만\n- 현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "answer": "**한 줄 결론** — 전체 기준 이용자 수 1위는 제주동문시장(평균 혼잡지수 1.02, 일평균 359명).\n\n**근거**\n- 전체 기준 이용자 수 1위는 제주동문시장(평균 혼잡지수 1.02, 일평균 359명)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 제주동문시장 반경 1.5km 내 정류소 109개, 합산 일평균 승차 11,776명 (와이파이 일평균 이용자 359명)\n- 가장 가까운 정류소 동문로터리,동문시장(0.13km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 상위 장소는 주말 분산 안내(실시간 혼잡 알림·대체 관광지 추천)와 임시 주차·셔틀 검토 대상입니다.\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)\n- 표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(308곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만\n- 현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 0.18,
-  "synthetic": true,
+  "elapsed": 0.17,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -352,7 +400,7 @@
    "기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.",
    "와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.",
    "혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)",
-   "표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(306곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
+   "표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(308곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
    "현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).",
    "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.",
    "정류소-관광지 거리는 직선거리입니다."
@@ -374,7 +422,7 @@
      "category": "관광지"
     },
     "ok": true,
-    "seconds": 0.07,
+    "seconds": 0.06,
     "rows": 10,
     "gate": [
      "게이트 통과"
@@ -387,8 +435,8 @@
      "place": "제주동문시장"
     },
     "ok": true,
-    "seconds": 0.06,
-    "rows": 56,
+    "seconds": 0.07,
+    "rows": 63,
     "gate": [
      "게이트 통과"
     ],
@@ -421,7 +469,7 @@
     "caveats": [
      "와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.",
      "혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)",
-     "표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(306곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
+     "표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(308곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
      "현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화)."
     ],
     "gate": [
@@ -577,8 +625,8 @@
     ],
     "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
     "facts": [
-     "제주동문시장 반경 1.5km 내 정류소 109개, 합산 일평균 승차 10,596명 (와이파이 일평균 이용자 359명)",
-     "가장 가까운 정류소 일도초등학교(0.22km), 피크 -시"
+     "제주동문시장 반경 1.5km 내 정류소 109개, 합산 일평균 승차 11,776명 (와이파이 일평균 이용자 359명)",
+     "가장 가까운 정류소 동문로터리,동문시장(0.13km), 피크 -시"
     ],
     "caveats": [
      "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.",
@@ -587,12 +635,20 @@
     "gate": [
      "게이트 통과"
     ],
-    "rows": 56,
+    "rows": 63,
     "table": [
+     {
+      "bus_station_name": "동문로터리,동문시장",
+      "dist_km": 0.13,
+      "daily_boardings": 1121.9,
+      "peak_hour": null,
+      "latitude": 33.51295,
+      "longitude": 126.52795
+     },
      {
       "bus_station_name": "일도초등학교",
       "dist_km": 0.22,
-      "daily_boardings": 5.4,
+      "daily_boardings": 5.0,
       "peak_hour": null,
       "latitude": 33.51087,
       "longitude": 126.528775
@@ -600,7 +656,7 @@
      {
       "bus_station_name": "중앙로(동문시장)",
       "dist_km": 0.23,
-      "daily_boardings": 182.6,
+      "daily_boardings": 169.3,
       "peak_hour": null,
       "latitude": 33.511683,
       "longitude": 126.524567
@@ -608,7 +664,7 @@
      {
       "bus_station_name": "중앙로(중앙성당)",
       "dist_km": 0.23,
-      "daily_boardings": 161.6,
+      "daily_boardings": 150.0,
       "peak_hour": null,
       "latitude": 33.512,
       "longitude": 126.524467
@@ -616,7 +672,7 @@
      {
       "bus_station_name": "제주성지",
       "dist_km": 0.27,
-      "daily_boardings": 1.2,
+      "daily_boardings": 1.1,
       "peak_hour": null,
       "latitude": 33.509852,
       "longitude": 126.525872
@@ -624,7 +680,7 @@
      {
       "bus_station_name": "중앙로(현대약국)",
       "dist_km": 0.29,
-      "daily_boardings": 497.9,
+      "daily_boardings": 460.1,
       "peak_hour": null,
       "latitude": 33.510888,
       "longitude": 126.524217
@@ -632,15 +688,23 @@
      {
       "bus_station_name": "중앙로 제민신협본점",
       "dist_km": 0.32,
-      "daily_boardings": 678.9,
+      "daily_boardings": 627.0,
       "peak_hour": null,
       "latitude": 33.510733,
       "longitude": 126.5239
      },
      {
+      "bus_station_name": "제일교동문시장입구",
+      "dist_km": 0.45,
+      "daily_boardings": 57.2,
+      "peak_hour": null,
+      "latitude": 33.51235,
+      "longitude": 126.53175
+     },
+     {
       "bus_station_name": "탑동입구",
       "dist_km": 0.46,
-      "daily_boardings": 114.0,
+      "daily_boardings": 102.3,
       "peak_hour": null,
       "latitude": 33.515853,
       "longitude": 126.524825
@@ -656,7 +720,7 @@
      {
       "bus_station_name": "종합어시장",
       "dist_km": 0.48,
-      "daily_boardings": 12.4,
+      "daily_boardings": 12.6,
       "peak_hour": null,
       "latitude": 33.5164,
       "longitude": 126.527933
@@ -664,7 +728,7 @@
      {
       "bus_station_name": "탑동푸른쉼터",
       "dist_km": 0.49,
-      "daily_boardings": 123.4,
+      "daily_boardings": 113.1,
       "peak_hour": null,
       "latitude": 33.516562,
       "longitude": 126.527116
@@ -672,7 +736,7 @@
      {
       "bus_station_name": "김만덕기념관",
       "dist_km": 0.5,
-      "daily_boardings": 23.5,
+      "daily_boardings": 21.4,
       "peak_hour": null,
       "latitude": 33.515921,
       "longitude": 126.529917
@@ -680,7 +744,7 @@
      {
       "bus_station_name": "제주동초등학교",
       "dist_km": 0.51,
-      "daily_boardings": 347.2,
+      "daily_boardings": 328.1,
       "peak_hour": null,
       "latitude": 33.513323,
       "longitude": 126.532215
@@ -688,7 +752,7 @@
      {
       "bus_station_name": "동문성당",
       "dist_km": 0.56,
-      "daily_boardings": 21.4,
+      "daily_boardings": 19.4,
       "peak_hour": null,
       "latitude": 33.510318,
       "longitude": 126.532522
@@ -696,7 +760,7 @@
      {
       "bus_station_name": "관덕정",
       "dist_km": 0.58,
-      "daily_boardings": 703.2,
+      "daily_boardings": 655.3,
       "peak_hour": null,
       "latitude": 33.513216,
       "longitude": 126.520875
@@ -704,7 +768,7 @@
      {
       "bus_station_name": "시민회관",
       "dist_km": 0.6,
-      "daily_boardings": 613.3,
+      "daily_boardings": 571.6,
       "peak_hour": null,
       "latitude": 33.5071,
       "longitude": 126.52455
@@ -712,7 +776,7 @@
      {
       "bus_station_name": "서문사거리",
       "dist_km": 0.68,
-      "daily_boardings": 19.8,
+      "daily_boardings": 17.8,
       "peak_hour": null,
       "latitude": 33.510788,
       "longitude": 126.519805
@@ -720,7 +784,7 @@
      {
       "bus_station_name": "민속자연사박물관",
       "dist_km": 0.69,
-      "daily_boardings": 30.6,
+      "daily_boardings": 28.1,
       "peak_hour": null,
       "latitude": 33.506709,
       "longitude": 126.530446
@@ -728,7 +792,7 @@
      {
       "bus_station_name": "제주해변공연장",
       "dist_km": 0.71,
-      "daily_boardings": 104.2,
+      "daily_boardings": 95.9,
       "peak_hour": null,
       "latitude": 33.517297,
       "longitude": 126.522467
@@ -736,7 +800,7 @@
      {
       "bus_station_name": "마음에온건입",
       "dist_km": 0.75,
-      "daily_boardings": 46.5,
+      "daily_boardings": 42.5,
       "peak_hour": null,
       "latitude": 33.516924,
       "longitude": 126.532616
@@ -744,7 +808,7 @@
      {
       "bus_station_name": "서문시장",
       "dist_km": 0.79,
-      "daily_boardings": 423.2,
+      "daily_boardings": 391.4,
       "peak_hour": null,
       "latitude": 33.512033,
       "longitude": 126.51845
@@ -752,7 +816,7 @@
      {
       "bus_station_name": "신산로",
       "dist_km": 0.81,
-      "daily_boardings": 25.0,
+      "daily_boardings": 22.7,
       "peak_hour": null,
       "latitude": 33.507935,
       "longitude": 126.534059
@@ -760,7 +824,7 @@
      {
       "bus_station_name": "농협지역본부/제주평생교육장학진흥원",
       "dist_km": 0.82,
-      "daily_boardings": 116.8,
+      "daily_boardings": 104.6,
       "peak_hour": null,
       "latitude": 33.507717,
       "longitude": 126.519817
@@ -768,7 +832,7 @@
      {
       "bus_station_name": "병문교",
       "dist_km": 0.86,
-      "daily_boardings": 12.5,
+      "daily_boardings": 11.2,
       "peak_hour": null,
       "latitude": 33.508972,
       "longitude": 126.518491
@@ -776,7 +840,7 @@
      {
       "bus_station_name": "삼도119센터",
       "dist_km": 0.88,
-      "daily_boardings": 24.4,
+      "daily_boardings": 22.9,
       "peak_hour": null,
       "latitude": 33.51457,
       "longitude": 126.51789
@@ -784,7 +848,7 @@
      {
       "bus_station_name": "삼성초등학교",
       "dist_km": 0.89,
-      "daily_boardings": 200.6,
+      "daily_boardings": 187.5,
       "peak_hour": null,
       "latitude": 33.504099,
       "longitude": 126.526639
@@ -792,7 +856,7 @@
      {
       "bus_station_name": "제주여자상업고등학교",
       "dist_km": 0.91,
-      "daily_boardings": 457.9,
+      "daily_boardings": 427.6,
       "peak_hour": null,
       "latitude": 33.513933,
       "longitude": 126.536525
@@ -800,7 +864,7 @@
      {
       "bus_station_name": "두문이머세(두맹이골목)",
       "dist_km": 0.92,
-      "daily_boardings": 7.1,
+      "daily_boardings": 6.4,
       "peak_hour": null,
       "latitude": 33.510423,
       "longitude": 126.536617
@@ -808,7 +872,7 @@
      {
       "bus_station_name": "보성시장",
       "dist_km": 0.97,
-      "daily_boardings": 176.6,
+      "daily_boardings": 163.5,
       "peak_hour": null,
       "latitude": 33.503421,
       "longitude": 126.527265
@@ -816,15 +880,23 @@
      {
       "bus_station_name": "제주중앙여자중학교",
       "dist_km": 1.03,
-      "daily_boardings": 100.6,
+      "daily_boardings": 90.8,
       "peak_hour": null,
       "latitude": 33.504932,
       "longitude": 126.519983
      },
      {
+      "bus_station_name": "쉐라톤제주호텔",
+      "dist_km": 1.03,
+      "daily_boardings": 22.3,
+      "peak_hour": null,
+      "latitude": 33.518378,
+      "longitude": 126.518676
+     },
+     {
       "bus_station_name": "제주중학교/제주향교",
       "dist_km": 1.05,
-      "daily_boardings": 80.8,
+      "daily_boardings": 75.3,
       "peak_hour": null,
       "latitude": 33.510783,
       "longitude": 126.5157
@@ -832,7 +904,7 @@
      {
       "bus_station_name": "인화동입구",
       "dist_km": 1.06,
-      "daily_boardings": 87.8,
+      "daily_boardings": 82.1,
       "peak_hour": null,
       "latitude": 33.513617,
       "longitude": 126.538267
@@ -840,7 +912,7 @@
      {
       "bus_station_name": "일도2동주민센터",
       "dist_km": 1.08,
-      "daily_boardings": 108.9,
+      "daily_boardings": 101.6,
       "peak_hour": null,
       "latitude": 33.5113,
       "longitude": 126.538533
@@ -848,7 +920,7 @@
      {
       "bus_station_name": "문예회관/제주콘텐츠진흥원",
       "dist_km": 1.09,
-      "daily_boardings": 21.7,
+      "daily_boardings": 19.4,
       "peak_hour": null,
       "latitude": 33.505476,
       "longitude": 126.535631
@@ -856,7 +928,7 @@
      {
       "bus_station_name": "광양/시민회관방면",
       "dist_km": 1.1,
-      "daily_boardings": 179.4,
+      "daily_boardings": 168.6,
       "peak_hour": null,
       "latitude": 33.502324,
       "longitude": 126.528058
@@ -864,7 +936,7 @@
      {
       "bus_station_name": "제주연안여객터미널",
       "dist_km": 1.12,
-      "daily_boardings": 36.1,
+      "daily_boardings": 33.1,
       "peak_hour": null,
       "latitude": 33.519229,
       "longitude": 126.535488
@@ -872,7 +944,7 @@
      {
       "bus_station_name": "사라봉경로당입구",
       "dist_km": 1.12,
-      "daily_boardings": 60.8,
+      "daily_boardings": 54.6,
       "peak_hour": null,
       "latitude": 33.51557,
       "longitude": 126.53828
@@ -880,7 +952,7 @@
      {
       "bus_station_name": "광양",
       "dist_km": 1.12,
-      "daily_boardings": 212.3,
+      "daily_boardings": 198.9,
       "peak_hour": null,
       "latitude": 33.502112,
       "longitude": 126.527961
@@ -888,7 +960,7 @@
      {
       "bus_station_name": "용담새마을금고",
       "dist_km": 1.12,
-      "daily_boardings": 24.7,
+      "daily_boardings": 22.1,
       "peak_hour": null,
       "latitude": 33.509583,
       "longitude": 126.515267
@@ -896,15 +968,23 @@
      {
       "bus_station_name": "인화동",
       "dist_km": 1.2,
-      "daily_boardings": 112.7,
+      "daily_boardings": 105.1,
       "peak_hour": null,
       "latitude": 33.509233,
       "longitude": 126.5394
      },
      {
+      "bus_station_name": "삼도1동주민센터",
+      "dist_km": 1.2,
+      "daily_boardings": 29.0,
+      "peak_hour": null,
+      "latitude": 33.503183,
+      "longitude": 126.519717
+     },
+     {
       "bus_station_name": "동광양",
       "dist_km": 1.21,
-      "daily_boardings": 626.6,
+      "daily_boardings": 584.3,
       "peak_hour": null,
       "latitude": 33.502197,
       "longitude": 126.532223
@@ -912,7 +992,7 @@
      {
       "bus_station_name": "용담사거리",
       "dist_km": 1.22,
-      "daily_boardings": 55.8,
+      "daily_boardings": 51.1,
       "peak_hour": null,
       "latitude": 33.510917,
       "longitude": 126.513867
@@ -920,7 +1000,7 @@
      {
       "bus_station_name": "문예회관",
       "dist_km": 1.25,
-      "daily_boardings": 355.9,
+      "daily_boardings": 327.8,
       "peak_hour": null,
       "latitude": 33.504633,
       "longitude": 126.536912
@@ -928,7 +1008,7 @@
      {
       "bus_station_name": "미래컨벤션센터",
       "dist_km": 1.28,
-      "daily_boardings": 28.6,
+      "daily_boardings": 26.4,
       "peak_hour": null,
       "latitude": 33.506607,
       "longitude": 126.514827
@@ -936,7 +1016,7 @@
      {
       "bus_station_name": "용담1동주민센터",
       "dist_km": 1.28,
-      "daily_boardings": 353.8,
+      "daily_boardings": 329.7,
       "peak_hour": null,
       "latitude": 33.50995,
       "longitude": 126.513333
@@ -944,15 +1024,31 @@
      {
       "bus_station_name": "인화초등학교",
       "dist_km": 1.3,
-      "daily_boardings": 602.1,
+      "daily_boardings": 552.8,
       "peak_hour": null,
       "latitude": 33.50668,
       "longitude": 126.539366
      },
      {
+      "bus_station_name": "탐라장애인종합복지관(동광로 방향)",
+      "dist_km": 1.31,
+      "daily_boardings": 180.9,
+      "peak_hour": null,
+      "latitude": 33.500393,
+      "longitude": 126.527539
+     },
+     {
+      "bus_station_name": "탐라장애인종합복지관(노형로 방향)",
+      "dist_km": 1.31,
+      "daily_boardings": 275.1,
+      "peak_hour": null,
+      "latitude": 33.500363,
+      "longitude": 126.527054
+     },
+     {
       "bus_station_name": "용천마을",
       "dist_km": 1.34,
-      "daily_boardings": 37.2,
+      "daily_boardings": 33.3,
       "peak_hour": null,
       "latitude": 33.501547,
       "longitude": 126.51995
@@ -960,15 +1056,23 @@
      {
       "bus_station_name": "중앙마을",
       "dist_km": 1.35,
-      "daily_boardings": 25.2,
+      "daily_boardings": 22.9,
       "peak_hour": null,
       "latitude": 33.501633,
       "longitude": 126.5197
      },
      {
+      "bus_station_name": "탐라장애인종합복지관",
+      "dist_km": 1.35,
+      "daily_boardings": 242.9,
+      "peak_hour": null,
+      "latitude": 33.500017,
+      "longitude": 126.525833
+     },
+     {
       "bus_station_name": "제4부두",
       "dist_km": 1.36,
-      "daily_boardings": 13.0,
+      "daily_boardings": 12.0,
       "peak_hour": null,
       "latitude": 33.520208,
       "longitude": 126.537948
@@ -976,7 +1080,7 @@
      {
       "bus_station_name": "사라봉오거리",
       "dist_km": 1.37,
-      "daily_boardings": 98.1,
+      "daily_boardings": 90.3,
       "peak_hour": null,
       "latitude": 33.513533,
       "longitude": 126.541583
@@ -984,7 +1088,7 @@
      {
       "bus_station_name": "이화아파트",
       "dist_km": 1.39,
-      "daily_boardings": 55.6,
+      "daily_boardings": 49.6,
       "peak_hour": null,
       "latitude": 33.518412,
       "longitude": 126.539927
@@ -992,7 +1096,7 @@
      {
       "bus_station_name": "제주시청(아라방면)",
       "dist_km": 1.42,
-      "daily_boardings": 1047.2,
+      "daily_boardings": 980.5,
       "peak_hour": null,
       "latitude": 33.49956,
       "longitude": 126.529771
@@ -1000,7 +1104,7 @@
      {
       "bus_station_name": "용천마을/남서광마을(동광로 방향)",
       "dist_km": 1.43,
-      "daily_boardings": 298.9,
+      "daily_boardings": 282.7,
       "peak_hour": null,
       "latitude": 33.499741,
       "longitude": 126.522692
@@ -1008,7 +1112,7 @@
      {
       "bus_station_name": "용천마을/남서광마을(노형로 방향)",
       "dist_km": 1.44,
-      "daily_boardings": 215.1,
+      "daily_boardings": 204.2,
       "peak_hour": null,
       "latitude": 33.499786,
       "longitude": 126.52221
@@ -1016,7 +1120,7 @@
      {
       "bus_station_name": "사라봉",
       "dist_km": 1.48,
-      "daily_boardings": 44.6,
+      "daily_boardings": 41.7,
       "peak_hour": null,
       "latitude": 33.513164,
       "longitude": 126.54285
@@ -1024,7 +1128,7 @@
      {
       "bus_station_name": "천수동",
       "dist_km": 1.48,
-      "daily_boardings": 579.2,
+      "daily_boardings": 545.3,
       "peak_hour": null,
       "latitude": 33.509344,
       "longitude": 126.542568
@@ -1032,7 +1136,7 @@
      {
       "bus_station_name": "제주해양경찰서",
       "dist_km": 1.5,
-      "daily_boardings": 1.6,
+      "daily_boardings": 1.4,
       "peak_hour": null,
       "latitude": 33.520408,
       "longitude": 126.539697
@@ -1043,12 +1147,12 @@
  },
  {
   "question": "성산일출봉은 언제 가장 붐비나?",
-  "answer": "**한 줄 결론** — 성산일출봉: 기간 내 고유 이용자 3,349명, 평일 일평균 116명 vs 주말 100명 (주말/평일 0.87배).\n\n**근거**\n- 성산일출봉: 기간 내 고유 이용자 3,349명, 평일 일평균 116명 vs 주말 100명 (주말/평일 0.87배)\n- 가장 붐비는 요일 목요일, 가장 붐빈 날 2025-09-04 (175명, 혼잡지수 1.54)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 484명 (와이파이 일평균 이용자 112명)\n- 가장 가까운 정류소 성산일출봉입구(0.26km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 붐비는 요일·시간을 피한 방문 권장 문구를 관광 안내에 반영하고, 피크일 전후로 인력·시설 운영을 조정할 수 있습니다.\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "answer": "**한 줄 결론** — 성산일출봉: 기간 내 고유 이용자 3,349명, 평일 일평균 116명 vs 주말 100명 (주말/평일 0.87배).\n\n**근거**\n- 성산일출봉: 기간 내 고유 이용자 3,349명, 평일 일평균 116명 vs 주말 100명 (주말/평일 0.87배)\n- 가장 붐비는 요일 목요일, 가장 붐빈 날 2025-09-04 (175명, 혼잡지수 1.54)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 474명 (와이파이 일평균 이용자 112명)\n- 가장 가까운 정류소 성산일출봉입구(0.26km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 붐비는 요일·시간을 피한 방문 권장 문구를 관광 안내에 반영하고, 피크일 전후로 인력·시설 운영을 조정할 수 있습니다.\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 0.16,
-  "synthetic": true,
+  "elapsed": 0.17,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -1089,7 +1193,7 @@
     },
     "ok": true,
     "seconds": 0.06,
-    "rows": 8,
+    "rows": 9,
     "gate": [
      "게이트 통과"
     ],
@@ -1410,7 +1514,7 @@
     ],
     "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
     "facts": [
-     "성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 484명 (와이파이 일평균 이용자 112명)",
+     "성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 474명 (와이파이 일평균 이용자 112명)",
      "가장 가까운 정류소 성산일출봉입구(0.26km), 피크 -시"
     ],
     "caveats": [
@@ -1420,12 +1524,12 @@
     "gate": [
      "게이트 통과"
     ],
-    "rows": 8,
+    "rows": 9,
     "table": [
      {
       "bus_station_name": "성산일출봉입구",
       "dist_km": 0.26,
-      "daily_boardings": 191.9,
+      "daily_boardings": 186.1,
       "peak_hour": null,
       "latitude": 33.463767,
       "longitude": 126.933767
@@ -1433,15 +1537,23 @@
      {
       "bus_station_name": "성산리",
       "dist_km": 0.3,
-      "daily_boardings": 36.2,
+      "daily_boardings": 33.8,
       "peak_hour": null,
       "latitude": 33.465157,
       "longitude": 126.935159
      },
      {
+      "bus_station_name": "성산리취락구조",
+      "dist_km": 0.41,
+      "daily_boardings": 10.3,
+      "peak_hour": null,
+      "latitude": 33.466033,
+      "longitude": 126.934417
+     },
+     {
       "bus_station_name": "성산리입구",
       "dist_km": 0.51,
-      "daily_boardings": 47.0,
+      "daily_boardings": 44.7,
       "peak_hour": null,
       "latitude": 33.46085,
       "longitude": 126.931267
@@ -1449,7 +1561,7 @@
      {
       "bus_station_name": "성산항입구",
       "dist_km": 0.93,
-      "daily_boardings": 90.1,
+      "daily_boardings": 85.4,
       "peak_hour": null,
       "latitude": 33.468495,
       "longitude": 126.929167
@@ -1465,7 +1577,7 @@
      {
       "bus_station_name": "성산항(출발지)",
       "dist_km": 1.09,
-      "daily_boardings": 100.5,
+      "daily_boardings": 96.5,
       "peak_hour": null,
       "latitude": 33.471323,
       "longitude": 126.930676
@@ -1473,7 +1585,7 @@
      {
       "bus_station_name": "성산항(종점)",
       "dist_km": 1.1,
-      "daily_boardings": 10.0,
+      "daily_boardings": 8.9,
       "peak_hour": null,
       "latitude": 33.471305,
       "longitude": 126.930442
@@ -1481,7 +1593,7 @@
      {
       "bus_station_name": "오조해녀의집",
       "dist_km": 1.46,
-      "daily_boardings": 8.6,
+      "daily_boardings": 8.4,
       "peak_hour": null,
       "latitude": 33.4687,
       "longitude": 126.922317
@@ -1492,12 +1604,12 @@
  },
  {
   "question": "성산일출봉 가는 버스 정류소는 얼마나 붐비나?",
-  "answer": "**한 줄 결론** — 성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 484명 (와이파이 일평균 이용자 112명).\n\n**근거**\n- 성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 484명 (와이파이 일평균 이용자 112명)\n- 가장 가까운 정류소 성산일출봉입구(0.26km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "answer": "**한 줄 결론** — 성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 474명 (와이파이 일평균 이용자 112명).\n\n**근거**\n- 성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 474명 (와이파이 일평균 이용자 112명)\n- 가장 가까운 정류소 성산일출봉입구(0.26km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
   "elapsed": 0.11,
-  "synthetic": true,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -1521,8 +1633,8 @@
      "place": "성산일출봉"
     },
     "ok": true,
-    "seconds": 0.06,
-    "rows": 8,
+    "seconds": 0.07,
+    "rows": 9,
     "gate": [
      "게이트 통과"
     ],
@@ -1546,7 +1658,7 @@
     ],
     "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
     "facts": [
-     "성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 484명 (와이파이 일평균 이용자 112명)",
+     "성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 474명 (와이파이 일평균 이용자 112명)",
      "가장 가까운 정류소 성산일출봉입구(0.26km), 피크 -시"
     ],
     "caveats": [
@@ -1556,12 +1668,12 @@
     "gate": [
      "게이트 통과"
     ],
-    "rows": 8,
+    "rows": 9,
     "table": [
      {
       "bus_station_name": "성산일출봉입구",
       "dist_km": 0.26,
-      "daily_boardings": 191.9,
+      "daily_boardings": 186.1,
       "peak_hour": null,
       "latitude": 33.463767,
       "longitude": 126.933767
@@ -1569,15 +1681,23 @@
      {
       "bus_station_name": "성산리",
       "dist_km": 0.3,
-      "daily_boardings": 36.2,
+      "daily_boardings": 33.8,
       "peak_hour": null,
       "latitude": 33.465157,
       "longitude": 126.935159
      },
      {
+      "bus_station_name": "성산리취락구조",
+      "dist_km": 0.41,
+      "daily_boardings": 10.3,
+      "peak_hour": null,
+      "latitude": 33.466033,
+      "longitude": 126.934417
+     },
+     {
       "bus_station_name": "성산리입구",
       "dist_km": 0.51,
-      "daily_boardings": 47.0,
+      "daily_boardings": 44.7,
       "peak_hour": null,
       "latitude": 33.46085,
       "longitude": 126.931267
@@ -1585,7 +1705,7 @@
      {
       "bus_station_name": "성산항입구",
       "dist_km": 0.93,
-      "daily_boardings": 90.1,
+      "daily_boardings": 85.4,
       "peak_hour": null,
       "latitude": 33.468495,
       "longitude": 126.929167
@@ -1601,7 +1721,7 @@
      {
       "bus_station_name": "성산항(출발지)",
       "dist_km": 1.09,
-      "daily_boardings": 100.5,
+      "daily_boardings": 96.5,
       "peak_hour": null,
       "latitude": 33.471323,
       "longitude": 126.930676
@@ -1609,7 +1729,7 @@
      {
       "bus_station_name": "성산항(종점)",
       "dist_km": 1.1,
-      "daily_boardings": 10.0,
+      "daily_boardings": 8.9,
       "peak_hour": null,
       "latitude": 33.471305,
       "longitude": 126.930442
@@ -1617,7 +1737,7 @@
      {
       "bus_station_name": "오조해녀의집",
       "dist_km": 1.46,
-      "daily_boardings": 8.6,
+      "daily_boardings": 8.4,
       "peak_hour": null,
       "latitude": 33.4687,
       "longitude": 126.922317
@@ -1628,12 +1748,12 @@
  },
  {
   "question": "해변 중에 주말에 가장 붐비는 곳은?",
-  "answer": "**한 줄 결론** — 주말 기준 혼잡지수 1위는 하효 쇠소깍 해변(평균 혼잡지수 1.39, 일평균 26명).\n\n**근거**\n- 주말 기준 혼잡지수 1위는 하효 쇠소깍 해변(평균 혼잡지수 1.39, 일평균 26명)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 하효 쇠소깍 해변 반경 1.5km 내 정류소 28개, 합산 일평균 승차 230명 (와이파이 일평균 이용자 22명)\n- 가장 가까운 정류소 쇠소깍하효항입구(0.58km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 상위 장소는 주말 분산 안내(실시간 혼잡 알림·대체 관광지 추천)와 임시 주차·셔틀 검토 대상입니다.\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- '장소별 혼잡도 순위 (주말)'의 일부 항목은 8일치만 있어 변동이 큽니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)\n- 표본 기준: 관측 5일 이상·일평균 20명 이상인 장소만 순위에 포함(17곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '해변'만\n- 현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "answer": "**한 줄 결론** — 주말 기준 혼잡지수 1위는 하효 쇠소깍 해변(평균 혼잡지수 1.39, 일평균 26명).\n\n**근거**\n- 주말 기준 혼잡지수 1위는 하효 쇠소깍 해변(평균 혼잡지수 1.39, 일평균 26명)\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n- 하효 쇠소깍 해변 반경 1.5km 내 정류소 28개, 합산 일평균 승차 265명 (와이파이 일평균 이용자 22명)\n- 가장 가까운 정류소 쇠소깍입구(0.54km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 상위 장소는 주말 분산 안내(실시간 혼잡 알림·대체 관광지 추천)와 임시 주차·셔틀 검토 대상입니다.\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- '장소별 혼잡도 순위 (주말)'의 일부 항목은 8일치만 있어 변동이 큽니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)\n- 표본 기준: 관측 5일 이상·일평균 20명 이상인 장소만 순위에 포함(17곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '해변'만\n- 현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 0.18,
-  "synthetic": true,
+  "elapsed": 0.21,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -1668,7 +1788,7 @@
      "category": "해변"
     },
     "ok": true,
-    "seconds": 0.07,
+    "seconds": 0.08,
     "rows": 10,
     "gate": [
      "게이트 통과"
@@ -1681,8 +1801,8 @@
      "place": "하효 쇠소깍 해변"
     },
     "ok": true,
-    "seconds": 0.06,
-    "rows": 13,
+    "seconds": 0.07,
+    "rows": 15,
     "gate": [
      "게이트 통과"
     ],
@@ -1738,6 +1858,19 @@
      },
      {
       "rank": 2,
+      "ap_place": "버스정류소_제주해변공연장_(종합어시장방면)_[405001515]",
+      "category": "문화시설",
+      "days": 8,
+      "avg_daily_users": 69.12,
+      "avg_congestion_index": 1.22,
+      "peak_congestion_index": 1.54,
+      "tourist_share": 0.0,
+      "foreign_share": 0.0,
+      "lat": 33.52,
+      "lon": 126.52
+     },
+     {
+      "rank": 3,
       "ap_place": "세화 해변",
       "category": "해변",
       "days": 8,
@@ -1750,7 +1883,7 @@
       "lon": 126.86
      },
      {
-      "rank": 3,
+      "rank": 4,
       "ap_place": "하고수동해수욕장",
       "category": "해변",
       "days": 8,
@@ -1763,7 +1896,7 @@
       "lon": 126.96
      },
      {
-      "rank": 4,
+      "rank": 5,
       "ap_place": "함덕 서우봉 해변",
       "category": "해변",
       "days": 8,
@@ -1776,7 +1909,7 @@
       "lon": 126.67
      },
      {
-      "rank": 5,
+      "rank": 6,
       "ap_place": "함덕 서우봉 해변 #1",
       "category": "해변",
       "days": 8,
@@ -1789,7 +1922,7 @@
       "lon": 126.67
      },
      {
-      "rank": 6,
+      "rank": 7,
       "ap_place": "삼양검은모래해변",
       "category": "해변",
       "days": 8,
@@ -1802,7 +1935,7 @@
       "lon": 126.59
      },
      {
-      "rank": 7,
+      "rank": 8,
       "ap_place": "곽지과물해변",
       "category": "해변",
       "days": 8,
@@ -1815,7 +1948,7 @@
       "lon": 126.3
      },
      {
-      "rank": 8,
+      "rank": 9,
       "ap_place": "형제해안도로",
       "category": "해변",
       "days": 8,
@@ -1828,7 +1961,7 @@
       "lon": 126.29
      },
      {
-      "rank": 9,
+      "rank": 10,
       "ap_place": "한담해변",
       "category": "해변",
       "days": 8,
@@ -1839,19 +1972,6 @@
       "foreign_share": 0.0,
       "lat": 33.46,
       "lon": 126.31
-     },
-     {
-      "rank": 10,
-      "ap_place": "김녕 성세기 해변",
-      "category": "해변",
-      "days": 8,
-      "avg_daily_users": 23.25,
-      "avg_congestion_index": 1.08,
-      "peak_congestion_index": 1.4,
-      "tourist_share": 0.0,
-      "foreign_share": 0.0,
-      "lat": 33.56,
-      "lon": 126.76
      }
     ]
    },
@@ -1871,8 +1991,8 @@
     ],
     "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
     "facts": [
-     "하효 쇠소깍 해변 반경 1.5km 내 정류소 28개, 합산 일평균 승차 230명 (와이파이 일평균 이용자 22명)",
-     "가장 가까운 정류소 쇠소깍하효항입구(0.58km), 피크 -시"
+     "하효 쇠소깍 해변 반경 1.5km 내 정류소 28개, 합산 일평균 승차 265명 (와이파이 일평균 이용자 22명)",
+     "가장 가까운 정류소 쇠소깍입구(0.54km), 피크 -시"
     ],
     "caveats": [
      "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.",
@@ -1881,12 +2001,20 @@
     "gate": [
      "게이트 통과"
     ],
-    "rows": 13,
+    "rows": 15,
     "table": [
+     {
+      "bus_station_name": "쇠소깍입구",
+      "dist_km": 0.54,
+      "daily_boardings": 51.1,
+      "peak_hour": null,
+      "latitude": 33.256784,
+      "longitude": 126.621741
+     },
      {
       "bus_station_name": "쇠소깍하효항입구",
       "dist_km": 0.58,
-      "daily_boardings": 5.9,
+      "daily_boardings": 5.3,
       "peak_hour": null,
       "latitude": 33.253779,
       "longitude": 126.617602
@@ -1894,15 +2022,23 @@
      {
       "bus_station_name": "망동산",
       "dist_km": 0.66,
-      "daily_boardings": 8.8,
+      "daily_boardings": 7.9,
       "peak_hour": null,
       "latitude": 33.256815,
       "longitude": 126.619194
      },
      {
+      "bus_station_name": "하효대선선과장",
+      "dist_km": 0.76,
+      "daily_boardings": 0.6,
+      "peak_hour": null,
+      "latitude": 33.250854,
+      "longitude": 126.615555
+     },
+     {
       "bus_station_name": "하효마을다목적회관",
       "dist_km": 0.87,
-      "daily_boardings": 3.8,
+      "daily_boardings": 3.4,
       "peak_hour": null,
       "latitude": 33.258153,
       "longitude": 126.617577
@@ -1910,7 +2046,7 @@
      {
       "bus_station_name": "용운사",
       "dist_km": 0.87,
-      "daily_boardings": 1.1,
+      "daily_boardings": 0.9,
       "peak_hour": null,
       "latitude": 33.259985,
       "longitude": 126.623463
@@ -1918,7 +2054,7 @@
      {
       "bus_station_name": "효돈농협하나로마트",
       "dist_km": 1.06,
-      "daily_boardings": 33.1,
+      "daily_boardings": 31.7,
       "peak_hour": null,
       "latitude": 33.260454,
       "longitude": 126.617999
@@ -1926,7 +2062,7 @@
      {
       "bus_station_name": "하효마을회관",
       "dist_km": 1.21,
-      "daily_boardings": 1.1,
+      "daily_boardings": 1.0,
       "peak_hour": null,
       "latitude": 33.261799,
       "longitude": 126.617578
@@ -1934,7 +2070,7 @@
      {
       "bus_station_name": "맹살공원",
       "dist_km": 1.23,
-      "daily_boardings": 2.1,
+      "daily_boardings": 1.8,
       "peak_hour": null,
       "latitude": 33.263138,
       "longitude": 126.621985
@@ -1942,7 +2078,7 @@
      {
       "bus_station_name": "효례교",
       "dist_km": 1.29,
-      "daily_boardings": 11.6,
+      "daily_boardings": 10.8,
       "peak_hour": null,
       "latitude": 33.263653,
       "longitude": 126.621854
@@ -1950,7 +2086,7 @@
      {
       "bus_station_name": "하례1리입구",
       "dist_km": 1.31,
-      "daily_boardings": 30.8,
+      "daily_boardings": 28.3,
       "peak_hour": null,
       "latitude": 33.263671,
       "longitude": 126.626185
@@ -1958,7 +2094,7 @@
      {
       "bus_station_name": "효돈중학교",
       "dist_km": 1.32,
-      "daily_boardings": 40.3,
+      "daily_boardings": 37.2,
       "peak_hour": null,
       "latitude": 33.263633,
       "longitude": 126.620083
@@ -1966,7 +2102,7 @@
      {
       "bus_station_name": "제지기오름",
       "dist_km": 1.38,
-      "daily_boardings": 3.1,
+      "daily_boardings": 2.9,
       "peak_hour": null,
       "latitude": 33.245305,
       "longitude": 126.611141
@@ -1974,7 +2110,7 @@
      {
       "bus_station_name": "효돈초등학교",
       "dist_km": 1.41,
-      "daily_boardings": 86.6,
+      "daily_boardings": 80.1,
       "peak_hour": null,
       "latitude": 33.263583,
       "longitude": 126.616945
@@ -1982,7 +2118,7 @@
      {
       "bus_station_name": "효돈축구공원",
       "dist_km": 1.47,
-      "daily_boardings": 2.2,
+      "daily_boardings": 2.0,
       "peak_hour": null,
       "latitude": 33.260483,
       "longitude": 126.61122
@@ -1993,37 +2129,27 @@
  },
  {
   "question": "비 오면 어디가 한산해지나?",
-  "answer": "질문에 맞는 분석 도구를 찾지 못했습니다. 예: '주말에 가장 붐비는 관광지는?', '251번 노선 시간대별 이용', '비 오면 어디가 한산해지나?' (복합 질문은 LLM 모드를 권장합니다)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "answer": "**한 줄 결론** — 날씨 데이터가 없어 강우 영향을 계산할 수 없습니다.\n\n**근거**\n- 합성(2025-03-01~2025-04-30)은 실데이터 기간과 겹치지 않아 적재하지 않음 — 강우 영향 기능 비활성. 날씨 실데이터는 python scripts/fetch_weather.py 로 수집(기상청 CSV 변환 / Open-Meteo / 기상청 API허브)\n\n**해석과 제안**\n- `python scripts/fetch_weather.py --kma-csv <기상청 CSV>` 또는 `--open-meteo --from 2025-09-01 --to 2025-09-30` 으로 날씨를 받아 넣은 뒤 '다시 읽기' 하면 이 질문이 동작합니다.\n- 날씨 없이 볼 수 있는 질문: '주말에 가장 붐비는 관광지는?', '효율이 낮은 버스 노선은?'\n\n**한계**\n- 강우일/비강우일 비교는 일강수량(관측소 4곳) 기준의 단순 비교입니다.\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 4.93,
-  "synthetic": true,
+  "elapsed": 0.03,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
-   "규칙 플래너: 질문의 키워드로 도구를 골랐습니다 → 강우 영향"
+   "날씨 데이터(5-02)가 적재되지 않아 강우 영향 분석을 실행하지 않음"
   ],
-  "limitations": [],
+  "limitations": [
+   "날씨 데이터 미적재"
+  ],
   "followups": [
    "주말에 가장 붐비는 관광지는?",
    "효율이 낮은 버스 노선은?",
    "어떤 데이터가 있어?"
   ],
   "llm_transcript": [],
-  "steps": [
-   {
-    "tool": "weather_effect",
-    "args": {
-     "target": "wifi"
-    },
-    "ok": false,
-    "seconds": 4.91,
-    "rows": 0,
-    "gate": [],
-    "error": "ValueError: 강우일이 3일 미만이거나 날씨 데이터와 기간이 겹치지 않습니다."
-   }
-  ],
+  "steps": [],
   "results": []
  },
  {
@@ -2032,8 +2158,8 @@
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 0.06,
-  "synthetic": true,
+  "elapsed": 0.08,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -2057,7 +2183,7 @@
      "route": "251"
     },
     "ok": true,
-    "seconds": 0.03,
+    "seconds": 0.04,
     "rows": 26,
     "gate": [
      "게이트 통과"
@@ -2234,7 +2360,7 @@
   "llm_calls": 0,
   "tokens": {},
   "elapsed": 0.07,
-  "synthetic": true,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -2259,7 +2385,7 @@
      "top_n": 10
     },
     "ok": true,
-    "seconds": 0.03,
+    "seconds": 0.04,
     "rows": 10,
     "gate": [
      "게이트 통과"
@@ -2402,12 +2528,12 @@
  },
  {
   "question": "어르신이 많이 타는 정류소는?",
-  "answer": "**한 줄 결론** — vulnerable_share 기준 1위 서귀포향토오일시장: 일평균 승차 54명, 교통약자 비중 79%, 주말/평일 1.8배.\n\n**근거**\n- vulnerable_share 기준 1위 서귀포향토오일시장: 일평균 승차 54명, 교통약자 비중 79%, 주말/평일 1.8배\n- 분석기간 18일, 전체 정류소 교통약자 평균 비중 39%\n- (사용 데이터: bus_station_usage, bus_station, 전체 기간)\n\n**해석과 제안**\n- 상위 정류소는 승강장 확충·배차 조정 우선순위이며, 교통약자 비중이 높은 곳은 저상버스·안내 보강 대상입니다.\n\n**한계**\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-18)으로 계산했습니다.\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "answer": "**한 줄 결론** — vulnerable_share 기준 1위 서귀포향토오일시장: 일평균 승차 54명, 교통약자 비중 79%, 주말/평일 1.78배.\n\n**근거**\n- vulnerable_share 기준 1위 서귀포향토오일시장: 일평균 승차 54명, 교통약자 비중 79%, 주말/평일 1.78배\n- 분석기간 18일, 전체 정류소 교통약자 평균 비중 39%\n- (사용 데이터: bus_station_usage, bus_station, 전체 기간)\n\n**해석과 제안**\n- 상위 정류소는 승강장 확충·배차 조정 우선순위이며, 교통약자 비중이 높은 곳은 저상버스·안내 보강 대상입니다.\n\n**한계**\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-18)으로 계산했습니다.\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 0.15,
-  "synthetic": true,
+  "elapsed": 0.14,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -2430,7 +2556,7 @@
      "top_n": 10
     },
     "ok": true,
-    "seconds": 0.11,
+    "seconds": 0.1,
     "rows": 10,
     "gate": [
      "게이트 통과"
@@ -2456,7 +2582,7 @@
     ],
     "method": "bus_station_usage 승차 행을 정류소별 합산, 교통약자(경로·장애·유공·어린이) 비중과 주말/평일 일평균 비율 계산",
     "facts": [
-     "vulnerable_share 기준 1위 서귀포향토오일시장: 일평균 승차 54명, 교통약자 비중 79%, 주말/평일 1.8배",
+     "vulnerable_share 기준 1위 서귀포향토오일시장: 일평균 승차 54명, 교통약자 비중 79%, 주말/평일 1.78배",
      "분석기간 18일, 전체 정류소 교통약자 평균 비중 39%"
     ],
     "caveats": [
@@ -2470,10 +2596,10 @@
      {
       "rank": 1,
       "bus_station_name": "서귀포향토오일시장",
-      "daily_boardings": 54.2,
+      "daily_boardings": 54.5,
       "vulnerable_share": 0.79,
       "senior_share": 0.0,
-      "weekend_ratio": 1.8,
+      "weekend_ratio": 1.78,
       "bus_city_type": null,
       "latitude": 33.265644,
       "longitude": 126.573988
@@ -2481,101 +2607,101 @@
      {
       "rank": 2,
       "bus_station_name": "한림오일시장",
-      "daily_boardings": 39.2,
-      "vulnerable_share": 0.745,
+      "daily_boardings": 39.6,
+      "vulnerable_share": 0.743,
       "senior_share": 0.0,
-      "weekend_ratio": 1.38,
+      "weekend_ratio": 1.37,
       "bus_city_type": null,
       "latitude": 33.420797,
       "longitude": 126.273594
      },
      {
       "rank": 3,
-      "bus_station_name": "제주절물자연휴양림",
-      "daily_boardings": 47.6,
-      "vulnerable_share": 0.744,
-      "senior_share": 0.0,
-      "weekend_ratio": 1.28,
-      "bus_city_type": null,
-      "latitude": 33.440704,
-      "longitude": 126.630249
-     },
-     {
-      "rank": 4,
       "bus_station_name": "하모3리",
-      "daily_boardings": 88.3,
-      "vulnerable_share": 0.74,
+      "daily_boardings": 89.8,
+      "vulnerable_share": 0.739,
       "senior_share": 0.0,
-      "weekend_ratio": 0.64,
+      "weekend_ratio": 0.63,
       "bus_city_type": null,
       "latitude": 33.221583,
       "longitude": 126.251067
      },
      {
-      "rank": 5,
-      "bus_station_name": "열린병원",
-      "daily_boardings": 86.1,
-      "vulnerable_share": 0.715,
+      "rank": 4,
+      "bus_station_name": "제주절물자연휴양림",
+      "daily_boardings": 52.3,
+      "vulnerable_share": 0.73,
       "senior_share": 0.0,
-      "weekend_ratio": 0.52,
+      "weekend_ratio": 1.13,
       "bus_city_type": null,
-      "latitude": 33.254186,
-      "longitude": 126.565218
+      "latitude": 33.440704,
+      "longitude": 126.630249
      },
      {
-      "rank": 6,
+      "rank": 5,
       "bus_station_name": "서귀포초등학교",
-      "daily_boardings": 26.1,
-      "vulnerable_share": 0.714,
+      "daily_boardings": 27.0,
+      "vulnerable_share": 0.718,
       "senior_share": 0.0,
-      "weekend_ratio": 1.03,
+      "weekend_ratio": 0.99,
       "bus_city_type": null,
       "latitude": 33.243155,
       "longitude": 126.565071
      },
      {
-      "rank": 7,
-      "bus_station_name": "제주삼양동유적",
-      "daily_boardings": 42.6,
-      "vulnerable_share": 0.71,
+      "rank": 6,
+      "bus_station_name": "열린병원",
+      "daily_boardings": 89.2,
+      "vulnerable_share": 0.716,
       "senior_share": 0.0,
-      "weekend_ratio": 1.17,
+      "weekend_ratio": 0.5,
       "bus_city_type": null,
-      "latitude": 33.522937,
-      "longitude": 126.586753
+      "latitude": 33.254186,
+      "longitude": 126.565218
      },
      {
-      "rank": 8,
+      "rank": 7,
       "bus_station_name": "중앙로(동문시장)",
-      "daily_boardings": 162.3,
-      "vulnerable_share": 0.709,
+      "daily_boardings": 169.3,
+      "vulnerable_share": 0.711,
       "senior_share": 0.0,
-      "weekend_ratio": 0.8,
+      "weekend_ratio": 0.76,
       "bus_city_type": null,
       "latitude": 33.511683,
       "longitude": 126.524567
      },
      {
-      "rank": 9,
-      "bus_station_name": "표선파출소",
-      "daily_boardings": 20.9,
-      "vulnerable_share": 0.706,
-      "senior_share": 0.0,
-      "weekend_ratio": 0.65,
-      "bus_city_type": null,
-      "latitude": 33.323303,
-      "longitude": 126.831449
-     },
-     {
-      "rank": 10,
+      "rank": 8,
       "bus_station_name": "서귀포농협",
-      "daily_boardings": 30.8,
-      "vulnerable_share": 0.706,
+      "daily_boardings": 31.7,
+      "vulnerable_share": 0.709,
       "senior_share": 0.0,
-      "weekend_ratio": 0.81,
+      "weekend_ratio": 0.78,
       "bus_city_type": null,
       "latitude": 33.25151,
       "longitude": 126.561122
+     },
+     {
+      "rank": 9,
+      "bus_station_name": "하귀하나로마트",
+      "daily_boardings": 84.1,
+      "vulnerable_share": 0.704,
+      "senior_share": 0.0,
+      "weekend_ratio": 0.72,
+      "bus_city_type": null,
+      "latitude": 33.484125,
+      "longitude": 126.411783
+     },
+     {
+      "rank": 10,
+      "bus_station_name": "제주삼양동유적",
+      "daily_boardings": 46.6,
+      "vulnerable_share": 0.702,
+      "senior_share": 0.0,
+      "weekend_ratio": 1.04,
+      "bus_city_type": null,
+      "latitude": 33.522937,
+      "longitude": 126.586753
      }
     ]
    }
@@ -2583,12 +2709,12 @@
  },
  {
   "question": "한라병원 정류소는 몇 시에 가장 붐비나?",
-  "answer": "**한 줄 결론** — boardings 기준 1위 한라병원: 일평균 승차 1,658명, 교통약자 비중 40%, 주말/평일 0.63배.\n\n**근거**\n- boardings 기준 1위 한라병원: 일평균 승차 1,658명, 교통약자 비중 40%, 주말/평일 0.63배\n- 분석기간 16일, 전체 정류소 교통약자 평균 비중 38%\n- (사용 데이터: bus_station_usage, bus_station, 전체 기간)\n\n**해석과 제안**\n- 상위 정류소는 승강장 확충·배차 조정 우선순위이며, 교통약자 비중이 높은 곳은 저상버스·안내 보강 대상입니다.\n\n**한계**\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-18)으로 계산했습니다.\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "answer": "**한 줄 결론** — boardings 기준 1위 한라병원: 일평균 승차 1,547명, 교통약자 비중 40%, 주말/평일 0.69배.\n\n**근거**\n- boardings 기준 1위 한라병원: 일평균 승차 1,547명, 교통약자 비중 40%, 주말/평일 0.69배\n- 분석기간 18일, 전체 정류소 교통약자 평균 비중 38%\n- (사용 데이터: bus_station_usage, bus_station, 전체 기간)\n\n**해석과 제안**\n- 상위 정류소는 승강장 확충·배차 조정 우선순위이며, 교통약자 비중이 높은 곳은 저상버스·안내 보강 대상입니다.\n\n**한계**\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-18)으로 계산했습니다.\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 0.1,
-  "synthetic": true,
+  "elapsed": 0.07,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -2613,7 +2739,7 @@
      "station_name": "한라병원"
     },
     "ok": true,
-    "seconds": 0.06,
+    "seconds": 0.04,
     "rows": 2,
     "gate": [
      "게이트 통과"
@@ -2639,8 +2765,8 @@
     ],
     "method": "bus_station_usage 승차 행을 정류소별 합산, 교통약자(경로·장애·유공·어린이) 비중과 주말/평일 일평균 비율 계산",
     "facts": [
-     "boardings 기준 1위 한라병원: 일평균 승차 1,658명, 교통약자 비중 40%, 주말/평일 0.63배",
-     "분석기간 16일, 전체 정류소 교통약자 평균 비중 38%"
+     "boardings 기준 1위 한라병원: 일평균 승차 1,547명, 교통약자 비중 40%, 주말/평일 0.69배",
+     "분석기간 18일, 전체 정류소 교통약자 평균 비중 38%"
     ],
     "caveats": [
      "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다."
@@ -2653,10 +2779,10 @@
      {
       "rank": 1,
       "bus_station_name": "한라병원",
-      "daily_boardings": 1658.4,
+      "daily_boardings": 1547.3,
       "vulnerable_share": 0.397,
       "senior_share": 0.0,
-      "weekend_ratio": 0.63,
+      "weekend_ratio": 0.69,
       "bus_city_type": null,
       "latitude": 33.489633,
       "longitude": 126.486
@@ -2664,10 +2790,10 @@
      {
       "rank": 2,
       "bus_station_name": "노형오거리(한라병원방면)",
-      "daily_boardings": 572.1,
-      "vulnerable_share": 0.323,
+      "daily_boardings": 531.9,
+      "vulnerable_share": 0.321,
       "senior_share": 0.0,
-      "weekend_ratio": 0.7,
+      "weekend_ratio": 0.78,
       "bus_city_type": null,
       "latitude": 33.486674,
       "longitude": 126.480927
@@ -2678,12 +2804,12 @@
  },
  {
   "question": "9월에 가장 붐빈 관광지는?",
-  "answer": "**한 줄 결론** — 전체 기준 혼잡지수 1위는 19코스(평균 혼잡지수 2.08, 일평균 39명).\n\n**근거**\n- 전체 기준 혼잡지수 1위는 19코스(평균 혼잡지수 2.08, 일평균 39명)\n- (사용 데이터: wifi_ap_usage, 기간 2025-09-01~2025-09-30)\n- 19코스 반경 1.5km 내 정류소 28개, 합산 일평균 승차 975명 (와이파이 일평균 이용자 39명)\n- 가장 가까운 정류소 함덕농협지소(0.76km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 기간 2025-09-01~2025-09-30)\n\n**해석과 제안**\n- 상위 장소는 주말 분산 안내(실시간 혼잡 알림·대체 관광지 추천)와 임시 주차·셔틀 검토 대상입니다.\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)\n- 표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(306곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만\n- 현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "answer": "**한 줄 결론** — 전체 기준 혼잡지수 1위는 19코스(평균 혼잡지수 2.08, 일평균 39명).\n\n**근거**\n- 전체 기준 혼잡지수 1위는 19코스(평균 혼잡지수 2.08, 일평균 39명)\n- (사용 데이터: wifi_ap_usage, 기간 2025-09-01~2025-09-30)\n- 19코스 반경 1.5km 내 정류소 28개, 합산 일평균 승차 1,262명 (와이파이 일평균 이용자 39명)\n- 가장 가까운 정류소 함덕농협지소(0.76km), 피크 -시\n- (사용 데이터: wifi_ap_usage, bus_station, bus_station_usage, 기간 2025-09-01~2025-09-30)\n\n**해석과 제안**\n- 상위 장소는 주말 분산 안내(실시간 혼잡 알림·대체 관광지 추천)와 임시 주차·셔틀 검토 대상입니다.\n- 접근 정류소의 피크 시간대에 증차·셔틀을 배치하면 관광지 쏠림과 대중교통 혼잡을 함께 줄일 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)\n- 표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(308곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만\n- 현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).\n- 티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.\n- 정류소-관광지 거리는 직선거리입니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 0.2,
-  "synthetic": true,
+  "elapsed": 0.16,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -2694,7 +2820,7 @@
    "4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.",
    "와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.",
    "혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)",
-   "표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(306곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
+   "표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(308곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
    "현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화).",
    "티머니 카드 태그 기반 집계이며 현금 승차·일부 요금제는 포함되지 않습니다. 배차 횟수 데이터가 없어 효율은 '승차 수요' 기준입니다.",
    "정류소-관광지 거리는 직선거리입니다."
@@ -2718,7 +2844,7 @@
      "category": "관광지"
     },
     "ok": true,
-    "seconds": 0.08,
+    "seconds": 0.06,
     "rows": 10,
     "gate": [
      "게이트 통과"
@@ -2733,8 +2859,8 @@
      "date_to": "2025-09-30"
     },
     "ok": true,
-    "seconds": 0.07,
-    "rows": 9,
+    "seconds": 0.06,
+    "rows": 15,
     "gate": [
      "게이트 통과"
     ],
@@ -2767,7 +2893,7 @@
     "caveats": [
      "와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.",
      "혼잡지수 = 일일 이용자수 ÷ 평일 중앙값(최소 10명)",
-     "표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(306곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
+     "표본 기준: 관측 20일 이상·일평균 20명 이상인 장소만 순위에 포함(308곳 제외) · 버스정류소·전기차충전소 AP 제외 · 카테고리 '관광지'만",
      "현재 와이파이 데이터는 허브 공개 API의 장소×일 집계본이라 국적·방문유형 비중은 계산되지 않습니다(센터 원본 4-05 적재 시 활성화)."
     ],
     "gate": [
@@ -2837,8 +2963,8 @@
       "peak_congestion_index": 3.64,
       "tourist_share": 0.0,
       "foreign_share": 0.0,
-      "lat": null,
-      "lon": null
+      "lat": 33.51,
+      "lon": 126.53
      },
      {
       "rank": 6,
@@ -2889,8 +3015,8 @@
       "peak_congestion_index": 3.86,
       "tourist_share": 0.0,
       "foreign_share": 0.0,
-      "lat": null,
-      "lon": null
+      "lat": 33.51,
+      "lon": 126.53
      },
      {
       "rank": 10,
@@ -2923,7 +3049,7 @@
     ],
     "method": "와이파이 장소 좌표 기준 haversine 거리로 정류소 선별 → bus_station_usage 승차 합산",
     "facts": [
-     "19코스 반경 1.5km 내 정류소 28개, 합산 일평균 승차 975명 (와이파이 일평균 이용자 39명)",
+     "19코스 반경 1.5km 내 정류소 28개, 합산 일평균 승차 1,262명 (와이파이 일평균 이용자 39명)",
      "가장 가까운 정류소 함덕농협지소(0.76km), 피크 -시"
     ],
     "caveats": [
@@ -2933,12 +3059,12 @@
     "gate": [
      "게이트 통과"
     ],
-    "rows": 9,
+    "rows": 15,
     "table": [
      {
       "bus_station_name": "함덕농협지소",
       "dist_km": 0.76,
-      "daily_boardings": 143.7,
+      "daily_boardings": 131.6,
       "peak_hour": null,
       "latitude": 33.54235,
       "longitude": 126.664167
@@ -2946,15 +3072,23 @@
      {
       "bus_station_name": "함덕비석거리",
       "dist_km": 0.78,
-      "daily_boardings": 126.1,
+      "daily_boardings": 116.4,
       "peak_hour": null,
       "latitude": 33.543217,
       "longitude": 126.661667
      },
      {
+      "bus_station_name": "함덕리3구",
+      "dist_km": 0.79,
+      "daily_boardings": 162.9,
+      "peak_hour": null,
+      "latitude": 33.541764,
+      "longitude": 126.665745
+     },
+     {
       "bus_station_name": "함덕환승정류장(함덕해수욕장)",
       "dist_km": 0.89,
-      "daily_boardings": 603.1,
+      "daily_boardings": 566.5,
       "peak_hour": null,
       "latitude": 33.541007,
       "longitude": 126.668767
@@ -2962,7 +3096,7 @@
      {
       "bus_station_name": "해양연구소",
       "dist_km": 0.91,
-      "daily_boardings": 74.9,
+      "daily_boardings": 68.9,
       "peak_hour": null,
       "latitude": 33.543809,
       "longitude": 126.658961
@@ -2970,7 +3104,15 @@
      {
       "bus_station_name": "함덕리(4구)",
       "dist_km": 1.22,
-      "daily_boardings": 15.1,
+      "daily_boardings": 14.6,
+      "peak_hour": null,
+      "latitude": 33.54011,
+      "longitude": 126.674739
+     },
+     {
+      "bus_station_name": "함덕리4구",
+      "dist_km": 1.22,
+      "daily_boardings": 59.7,
       "peak_hour": null,
       "latitude": 33.54011,
       "longitude": 126.674739
@@ -2986,18 +3128,50 @@
      {
       "bus_station_name": "신흥리",
       "dist_km": 1.35,
-      "daily_boardings": 0.5,
+      "daily_boardings": 0.4,
       "peak_hour": null,
       "latitude": 33.543829,
       "longitude": 126.653428
      },
      {
+      "bus_station_name": "신흥리(마을입구),함덕고등학교",
+      "dist_km": 1.36,
+      "daily_boardings": 71.8,
+      "peak_hour": null,
+      "latitude": 33.543415,
+      "longitude": 126.653501
+     },
+     {
+      "bus_station_name": "신흥리복지회관",
+      "dist_km": 1.38,
+      "daily_boardings": 2.1,
+      "peak_hour": null,
+      "latitude": 33.546769,
+      "longitude": 126.652002
+     },
+     {
+      "bus_station_name": "함덕광명샤인빌앞",
+      "dist_km": 1.39,
+      "daily_boardings": 53.1,
+      "peak_hour": null,
+      "latitude": 33.538233,
+      "longitude": 126.674617
+     },
+     {
       "bus_station_name": "911의원",
       "dist_km": 1.39,
-      "daily_boardings": 10.2,
+      "daily_boardings": 9.3,
       "peak_hour": null,
       "latitude": 33.540685,
       "longitude": 126.678082
+     },
+     {
+      "bus_station_name": "신흥리포구",
+      "dist_km": 1.47,
+      "daily_boardings": 2.7,
+      "peak_hour": null,
+      "latitude": 33.548741,
+      "longitude": 126.650802
      },
      {
       "bus_station_name": "사장교차로",
@@ -3012,13 +3186,571 @@
   ]
  },
  {
+  "question": "9월 전반과 후반에 어디가 늘고 줄었어?",
+  "answer": "**한 줄 결론** — 전반(2025-09-01~2025-09-15) 대비 후반(2025-09-16~2025-09-30) 전체 일평균 11,440 → 11,684 (+2%).\n\n**근거**\n- 전반(2025-09-01~2025-09-15) 대비 후반(2025-09-16~2025-09-30) 전체 일평균 11,440 → 11,684 (+2%)\n- 가장 늘어난 장소: 서귀포의료원 (31 → 46, +49%)\n- 가장 줄어든 장소: 제주항국제여객터미널 (197 → 75, -62%)\n- (사용 데이터: wifi_ap_usage, 기간 2025-09-01~2025-09-30)\n\n**해석과 제안**\n- 크게 늘어난 곳은 원인(행사·개통·계절) 확인과 선제 분산 안내, 크게 줄어든 곳은 운영·홍보 점검 대상입니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 두 구간의 요일 구성·공휴일·행사·날씨가 통제되지 않은 단순 비교입니다(상관 관계).\n- 두 구간 모두 관측 7일 이상·일평균 20명 이상인 장소만 포함(439곳 제외).\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.09,
+  "synthetic": false,
+  "verification": {},
+  "notes": [],
+  "plan": [
+   "규칙 플래너: 질문의 키워드로 도구를 골랐습니다 → 기간·요일 비교 (기간 2025-09-01~2025-09-30)"
+  ],
+  "limitations": [
+   "4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.",
+   "두 구간의 요일 구성·공휴일·행사·날씨가 통제되지 않은 단순 비교입니다(상관 관계).",
+   "두 구간 모두 관측 7일 이상·일평균 20명 이상인 장소만 포함(439곳 제외)."
+  ],
+  "followups": [
+   "서귀포의료원은 언제 가장 붐비나?",
+   "서귀포의료원 가는 버스 정류소는 얼마나 붐비나?",
+   "평일과 주말 차이가 큰 곳은?"
+  ],
+  "llm_transcript": [],
+  "steps": [
+   {
+    "tool": "compare_periods",
+    "args": {
+     "target": "wifi",
+     "split": "halves",
+     "date_from": "2025-09-01",
+     "date_to": "2025-09-30"
+    },
+    "ok": true,
+    "seconds": 0.06,
+    "rows": 20,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "compare_periods",
+    "title": "장소별 전반·후반 비교 (wifi)",
+    "params": {
+     "target": "wifi",
+     "split": "halves",
+     "date_from": "2025-09-01",
+     "date_to": "2025-09-30",
+     "a_from": null,
+     "a_to": null,
+     "b_from": null,
+     "b_to": null,
+     "place": null,
+     "top_n": 10,
+     "min_daily": 20
+    },
+    "datasets": [
+     "wifi_ap_usage"
+    ],
+    "method": "장소별 일별 합계를 전반(2025-09-01~2025-09-15)·후반(2025-09-16~2025-09-30) 구간으로 나눠 일평균을 구하고 변화율 = 후반/전반 − 1",
+    "facts": [
+     "전반(2025-09-01~2025-09-15) 대비 후반(2025-09-16~2025-09-30) 전체 일평균 11,440 → 11,684 (+2%)",
+     "가장 늘어난 장소: 서귀포의료원 (31 → 46, +49%)",
+     "가장 줄어든 장소: 제주항국제여객터미널 (197 → 75, -62%)"
+    ],
+    "caveats": [
+     "두 구간의 요일 구성·공휴일·행사·날씨가 통제되지 않은 단순 비교입니다(상관 관계).",
+     "두 구간 모두 관측 7일 이상·일평균 20명 이상인 장소만 포함(439곳 제외)."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 20,
+    "table": [
+     {
+      "rank": 1,
+      "장소": "서귀포의료원",
+      "전반_일수": 15,
+      "전반_일평균": 31.0,
+      "후반_일수": 15,
+      "후반_일평균": 46.3,
+      "증감": 15.3,
+      "변화율": 0.492
+     },
+     {
+      "rank": 2,
+      "장소": "조천읍도서관",
+      "전반_일수": 15,
+      "전반_일평균": 27.4,
+      "후반_일수": 14,
+      "후반_일평균": 35.2,
+      "증감": 7.8,
+      "변화율": 0.285
+     },
+     {
+      "rank": 3,
+      "장소": "서귀포서부도서관",
+      "전반_일수": 14,
+      "전반_일평균": 34.6,
+      "후반_일수": 14,
+      "후반_일평균": 44.3,
+      "증감": 9.7,
+      "변화율": 0.281
+     },
+     {
+      "rank": 4,
+      "장소": "신산공원",
+      "전반_일수": 15,
+      "전반_일평균": 24.9,
+      "후반_일수": 15,
+      "후반_일평균": 31.6,
+      "증감": 6.7,
+      "변화율": 0.271
+     },
+     {
+      "rank": 5,
+      "장소": "금능해수욕장",
+      "전반_일수": 15,
+      "전반_일평균": 28.4,
+      "후반_일수": 15,
+      "후반_일평균": 35.7,
+      "증감": 7.3,
+      "변화율": 0.256
+     },
+     {
+      "rank": 6,
+      "장소": "칠십리 음식 특화거리",
+      "전반_일수": 15,
+      "전반_일평균": 66.7,
+      "후반_일수": 15,
+      "후반_일평균": 83.7,
+      "증감": 17.0,
+      "변화율": 0.255
+     },
+     {
+      "rank": 7,
+      "장소": "삼화제2근린공원",
+      "전반_일수": 15,
+      "전반_일평균": 25.6,
+      "후반_일수": 15,
+      "후반_일평균": 31.9,
+      "증감": 6.3,
+      "변화율": 0.245
+     },
+     {
+      "rank": 8,
+      "장소": "금능으뜸원 해변(금능해수욕장)",
+      "전반_일수": 15,
+      "전반_일평균": 33.0,
+      "후반_일수": 15,
+      "후반_일평균": 40.5,
+      "증감": 7.5,
+      "변화율": 0.228
+     },
+     {
+      "rank": 9,
+      "장소": "중앙도서관",
+      "전반_일수": 15,
+      "전반_일평균": 34.2,
+      "후반_일수": 15,
+      "후반_일평균": 41.8,
+      "증감": 7.6,
+      "변화율": 0.222
+     },
+     {
+      "rank": 10,
+      "장소": "서귀포시외버스터미널",
+      "전반_일수": 15,
+      "전반_일평균": 64.5,
+      "후반_일수": 15,
+      "후반_일평균": 78.5,
+      "증감": 14.0,
+      "변화율": 0.217
+     },
+     {
+      "rank": 11,
+      "장소": "함덕 서우봉 해변 #1",
+      "전반_일수": 15,
+      "전반_일평균": 137.4,
+      "후반_일수": 15,
+      "후반_일평균": 108.3,
+      "증감": -29.1,
+      "변화율": -0.212
+     },
+     {
+      "rank": 12,
+      "장소": "지하상가 3-1",
+      "전반_일수": 15,
+      "전반_일평균": 32.5,
+      "후반_일수": 15,
+      "후반_일평균": 25.3,
+      "증감": -7.2,
+      "변화율": -0.221
+     },
+     {
+      "rank": 13,
+      "장소": "지하상가 2-1",
+      "전반_일수": 15,
+      "전반_일평균": 38.6,
+      "후반_일수": 15,
+      "후반_일평균": 30.0,
+      "증감": -8.6,
+      "변화율": -0.223
+     },
+     {
+      "rank": 14,
+      "장소": "함덕 서우봉 해변",
+      "전반_일수": 15,
+      "전반_일평균": 127.2,
+      "후반_일수": 15,
+      "후반_일평균": 98.2,
+      "증감": -29.0,
+      "변화율": -0.228
+     },
+     {
+      "rank": 15,
+      "장소": "지하상가 1-1",
+      "전반_일수": 15,
+      "전반_일평균": 30.5,
+      "후반_일수": 15,
+      "후반_일평균": 23.4,
+      "증감": -7.1,
+      "변화율": -0.232
+     },
+     {
+      "rank": 16,
+      "장소": "지하상가 2-2",
+      "전반_일수": 15,
+      "전반_일평균": 48.3,
+      "후반_일수": 15,
+      "후반_일평균": 36.8,
+      "증감": -11.5,
+      "변화율": -0.238
+     },
+     {
+      "rank": 17,
+      "장소": "18코스",
+      "전반_일수": 15,
+      "전반_일평균": 33.3,
+      "후반_일수": 15,
+      "후반_일평균": 23.5,
+      "증감": -9.9,
+      "변화율": -0.296
+     },
+     {
+      "rank": 18,
+      "장소": "지하상가 3-2",
+      "전반_일수": 15,
+      "전반_일평균": 51.8,
+      "후반_일수": 15,
+      "후반_일평균": 35.8,
+      "증감": -16.0,
+      "변화율": -0.309
+     },
+     {
+      "rank": 19,
+      "장소": "7코스",
+      "전반_일수": 15,
+      "전반_일평균": 45.5,
+      "후반_일수": 15,
+      "후반_일평균": 30.1,
+      "증감": -15.4,
+      "변화율": -0.338
+     },
+     {
+      "rank": 20,
+      "장소": "제주항국제여객터미널",
+      "전반_일수": 15,
+      "전반_일평균": 196.6,
+      "후반_일수": 15,
+      "후반_일평균": 75.3,
+      "증감": -121.3,
+      "변화율": -0.617
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "question": "평일과 주말 차이가 큰 정류소는?",
+  "answer": "**한 줄 결론** — 평일(2025-09-01~2025-09-18 평일) 대비 주말(2025-09-01~2025-09-18 주말) 전체 일평균 85,201 → 65,186 (-23%).\n\n**근거**\n- 평일(2025-09-01~2025-09-18 평일) 대비 주말(2025-09-01~2025-09-18 주말) 전체 일평균 85,201 → 65,186 (-23%)\n- 가장 늘어난 정류소: 렛츠런파크 (83 → 262, +216%)\n- 가장 줄어든 정류소: 제주한라대학교 (476 → 115, -76%)\n- (사용 데이터: bus_station_usage, 전체 기간)\n\n**해석과 제안**\n- 크게 늘어난 곳은 원인(행사·개통·계절) 확인과 선제 분산 안내, 크게 줄어든 곳은 운영·홍보 점검 대상입니다.\n\n**한계**\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-18)으로 계산했습니다.\n- 두 구간의 요일 구성·공휴일·행사·날씨가 통제되지 않은 단순 비교입니다(상관 관계).\n- 두 구간 모두 관측 2일 이상·일평균 20명 이상인 정류소만 포함(1389곳 제외).\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "mode": "offline",
+  "llm_calls": 0,
+  "tokens": {},
+  "elapsed": 0.1,
+  "synthetic": false,
+  "verification": {},
+  "notes": [],
+  "plan": [
+   "규칙 플래너: 질문의 키워드로 도구를 골랐습니다 → 기간·요일 비교 (버스 기준)"
+  ],
+  "limitations": [
+   "기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-18)으로 계산했습니다.",
+   "두 구간의 요일 구성·공휴일·행사·날씨가 통제되지 않은 단순 비교입니다(상관 관계).",
+   "두 구간 모두 관측 2일 이상·일평균 20명 이상인 정류소만 포함(1389곳 제외)."
+  ],
+  "followups": [
+   "렛츠런파크 정류소는 몇 시에 가장 붐비나?"
+  ],
+  "llm_transcript": [],
+  "steps": [
+   {
+    "tool": "compare_periods",
+    "args": {
+     "target": "bus_station",
+     "split": "weekday_weekend"
+    },
+    "ok": true,
+    "seconds": 0.06,
+    "rows": 20,
+    "gate": [
+     "게이트 통과"
+    ],
+    "error": ""
+   }
+  ],
+  "results": [
+   {
+    "tool": "compare_periods",
+    "title": "정류소별 평일·주말 비교 (bus_station)",
+    "params": {
+     "target": "bus_station",
+     "split": "weekday_weekend",
+     "date_from": null,
+     "date_to": null,
+     "a_from": null,
+     "a_to": null,
+     "b_from": null,
+     "b_to": null,
+     "place": null,
+     "top_n": 10,
+     "min_daily": 20
+    },
+    "datasets": [
+     "bus_station_usage"
+    ],
+    "method": "정류소별 일별 합계를 평일(2025-09-01~2025-09-18 평일)·주말(2025-09-01~2025-09-18 주말) 구간으로 나눠 일평균을 구하고 변화율 = 주말/평일 − 1",
+    "facts": [
+     "평일(2025-09-01~2025-09-18 평일) 대비 주말(2025-09-01~2025-09-18 주말) 전체 일평균 85,201 → 65,186 (-23%)",
+     "가장 늘어난 정류소: 렛츠런파크 (83 → 262, +216%)",
+     "가장 줄어든 정류소: 제주한라대학교 (476 → 115, -76%)"
+    ],
+    "caveats": [
+     "두 구간의 요일 구성·공휴일·행사·날씨가 통제되지 않은 단순 비교입니다(상관 관계).",
+     "두 구간 모두 관측 2일 이상·일평균 20명 이상인 정류소만 포함(1389곳 제외)."
+    ],
+    "gate": [
+     "게이트 통과"
+    ],
+    "rows": 20,
+    "table": [
+     {
+      "rank": 1,
+      "정류소": "렛츠런파크",
+      "평일_일수": 14,
+      "평일_일평균": 82.7,
+      "주말_일수": 4,
+      "주말_일평균": 261.8,
+      "증감": 179.0,
+      "변화율": 2.165
+     },
+     {
+      "rank": 2,
+      "정류소": "한라생태숲",
+      "평일_일수": 14,
+      "평일_일평균": 39.1,
+      "주말_일수": 4,
+      "주말_일평균": 75.2,
+      "증감": 36.1,
+      "변화율": 0.922
+     },
+     {
+      "rank": 3,
+      "정류소": "관음사탐방로입구",
+      "평일_일수": 11,
+      "평일_일평균": 22.3,
+      "주말_일수": 4,
+      "주말_일평균": 40.0,
+      "증감": 17.7,
+      "변화율": 0.796
+     },
+     {
+      "rank": 4,
+      "정류소": "서귀포향토오일시장",
+      "평일_일수": 14,
+      "평일_일평균": 46.4,
+      "주말_일수": 4,
+      "주말_일평균": 82.8,
+      "증감": 36.3,
+      "변화율": 0.782
+     },
+     {
+      "rank": 5,
+      "정류소": "다호마을",
+      "평일_일수": 14,
+      "평일_일평균": 33.9,
+      "주말_일수": 4,
+      "주말_일평균": 59.8,
+      "증감": 25.9,
+      "변화율": 0.765
+     },
+     {
+      "rank": 6,
+      "정류소": "제주국제컨벤션센터중문대포해안주상절리대",
+      "평일_일수": 13,
+      "평일_일평균": 25.0,
+      "주말_일수": 4,
+      "주말_일평균": 43.8,
+      "증감": 18.8,
+      "변화율": 0.75
+     },
+     {
+      "rank": 7,
+      "정류소": "월구마을/동성마을(노형로 방향)",
+      "평일_일수": 14,
+      "평일_일평균": 27.5,
+      "주말_일수": 4,
+      "주말_일평균": 44.0,
+      "증감": 16.5,
+      "변화율": 0.6
+     },
+     {
+      "rank": 8,
+      "정류소": "성판악",
+      "평일_일수": 14,
+      "평일_일평균": 89.1,
+      "주말_일수": 4,
+      "주말_일평균": 136.8,
+      "증감": 47.7,
+      "변화율": 0.535
+     },
+     {
+      "rank": 9,
+      "정류소": "운전면허시험장",
+      "평일_일수": 14,
+      "평일_일평균": 23.4,
+      "주말_일수": 4,
+      "주말_일평균": 35.8,
+      "증감": 12.4,
+      "변화율": 0.531
+     },
+     {
+      "rank": 10,
+      "정류소": "돈대산입구",
+      "평일_일수": 12,
+      "평일_일평균": 21.9,
+      "주말_일수": 4,
+      "주말_일평균": 33.5,
+      "증감": 11.6,
+      "변화율": 0.529
+     },
+     {
+      "rank": 11,
+      "정류소": "해오름아파트",
+      "평일_일수": 14,
+      "평일_일평균": 60.3,
+      "주말_일수": 4,
+      "주말_일평균": 26.5,
+      "증감": -33.8,
+      "변화율": -0.56
+     },
+     {
+      "rank": 12,
+      "정류소": "제주의료원",
+      "평일_일수": 14,
+      "평일_일평균": 74.8,
+      "주말_일수": 4,
+      "주말_일평균": 32.0,
+      "증감": -42.8,
+      "변화율": -0.572
+     },
+     {
+      "rank": 13,
+      "정류소": "신제주초등학교",
+      "평일_일수": 14,
+      "평일_일평균": 82.1,
+      "주말_일수": 4,
+      "주말_일평균": 34.0,
+      "증감": -48.1,
+      "변화율": -0.586
+     },
+     {
+      "rank": 14,
+      "정류소": "제주대학교교육대학",
+      "평일_일수": 14,
+      "평일_일평균": 150.4,
+      "주말_일수": 4,
+      "주말_일평균": 59.2,
+      "증감": -91.1,
+      "변화율": -0.606
+     },
+     {
+      "rank": 15,
+      "정류소": "제주국제자유도시개발센터",
+      "평일_일수": 14,
+      "평일_일평균": 56.5,
+      "주말_일수": 4,
+      "주말_일평균": 22.2,
+      "증감": -34.2,
+      "변화율": -0.606
+     },
+     {
+      "rank": 16,
+      "정류소": "제주대학교병원",
+      "평일_일수": 14,
+      "평일_일평균": 611.4,
+      "주말_일수": 4,
+      "주말_일평균": 213.8,
+      "증감": -397.7,
+      "변화율": -0.65
+     },
+     {
+      "rank": 17,
+      "정류소": "신성여자중고등학교",
+      "평일_일수": 14,
+      "평일_일평균": 73.6,
+      "주말_일수": 4,
+      "주말_일평균": 25.0,
+      "증감": -48.6,
+      "변화율": -0.66
+     },
+     {
+      "rank": 18,
+      "정류소": "삼성여자고등학교",
+      "평일_일수": 14,
+      "평일_일평균": 62.1,
+      "주말_일수": 4,
+      "주말_일평균": 21.0,
+      "증감": -41.1,
+      "변화율": -0.662
+     },
+     {
+      "rank": 19,
+      "정류소": "제주대학교",
+      "평일_일수": 14,
+      "평일_일평균": 1976.5,
+      "주말_일수": 4,
+      "주말_일평균": 572.5,
+      "증감": -1404.0,
+      "변화율": -0.71
+     },
+     {
+      "rank": 20,
+      "정류소": "제주한라대학교",
+      "평일_일수": 14,
+      "평일_일평균": 476.4,
+      "주말_일수": 4,
+      "주말_일평균": 115.0,
+      "증감": -361.4,
+      "변화율": -0.759
+     }
+    ]
+   }
+  ]
+ },
+ {
   "question": "이번 주말 어디가 붐빌까?",
   "answer": "**한 줄 결론** — 2025-10-04(토) 예상 혼잡 1위 제주항국제여객터미널: 예상 이용자 138명(최근 같은 요일 17~382명), 예상 혼잡지수 4.17.\n\n**근거**\n- 2025-10-04(토) 예상 혼잡 1위 제주항국제여객터미널: 예상 이용자 138명(최근 같은 요일 17~382명), 예상 혼잡지수 4.17\n- 추세계수(최근 4주÷이전 4주) 최대 1.5 (애월국민체육센터), 데이터 마지막 날짜 2025-09-30\n- 예상 혼잡지수 1.5 이상(평일의 1.5배 초과) 장소 6곳 → 분산 안내 후보\n- (사용 데이터: wifi_ap_usage, 전체 기간)\n\n**해석과 제안**\n- 예측 상위 장소는 주말 전 분산 안내·주차 관리 계획을 세울 근거가 됩니다(예측은 과거 패턴 기반).\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- 와이파이 이용자는 전체 방문객의 일부(표본)이므로 절대 방문객 수가 아닌 상대 비교 지표로 해석해야 합니다.\n- 공휴일·행사·날씨 예보를 반영하지 않은 요일 패턴 기반 단순 추정입니다. 구간(최근 같은 요일 최소~최대)과 함께 보세요.\n- 최근 2주 관측 9일 미만이거나 일평균 20명 미만인 장소와 정류소·충전소 AP는 제외했습니다.\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 1.14,
-  "synthetic": true,
+  "elapsed": 0.91,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -3043,7 +3775,7 @@
      "top_n": 10
     },
     "ok": true,
-    "seconds": 1.11,
+    "seconds": 0.88,
     "rows": 10,
     "gate": [
      "게이트 통과"
@@ -3141,11 +3873,11 @@
      },
      {
       "rank": 7,
-      "ap_place": "7코스",
-      "predicted_users": 58,
-      "range_low": 21,
-      "range_high": 66,
-      "trend_factor": 1.2,
+      "ap_place": "세화공원",
+      "predicted_users": 38,
+      "range_low": 19,
+      "range_high": 46,
+      "trend_factor": 1.34,
       "predicted_congestion_index": 1.47,
       "basis_days": 4
      },
@@ -3161,11 +3893,11 @@
      },
      {
       "rank": 9,
-      "ap_place": "세화공원",
-      "predicted_users": 38,
-      "range_low": 19,
-      "range_high": 46,
-      "trend_factor": 1.34,
+      "ap_place": "7코스",
+      "predicted_users": 58,
+      "range_low": 21,
+      "range_high": 66,
+      "trend_factor": 1.2,
       "predicted_congestion_index": 1.47,
       "basis_days": 4
      },
@@ -3189,8 +3921,8 @@
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 0.08,
-  "synthetic": true,
+  "elapsed": 0.06,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
@@ -3215,7 +3947,7 @@
      "month": "2025-09"
     },
     "ok": true,
-    "seconds": 0.04,
+    "seconds": 0.03,
     "rows": 7,
     "gate": [
      "게이트 통과"
@@ -3298,21 +4030,20 @@
  },
  {
   "question": "어떤 데이터가 있어?",
-  "answer": "**한 줄 결론** — 9개 데이터셋 적재, 엔진 sqlite.\n\n**근거**\n- 9개 데이터셋 적재, 엔진 sqlite\n- ⚠️ 일부/전체가 개발용 합성 데이터입니다. 실제 결론에 사용하지 마세요.\n- (사용 데이터: wifi_ap_usage, wifi_ap, wifi_daily_users, bus_station_usage, bus_route_usage, bus_station, bus_route, weather_daily, weather_station, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- ⚠️ 사용 데이터 5-02, 5-01, 4-06은(는) 개발용 합성 데이터입니다. 실제 의사결정에 쓰지 마세요.\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-01-01~2025-09-30)으로 계산했습니다.\n- 3-02에 데이터가 없는 날짜: 09-12, 09-17, 09-21, 09-23 (제공처 공백, 집계에서 제외)\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
+  "answer": "**한 줄 결론** — 9개 데이터셋 적재, 엔진 sqlite.\n\n**근거**\n- 9개 데이터셋 적재, 엔진 sqlite\n- (사용 데이터: wifi_ap_usage, wifi_ap, bus_station_usage, bus_route_usage, bus_station, bus_route, 전체 기간)\n\n**해석과 제안**\n- 위 수치는 도구가 계산한 집계이며, 상위 항목부터 현장 확인·정책 검토 대상으로 삼을 수 있습니다.\n\n**한계**\n- 4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.\n- 기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.\n- 3-02에 데이터가 없는 날짜: 09-12, 09-17, 09-21, 09-23 (제공처 공백, 집계에서 제외)\n- (오프라인 모드: LLM 없이 규칙 기반으로 작성된 답변입니다.)\n\n본 자료는 제주빅데이터센터에서 제공하는 자료를 활용한 것이며, 연구결과는 제주특별자치도 및 제주테크노파크와 관련이 없음을 밝힙니다.",
   "mode": "offline",
   "llm_calls": 0,
   "tokens": {},
-  "elapsed": 0.08,
-  "synthetic": true,
+  "elapsed": 0.05,
+  "synthetic": false,
   "verification": {},
   "notes": [],
   "plan": [
    "규칙 플래너: 질문의 키워드로 도구를 골랐습니다 → 데이터 설명"
   ],
   "limitations": [
-   "⚠️ 사용 데이터 5-02, 5-01, 4-06은(는) 개발용 합성 데이터입니다. 실제 의사결정에 쓰지 마세요.",
    "4-05에 원본에 없던 컬럼을 기본값으로 채웠습니다(nationality=대한민국, visit_type=미상, ap_category=미분류). 그 컬럼으로 나눈 비중은 의미가 없습니다.",
-   "기간을 지정하지 않아 적재된 전체 기간(2025-01-01~2025-09-30)으로 계산했습니다.",
+   "기간을 지정하지 않아 적재된 전체 기간(2025-09-01~2025-09-30)으로 계산했습니다.",
    "3-02에 데이터가 없는 날짜: 09-12, 09-17, 09-21, 09-23 (제공처 공백, 집계에서 제외)"
   ],
   "followups": [
@@ -3342,18 +4073,14 @@
     "datasets": [
      "wifi_ap_usage",
      "wifi_ap",
-     "wifi_daily_users",
      "bus_station_usage",
      "bus_route_usage",
      "bus_station",
-     "bus_route",
-     "weather_daily",
-     "weather_station"
+     "bus_route"
     ],
     "method": "",
     "facts": [
-     "9개 데이터셋 적재, 엔진 sqlite",
-     "⚠️ 일부/전체가 개발용 합성 데이터입니다. 실제 결론에 사용하지 마세요."
+     "9개 데이터셋 적재, 엔진 sqlite"
     ],
     "caveats": [],
     "gate": [
@@ -3367,9 +4094,9 @@
       "name": "와이파이 AP별 이용 현황",
       "source": "raw",
       "rows": 38366,
-      "files": "와이파이 AP별 이용 현황_허브API_202509.csv",
+      "files": "wifi_ap_usage.csv.gz",
       "period": "2025-09-01~2025-09-30",
-      "note": "기본값 채움 nationality=대한민국, visit_type=미상, ap_category=미분류 / 값이 전부 비어 있는 필수 컬럼: ap_latitude, ap_longitude / 좌표·카테고리를 4-01 장소명(75%)·3-03 정류소ID(16%)로 보완"
+      "note": "저장소 동봉 축약본(data/demo) / 기본값 채움 nationality=대한민국, visit_type=미상, ap_category=미분류 / 값이 전부 비어 있는 필수 컬럼: ap_latitude, ap_longitude / 좌표·카테고리를 4-01 장소명(77%)·3-03 정류소(16%)로 보완"
      },
      {
       "key": "wifi_ap",
@@ -3377,19 +4104,19 @@
       "name": "와이파이 AP 현황(고정형, 최신)",
       "source": "raw",
       "rows": 3046,
-      "files": "와이파이 AP 현황_허브API.csv",
+      "files": "wifi_ap.csv.gz",
       "period": "2025-09-15~2025-09-15",
-      "note": ""
+      "note": "저장소 동봉 축약본(data/demo)"
      },
      {
       "key": "wifi_daily_users",
       "code": "4-06",
       "name": "와이파이 일별 이용자 현황",
-      "source": "synthetic",
-      "rows": 37366,
-      "files": "wifi_daily_users.csv",
-      "period": "2025-01-01~2025-06-30",
-      "note": ""
+      "source": "missing",
+      "rows": 0,
+      "files": "",
+      "period": "",
+      "note": "합성(2025-03-01~2025-04-30)은 실데이터 기간과 겹치지 않아 적재하지 않음"
      },
      {
       "key": "bus_station_usage",
@@ -3397,9 +4124,9 @@
       "name": "버스 정류소별 이용 현황",
       "source": "raw",
       "rows": 107101,
-      "files": "버스 정류소별 이용 현황_허브API_202509.csv, 버스 정류소별 이용 현황_허브API_202509_b.csv",
+      "files": "bus_station_usage.csv.gz",
       "period": "2025-09-01~2025-09-18",
-      "note": "정류소ID 체계가 3-03과 달라 정류소명으로 3-03 ID 매핑(80%), 미일치는 이름을 ID로 사용"
+      "note": "저장소 동봉 축약본(data/demo) / 정류소ID 체계가 3-03과 달라 정류소명으로 3-03 ID 매핑(99%: 정확 86%+정규화 13%), 미일치는 이름을 ID로 사용 / 정류소명이 빈 8,132행은 같은 원본ID의 이름으로 채움 / 정류소명·좌표 없는 20행(0.0%)은 정류소 순위에서 제외"
      },
      {
       "key": "bus_route_usage",
@@ -3407,9 +4134,9 @@
       "name": "버스 노선별 이용 현황",
       "source": "raw",
       "rows": 54659,
-      "files": "버스 노선별 이용 현황_허브API_202509.csv",
+      "files": "bus_route_usage.csv.gz",
       "period": "2025-09-01~2025-09-30",
-      "note": "bus_route_id 를 3-01 노선번호로 보완(61%), 나머지는 노선명 사용"
+      "note": "저장소 동봉 축약본(data/demo) / bus_route_id 를 3-01 노선번호로 보완(61%), 나머지는 노선명 사용"
      },
      {
       "key": "bus_station",
@@ -3417,9 +4144,9 @@
       "name": "버스 정류소 정보",
       "source": "raw",
       "rows": 4352,
-      "files": "버스 정류소 정보_허브API.csv",
+      "files": "bus_station.csv.gz",
       "period": "",
-      "note": ""
+      "note": "저장소 동봉 축약본(data/demo)"
      },
      {
       "key": "bus_route",
@@ -3427,29 +4154,29 @@
       "name": "버스 노선 정보",
       "source": "raw",
       "rows": 745,
-      "files": "버스 노선 정보_허브API.csv",
+      "files": "bus_route.csv.gz",
       "period": "",
-      "note": ""
+      "note": "저장소 동봉 축약본(data/demo)"
      },
      {
       "key": "weather_daily",
       "code": "5-02",
       "name": "일일 날씨 정보",
-      "source": "synthetic",
-      "rows": 724,
-      "files": "weather_daily.csv",
-      "period": "2025-01-01~2025-06-30",
-      "note": ""
+      "source": "missing",
+      "rows": 0,
+      "files": "",
+      "period": "",
+      "note": "합성(2025-03-01~2025-04-30)은 실데이터 기간과 겹치지 않아 적재하지 않음 — 강우 영향 기능 비활성. 날씨 실데이터는 python scripts/fetch_weather.py 로 수집(기상청 CSV 변환 / Open-Meteo / 기상청 API허브)"
      },
      {
       "key": "weather_station",
       "code": "5-01",
       "name": "날씨 관측소 정보",
-      "source": "synthetic",
-      "rows": 4,
-      "files": "weather_station.csv",
+      "source": "missing",
+      "rows": 0,
+      "files": "",
       "period": "",
-      "note": ""
+      "note": "일일 날씨와 함께 비활성"
      }
     ]
    }

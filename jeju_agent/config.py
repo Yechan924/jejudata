@@ -21,9 +21,11 @@ DB_PATH = Path(os.getenv("JEJU_DB_PATH", DATA_DIR / "jeju.duckdb"))
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "auto")  # auto | anthropic | openai | ollama | offline
 LLM_MODEL = os.getenv("LLM_MODEL", "")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_NUM_CTX = int(os.getenv("OLLAMA_NUM_CTX", "12288"))   # 시스템 프롬프트+도구 스키마가 ~8k 토큰이라 기본 4096 으로는 잘린다
 LLM_MAX_TOOL_CALLS = int(os.getenv("LLM_MAX_TOOL_CALLS", "6"))
 LLM_TIMEOUT = int(os.getenv("LLM_TIMEOUT", "60"))
 LLM_RETRIES = int(os.getenv("LLM_RETRIES", "2"))      # 429/5xx·네트워크 오류 재시도 횟수
+LLM_EXTRAS = os.getenv("LLM_EXTRAS", "followups")      # 답변 후 LLM 부가 단계: followups(후속 질문 제안), review(답변-근거 대조 자기 점검), none. 쉼표로 복수
 
 # 반출 게이트
 MIN_CELL_COUNT = int(os.getenv("EXPORT_MIN_CELL_COUNT", "10"))  # 이 미만 집계 셀은 마스킹 (센터 반출 정책 2026.09.01: 단순집계 10 미만 불포함)

@@ -45,7 +45,15 @@ python scripts/fetch_hub.py --status                                   # 받은 
 | `route_info` | 버스 노선 기본 정보 (#611) | 3-01 (노선거리) | `data/raw/버스 노선 정보_허브API.csv` |
 | `ap_info` | 제주 공공와이파이 AP 정보 (#618) | 4-01 (AP 좌표·카테고리) | `data/raw/와이파이 AP 현황_허브API.csv` |
 
-허브에 날씨(5-01·5-02)는 없습니다. 강우 효과 기능이 필요하면 기상청 공공데이터포털(ASOS 일자료, 제주 184·서귀포 189 지점)을 `일일 날씨 정보.csv`·`날씨 관측소 정보.csv`로 저장해 넣으면 별칭 규칙으로 읽힙니다. 없으면 `weather_effect`만 비활성.
+허브에 날씨(5-01·5-02)는 없습니다. 강우 효과 기능은 `python scripts/fetch_weather.py` 로 받습니다(없으면 `weather_effect`만 비활성, 기간이 다른 합성 날씨는 실데이터에 섞지 않음).
+
+| 경로 | 명령 | 비고 |
+|---|---|---|
+| **A. 기상청 기상자료개방포털 CSV (권장, 관측값)** | data.kma.go.kr → 데이터 → 기상관측 → 지상 → 종관기상관측(ASOS) → '일 자료' → 지점 제주(184)·고산(185)·성산(188)·서귀포(189) → 기간 → CSV 다운로드(무료 로그인) → `python scripts/fetch_weather.py --kma-csv OBS_ASOS_DD_….csv` | 변환 없이 `data/raw/일일 날씨 정보_기상청.csv` 로 넣어도 별칭(지점·일시·일강수량(mm)…)으로 읽힘 |
+| B. Open-Meteo (키 없음) | `python scripts/fetch_weather.py --open-meteo --from 2025-09-01 --to 2025-09-30` | ERA5 재분석 격자값(관측소 실측 아님), CC BY 4.0, 비상업·연구용 |
+| C. 기상청 API허브 | `.env`에 `KMA_API_KEY` → `python scripts/fetch_weather.py --kma-api --from … --to …` | apihub.kma.go.kr 가입·인증키 |
+
+저장 위치: `data/raw/weather_daily/일일 날씨 정보_<출처>_YYYYMM.csv`(5-02), `data/raw/weather_station/날씨 관측소 정보_<출처>.csv`(5-01). 관측소 파일이 없어도 내장 `config/weather_stations_jeju.csv`로 동작합니다. 확인: `python scripts/check_data.py` 에서 weather_daily 가 `source=raw`.
 
 ### 3) 확인
 ```bash

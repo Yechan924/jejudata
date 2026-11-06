@@ -14,7 +14,7 @@ from .tools.base import ToolResult
 TOOL_KO = {
     "congestion_rank": "장소별 혼잡 순위", "place_profile": "장소 혼잡 프로필", "list_places": "장소 목록",
     "bus_station_rank": "정류소 승차 순위", "bus_route_efficiency": "노선 효율", "hourly_profile": "정류소 시간대 프로필",
-    "place_access": "관광지 주변 정류소 접근성", "weather_effect": "강우 영향", "congestion_forecast": "주말 혼잡 예측",
+    "place_access": "관광지 주변 정류소 접근성", "weather_effect": "강우 영향", "congestion_forecast": "주말 혼잡 예측", "compare_periods": "기간·요일 비교",
     "monthly_brief": "월간 브리핑", "run_sql": "맞춤 집계(SQL)", "describe_data": "데이터 설명",
 }
 
@@ -65,6 +65,13 @@ def auto_limitations(db, results: list[ToolResult], verification: dict | None = 
         p = db.provenance[k]
         if p.defaulted:
             out.append(f"{schemas.dataset(k)['code']}에 원본에 없던 컬럼을 기본값으로 채웠습니다({', '.join(f'{a}={b}' for a, b in p.defaulted.items())}). 그 컬럼으로 나눈 비중은 의미가 없습니다.")
+    # 1-1) 이름 매핑 실패(좌표·ID 없음) — 결과에 그 장소가 들어 있으면 짚어 준다
+    for k, col in (("wifi_ap_usage", "ap_place"), ("bus_station_usage", "bus_station_name")):
+        if k in used and db.provenance[k].unmatched:
+            names = {str(x) for r in results if col in r.table.columns for x in r.table[col].head(20)}
+            hit = [n for n in db.provenance[k].unmatched if n in names]
+            if hit:
+                out.append(f"{', '.join(hit[:3])}은(는) 4-01/3-03과 이름이 맞지 않아 좌표가 없습니다(지도에 표시되지 않음, 순위 수치는 유효).")
     # 2) 기간
     ps = [db.provenance[k] for k in used if db.provenance[k].date_min and k not in INFO_TABLES]
     if ps:
@@ -160,6 +167,17 @@ def suggest_followups(question: str, results: list[ToolResult], db) -> list[str]
             sug.append("이용 많은 정류소는 어디야?")
         elif r.name == "hourly_profile":
             sug += ["어르신이 많이 타는 정류소는?", "효율이 낮은 버스 노선은?"]
+        elif r.name == "compare_periods":
+            kind = next((c for c in ("장소", "정류소", "노선") if c in r.table.columns), None)
+            p = top(r, kind) if kind else None
+            if p and kind == "장소":
+                sug += [f"{josa(p)} 언제 가장 붐비나?", f"{p} 가는 버스 정류소는 얼마나 붐비나?"]
+            elif p and kind == "정류소":
+                sug.append(f"{p} 정류소는 몇 시에 가장 붐비나?")
+            if r.params.get("split") != "weekday_weekend":
+                sug.append("평일과 주말 차이가 큰 곳은?")
+            if r.params.get("target") != "bus_station":
+                sug.append("정류소 승차는 전반과 후반이 어떻게 달라졌어?")
         elif r.name == "weather_effect":
             sug += ["주말에 가장 붐비는 관광지는?", "비 오는 날 버스 이용은 어떻게 바뀌어?" if r.params.get("target") != "bus_station" else "비 오면 어디가 한산해지나?"]
         elif r.name == "congestion_forecast":

@@ -1,7 +1,8 @@
 """LLM 공급자 추상화 (SDK 없이 requests만 사용).
 
-지원: anthropic (Messages API, 도구호출), openai (Chat Completions, 도구호출), ollama (OpenAI 호환 /v1, 도구호출 지원 모델),
+지원: anthropic (Messages API, 도구호출), openai (Chat Completions, 도구호출), ollama (네이티브 /api/chat, 도구호출 지원 모델 — 센터 PC 오프라인용),
       offline (LLM 없음 → 규칙 기반 플래너). provider=auto 면 키/서버 존재 여부로 자동 선택.
+Ollama 는 /api/chat 을 쓴다: OpenAI 호환 /v1 은 num_ctx 를 받지 못해 기본 4096 토큰에서 시스템 프롬프트가 잘리기 때문이다(OLLAMA_NUM_CTX).
 
 메시지는 내부적으로 OpenAI 형식(role/content/tool_calls/tool)으로 다루고 공급자별로 변환한다.
 """
@@ -14,7 +15,7 @@ from dataclasses import dataclass, field
 
 import requests
 
-from .config import LLM_MODEL, LLM_PROVIDER, LLM_RETRIES, LLM_TIMEOUT, OLLAMA_BASE_URL
+from .config import LLM_MODEL, LLM_PROVIDER, LLM_RETRIES, LLM_TIMEOUT, OLLAMA_BASE_URL, OLLAMA_NUM_CTX
 
 DEFAULT_MODELS = {"anthropic": "claude-sonnet-5-5", "openai": "gpt-4o-mini", "ollama": "qwen2.5:7b"}
 
@@ -63,7 +64,9 @@ class LLM:
     def chat(self, system: str, messages: list[dict], tools: list[dict] | None = None, max_tokens: int = 1500) -> LLMReply:
         if self.provider == "anthropic":
             return self._anthropic(system, messages, tools, max_tokens)
-        if self.provider in ("openai", "ollama"):
+        if self.provider == "ollama":
+            return self._ollama(system, messages, tools, max_tokens)
+        if self.provider == "openai":
             return self._openai_compat(system, messages, tools, max_tokens)
         raise RuntimeError("LLM 공급자가 설정되지 않았습니다 (offline).")
 
@@ -130,7 +133,46 @@ class LLM:
                 rep.tool_calls.append(ToolCall(b["id"], b["name"], b.get("input") or {}))
         return rep
 
-    # ---------- OpenAI 호환 (OpenAI, Ollama) ----------
+    # ---------- Ollama 네이티브 ----------
+    def _ollama(self, system, messages, tools, max_tokens) -> LLMReply:
+        conv = [{"role": "system", "content": system}]
+        for m in messages:
+            if m["role"] == "assistant":
+                am = {"role": "assistant", "content": m.get("content") or ""}
+                if m.get("tool_calls"):
+                    am["tool_calls"] = [{"function": {"name": tc["name"], "arguments": tc["args"]}} for tc in m["tool_calls"]]
+                conv.append(am)
+            elif m["role"] == "tool":
+                conv.append({"role": "tool", "content": m["content"]})
+            else:
+                conv.append({"role": "user", "content": m["content"]})
+        body = {"model": self.model, "messages": conv, "stream": False,
+                "options": {"temperature": 0, "num_ctx": OLLAMA_NUM_CTX, "num_predict": max_tokens}}
+        if tools:
+            body["tools"] = [{"type": "function", "function": {"name": t["name"], "description": t["description"], "parameters": t["parameters"]}} for t in tools]
+        try:
+            data = self._post(f"{OLLAMA_BASE_URL}/api/chat", body, {}, LLM_TIMEOUT * 3)
+        except RuntimeError as e:
+            if "does not support tools" in str(e):
+                raise RuntimeError(f"Ollama 모델 '{self.model}'은 도구 호출을 지원하지 않습니다. qwen2.5:7b / llama3.1:8b 같은 tools 지원 모델을 쓰세요 ({e})") from e
+            if "not found" in str(e).lower():
+                raise RuntimeError(f"Ollama 에 모델 '{self.model}'이 없습니다: ollama pull {self.model} ({e})") from e
+            raise
+        msg = data.get("message") or {}
+        usage = {"prompt_tokens": data.get("prompt_eval_count", 0), "completion_tokens": data.get("eval_count", 0)}
+        rep = LLMReply(text=msg.get("content") or "", raw=data, usage=usage)
+        for i, tc in enumerate(msg.get("tool_calls") or []):
+            fn = tc.get("function") or {}
+            args = fn.get("arguments") or {}
+            if isinstance(args, str):
+                try:
+                    args = json.loads(args)
+                except json.JSONDecodeError:
+                    args = {}
+            rep.tool_calls.append(ToolCall(tc.get("id") or f"call_{i}", fn.get("name", ""), args))
+        return rep
+
+    # ---------- OpenAI 호환 (OpenAI) ----------
     def _openai_compat(self, system, messages, tools, max_tokens) -> LLMReply:
         conv = [{"role": "system", "content": system}]
         for m in messages:
@@ -146,11 +188,8 @@ class LLM:
         body = {"model": self.model, "messages": conv, "temperature": 0, "max_tokens": max_tokens}
         if tools:
             body["tools"] = [{"type": "function", "function": {"name": t["name"], "description": t["description"], "parameters": t["parameters"]}} for t in tools]
-        if self.provider == "openai":
-            url, headers = "https://api.openai.com/v1/chat/completions", {"Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY', '')}"}
-        else:
-            url, headers = f"{OLLAMA_BASE_URL}/v1/chat/completions", {}
-        data = self._post(url, body, headers, LLM_TIMEOUT * (3 if self.provider == "ollama" else 1))
+        url, headers = "https://api.openai.com/v1/chat/completions", {"Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY', '')}"}
+        data = self._post(url, body, headers, LLM_TIMEOUT)
         msg = data["choices"][0]["message"]
         rep = LLMReply(text=msg.get("content") or "", raw=data, usage=data.get("usage", {}))
         for i, tc in enumerate(msg.get("tool_calls") or []):
