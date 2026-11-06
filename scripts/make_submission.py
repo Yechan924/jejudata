@@ -6,7 +6,9 @@
 산출물 (저장소 밖 dist/ 에 생성; dist/ 는 .gitignore)
   dist/제출_재주도좋다_제주혼잡이동진단Agent.zip
   docs/AI_Agent_기획서_제주혼잡이동진단.pdf  (docs/proposal.html → Chrome headless 또는 wkhtmltopdf)
-ZIP 제외: .git, .venv, __pycache__, .env, data/raw(실데이터), data/synthetic/*.csv(실행 시 자동 생성), outputs/(samples 제외), dist
+ZIP 제외: .git, .venv, __pycache__, .env, data/synthetic/*.csv(실행 시 자동 생성), outputs/(samples 제외), dist
+ZIP 포함: data/raw/ 의 허브 공개 API 수집본(집계 데이터, 개인정보 없음) — 심사위원이 실데이터로 바로 재현할 수 있게. 제외하려면 --no-raw.
+  (GitHub 저장소에는 .gitignore 로 올라가지 않음)
 """
 from __future__ import annotations
 
@@ -26,6 +28,7 @@ PDF = ROOT / "docs" / "AI_Agent_기획서_제주혼잡이동진단.pdf"
 EXCLUDE_DIRS = {".git", ".venv", "venv", "__pycache__", ".pytest_cache", "dist", "node_modules", ".claude"}
 EXCLUDE_FILES = {".env"}
 SCREENS = ["01_home.png", "02_answer.png", "03_map.png", "06_llm_transfer.png"]
+INCLUDE_RAW = True
 
 
 def insert_screens() -> None:
@@ -80,7 +83,7 @@ def should_skip(rel: Path) -> bool:
     if any(p in EXCLUDE_DIRS for p in parts) or rel.name in EXCLUDE_FILES or rel.suffix in (".pyc", ".duckdb"):
         return True
     if parts[0] == "data" and len(parts) > 1 and parts[1] == "raw":
-        return True
+        return (not INCLUDE_RAW) or rel.name.startswith(".")
     if parts[0] == "data" and len(parts) > 1 and parts[1] == "synthetic" and rel.suffix == ".csv":
         return True
     if parts[0] == "outputs" and not (len(parts) > 1 and parts[1] == "samples"):
@@ -108,8 +111,9 @@ def make_zip() -> Path:
 def verify_zip(out: Path) -> None:
     with zipfile.ZipFile(out) as z:
         names = z.namelist()
-    bad = [n for n in names if n.endswith("/.env") or n == ".env" or "/raw/" in n]
-    print("점검:", "✗ .env/raw 포함!" if bad else "✓ .env·실데이터 미포함", "·", f"{'✓' if 'README.md' in names else '✗'} README",
+    bad = [n for n in names if n.endswith("/.env") or n == ".env"]
+    raw = [n for n in names if n.startswith("data/raw/")]
+    print("점검:", "✗ .env 포함!" if bad else "✓ .env 미포함", f"· 실데이터 {len(raw)}파일 {'포함' if raw else '미포함'}", "·", f"{'✓' if 'README.md' in names else '✗'} README",
           f"{'✓' if any(n.startswith('docs/USER_MANUAL') for n in names) else '✗'} 매뉴얼",
           f"{'✓' if any(n.startswith('docs/DATA_SPEC') for n in names) else '✗'} 데이터 명세",
           f"{'✓' if any(n.startswith('docs/RESULT_REPORT') for n in names) else '✗'} 결과 설명",
@@ -122,7 +126,10 @@ def verify_zip(out: Path) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-pdf", action="store_true")
+    ap.add_argument("--no-raw", action="store_true", help="data/raw 실데이터를 ZIP에서 제외")
     a = ap.parse_args()
+    global INCLUDE_RAW
+    INCLUDE_RAW = not a.no_raw
     os.chdir(ROOT)
     insert_screens()
     if not a.no_pdf:
