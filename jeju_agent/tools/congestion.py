@@ -103,7 +103,7 @@ def congestion_rank(db, date_from=None, date_to=None, weekend_only=False, foreig
     daily = daily.merge(cats, on="ap_place", how="left")
     excluded = []
     if exclude_bus_stops and not (category and ("정류" in category or "충전" in category)):
-        daily = daily[~daily["category"].isin(["버스정류소", "전기차충전소"])]
+        daily = daily[~(daily["category"].isin(["버스정류소", "전기차충전소"]) | daily["ap_place"].astype(str).str.match(r"^(버스정류소|전기차충전소)_"))]
         excluded.append("버스정류소·전기차충전소 AP 제외")
     if category:
         key_cat = category.replace(" ", "")

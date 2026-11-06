@@ -12,6 +12,7 @@
   B. Open-Meteo 과거 기상 API (키 없음, 무료, 비상업·연구용) — ERA5 재분석 격자값(관측소 실측이 아님)
        python scripts/fetch_weather.py --open-meteo --from 2025-09-01 --to 2025-09-30
      4개 관측소 좌표의 격자값을 받아 같은 관측소 코드로 저장한다. 출처: https://open-meteo.com (CC BY 4.0)
+     외부망이 막힌 PC에서는 브라우저로 응답 JSON 을 <관측소코드>.json 으로 저장한 뒤  --open-meteo-json <폴더>
 
   C. 기상청 API허브 (키 필요: https://apihub.kma.go.kr 가입 → 인증키, .env 에 KMA_API_KEY)
        python scripts/fetch_weather.py --kma-api --from 2025-09-01 --to 2025-09-30
@@ -162,6 +163,31 @@ def from_open_meteo(d0: date, d1: date) -> list[dict]:
     return rows
 
 
+def from_open_meteo_json(d: Path) -> list[dict]:
+    """브라우저로 저장한 Open-Meteo 응답 JSON(<관측소코드>.json)을 변환한다 — 외부망이 막힌 환경용."""
+    import json
+    rows: list[dict] = []
+    codes = {s["observatory_code"]: s for s in stations()}
+    for f in sorted(d.glob("*.json")):
+        code = f.stem
+        if code not in codes:
+            print(f"  건너뜀(관측소 코드 아님): {f.name}")
+            continue
+        j = json.loads(f.read_text(encoding="utf-8")).get("daily", {})
+        n = 0
+        for i, day in enumerate(j.get("time", [])):
+            def g(k):
+                arr = j.get(k) or []
+                return "" if i >= len(arr) or arr[i] is None else arr[i]
+            rows.append(finish_row({"base_date": day, "observatory_code": code, "average_temperature": g("temperature_2m_mean"),
+                                    "lowest_temperature": g("temperature_2m_min"), "highest_temperature": g("temperature_2m_max"),
+                                    "daily_rainfall": g("precipitation_sum"), "maximum_wind_speed": g("wind_gusts_10m_max"),
+                                    "average_wind_speed": g("wind_speed_10m_max"), "maximum_wind_speed_direction": g("wind_direction_10m_dominant")}))
+            n += 1
+        print(f"[Open-Meteo JSON] {codes[code]['observatory_name']}({code}) {n}일")
+    return rows
+
+
 # ---------- C. 기상청 API허브 ----------
 def from_kma_api(d0: date, d1: date, debug: bool = False) -> list[dict]:
     import requests
@@ -205,6 +231,7 @@ def main() -> None:
     g.add_argument("--kma-csv", type=Path, help="기상자료개방포털 ASOS 일자료 CSV 경로")
     g.add_argument("--open-meteo", action="store_true", help="Open-Meteo 과거 기상 API(키 없음)")
     g.add_argument("--kma-api", action="store_true", help="기상청 API허브(KMA_API_KEY)")
+    g.add_argument("--open-meteo-json", type=Path, help="브라우저로 저장한 Open-Meteo 응답 JSON 폴더(<관측소코드>.json)")
     ap.add_argument("--from", dest="d0", default="2025-09-01")
     ap.add_argument("--to", dest="d1", default=(date.today() - timedelta(days=7)).isoformat())
     ap.add_argument("--tag", default="", help="저장 파일 꼬리표(기본: 출처명)")
@@ -215,6 +242,8 @@ def main() -> None:
         rows, tag = from_kma_csv(a.kma_csv), a.tag or "기상청"
     elif a.open_meteo:
         rows, tag = from_open_meteo(d0, d1), a.tag or "OpenMeteo"
+    elif a.open_meteo_json:
+        rows, tag = from_open_meteo_json(a.open_meteo_json), a.tag or "OpenMeteo"
     else:
         rows, tag = from_kma_api(d0, d1, a.debug), a.tag or "기상청API"
     save(rows, tag)

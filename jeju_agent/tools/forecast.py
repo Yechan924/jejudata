@@ -115,14 +115,20 @@ def monthly_brief(db, month=None) -> ToolResult:
     top = cur.groupby("ap_place").agg(v=wifi_users_agg(u))["v"].sort_values(ascending=False).head(5)
     top_f = (cur[cur["nationality"] != "대한민국"].groupby("ap_place")["user_id"].nunique().sort_values(ascending=False).head(3)
              if not agg_mode else pd.Series(dtype=float))
-    rows = [{"지표": "와이파이 고유 이용자", "값": f"{cu:,}", "전월": f"{pu:,}" if pu else "-", "변화": f"{(cu / pu - 1):+.1%}" if pu else "-"},
-            {"지표": "외국인 비중", "값": f"{cf:.1%}", "전월": f"{pf:.1%}" if pf is not None else "-", "변화": f"{(cf - pf) * 100:+.1f}%p" if pf is not None else "-"},
-            {"지표": "관광 방문 비중", "값": f"{ct:.1%}", "전월": f"{pt:.1%}" if pt is not None else "-", "변화": f"{(ct - pt) * 100:+.1f}%p" if pt is not None else "-"},
-            {"지표": "이용자 상위 5곳", "값": ", ".join(f"{k}({v:,})" for k, v in top.items()), "전월": "", "변화": ""},
-            {"지표": "외국인 상위 3곳", "값": ", ".join(f"{k}({v:,})" for k, v in top_f.items()), "전월": "", "변화": ""}]
-    facts = [f"{month} 와이파이 고유 이용자 {cu:,}명" + (f" (전월比 {(cu / pu - 1):+.1%})" if pu else ""),
-             f"외국인 비중 {cf:.1%}" + (f" (전월 {pf:.1%})" if pf is not None else "") + f", 관광 방문 비중 {ct:.1%}",
-             f"이용자 상위: {', '.join(top.index[:3])} / 외국인 상위: {', '.join(top_f.index[:3])}"]
+    label_users = "와이파이 이용자(장소×일 합)" if agg_mode else "와이파이 고유 이용자"
+    rows = [{"지표": label_users, "값": f"{cu:,}", "전월": f"{pu:,}" if pu else "-", "변화": f"{(cu / pu - 1):+.1%}" if pu else "-"}]
+    if not agg_mode:
+        rows += [{"지표": "외국인 비중", "값": f"{cf:.1%}", "전월": f"{pf:.1%}" if pf is not None else "-", "변화": f"{(cf - pf) * 100:+.1f}%p" if pf is not None else "-"},
+                 {"지표": "관광 방문 비중", "값": f"{ct:.1%}", "전월": f"{pt:.1%}" if pt is not None else "-", "변화": f"{(ct - pt) * 100:+.1f}%p" if pt is not None else "-"}]
+    rows.append({"지표": "이용자 상위 5곳", "값": ", ".join(f"{k}({v:,})" for k, v in top.items()), "전월": "", "변화": ""})
+    if not agg_mode:
+        rows.append({"지표": "외국인 상위 3곳", "값": ", ".join(f"{k}({v:,})" for k, v in top_f.items()), "전월": "", "변화": ""})
+    facts = [f"{month} {label_users} {cu:,}명" + (f" (전월比 {(cu / pu - 1):+.1%})" if pu else "")]
+    if not agg_mode:
+        facts.append(f"외국인 비중 {cf:.1%}" + (f" (전월 {pf:.1%})" if pf is not None else "") + f", 관광 방문 비중 {ct:.1%}")
+        facts.append(f"이용자 상위: {', '.join(top.index[:3])} / 외국인 상위: {', '.join(top_f.index[:3])}")
+    else:
+        facts.append(f"이용자 상위: {', '.join(top.index[:3])} (허브 집계본이라 국적·방문유형 비중은 없음)")
     datasets = ["wifi_ap_usage"]
     if db.has("bus_route_usage"):
         b = db.table("bus_route_usage"); b = b[(b["ym"] == month) & (b["get_on_off_type"] == "승차")]
@@ -133,15 +139,23 @@ def monthly_brief(db, month=None) -> ToolResult:
             low = hourly[(hourly.hour.between(5, 23)) & (hourly.user_count < peak * 0.15)].groupby("bus_route_name").size().sort_values(ascending=False).head(3)
             vul = b[b.user_category.isin(VULNERABLE)].user_count.sum() / b.user_count.sum()
             rows.append({"지표": "버스 일평균 승차(노선 합)", "값": f"{b.user_count.sum() / days:,.0f}", "전월": "", "변화": ""})
-            rows.append({"지표": "저이용 시간대 많은 노선", "값": ", ".join(f"{k.split('(')[0]}({v}개)" for k, v in low.items()), "전월": "", "변화": ""})
-            facts.append(f"버스 일평균 승차 {b.user_count.sum() / days:,.0f}명, 교통약자 비중 {vul:.0%}, 저이용 시간대 최다 노선 {', '.join(k.split('(')[0] for k in low.index)}")
+            has_hour = b["hour"].notna().any()
+            if has_hour:
+                rows.append({"지표": "저이용 시간대 많은 노선", "값": ", ".join(f"{k.split('(')[0]}({v}개)" for k, v in low.items()), "전월": "", "변화": ""})
+            else:
+                eff = b.groupby("bus_route_name")["user_count"].sum().sort_values().head(3)
+                rows.append({"지표": "승차 최저 노선 3", "값": ", ".join(f"{k.split('(')[0]}({v / days:,.0f}명/일)" for k, v in eff.items()), "전월": "", "변화": ""})
+            facts.append(f"버스 일평균 승차 {b.user_count.sum() / days:,.0f}명, 교통약자 비중 {vul:.0%}, " +
+                         (f"저이용 시간대 최다 노선 {', '.join(k.split('(')[0] for k in low.index)}" if has_hour else
+                          f"승차 최저 노선 {', '.join(k.split('(')[0] for k in eff.index)} (시간대 컬럼 없음 → 일 단위)"))
             datasets.append("bus_route_usage")
     if db.has("weather_daily"):
         w = db.table("weather_daily"); w = w[(w["ym"] == month) & (w["observatory_code"].astype(str) == "184")]
         if len(w):
             rain_days = int((w["daily_rainfall"] >= 1).sum())
-            rows.append({"지표": "강우일(제주 184)", "값": f"{rain_days}일 / {w['date'].nunique()}일", "전월": "", "변화": ""})
-            facts.append(f"강우일 {rain_days}일, 평균기온 {w['average_temperature'].mean():.1f}℃")
+            rain_days5 = int((w["daily_rainfall"] >= 5).sum())
+            rows.append({"지표": "강우일(제주 184)", "값": f"≥1mm {rain_days}일 · ≥5mm {rain_days5}일 / {w['date'].nunique()}일", "전월": "", "변화": ""})
+            facts.append(f"강우일(제주 관측소) 1mm 이상 {rain_days}일·5mm 이상 {rain_days5}일, 평균기온 {w['average_temperature'].mean():.1f}℃")
             datasets.append("weather_daily")
     out = pd.DataFrame(rows)
     return ToolResult("monthly_brief", f"{month} 월간 브리핑", out, facts, [CAVEAT_WIFI, "전월 비교는 단순 비교이며 계절·공휴일 효과가 포함됩니다."],

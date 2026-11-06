@@ -66,7 +66,7 @@ def compare_periods(db, target="wifi", split="halves", date_from=None, date_to=N
         raise ValueError("지정한 기간에 데이터가 없습니다.")
     if target == "wifi" and exclude_bus_stops:
         cat = d["category"].where(d["category"].notna() & (d["category"] != "미분류"), d["label"].map(infer_category))
-        d = d[~cat.isin(["버스정류소", "전기차충전소"])]
+        d = d[~(cat.isin(["버스정류소", "전기차충전소"]) | d["label"].astype(str).str.match(r"^(버스정류소|전기차충전소)_"))]
     if place:
         nm = fuzzy_match(place, sorted(d["label"].dropna().unique().tolist()))
         if not nm:
