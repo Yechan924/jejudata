@@ -27,6 +27,8 @@ ZIP_NAME = "제출_재주도좋다_제주혼잡이동진단Agent.zip"
 PDF = ROOT / "docs" / "AI_Agent_기획서_제주혼잡이동진단.pdf"
 EXCLUDE_DIRS = {".git", ".venv", "venv", "__pycache__", ".pytest_cache", "dist", "node_modules", ".claude"}
 EXCLUDE_FILES = {".env"}
+# 대회 제공 자료 중 외부 배포가 금지된 파일(DAKER 외 배포 금지) — ZIP에 절대 포함하지 않는다
+EXCLUDE_NAME_PARTS = ("데이터목록", "데이터 목록")
 SCREENS = ["01_home.png", "02_answer.png", "03_map.png", "06_llm_transfer.png"]
 INCLUDE_RAW = True
 
@@ -81,6 +83,8 @@ def pdf_pages() -> int | None:
 def should_skip(rel: Path) -> bool:
     parts = rel.parts
     if any(p in EXCLUDE_DIRS for p in parts) or rel.name in EXCLUDE_FILES or rel.suffix in (".pyc", ".duckdb"):
+        return True
+    if any(k in rel.name for k in EXCLUDE_NAME_PARTS):
         return True
     if parts[0] == "data" and len(parts) > 1 and parts[1] == "raw":
         return (not INCLUDE_RAW) or rel.name.startswith(".")

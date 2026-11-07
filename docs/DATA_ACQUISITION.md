@@ -45,7 +45,7 @@ python scripts/fetch_hub.py --status                                   # 받은 
 | `route_info` | 버스 노선 기본 정보 (#611) | 3-01 (노선거리) | `data/raw/버스 노선 정보_허브API.csv` |
 | `ap_info` | 제주 공공와이파이 AP 정보 (#618) | 4-01 (AP 좌표·카테고리) | `data/raw/와이파이 AP 현황_허브API.csv` |
 
-허브에 날씨(5-01·5-02)는 없습니다. 강우 효과 기능은 `python scripts/fetch_weather.py` 로 받습니다(없으면 `weather_effect`만 비활성, 기간이 다른 합성 날씨는 실데이터에 섞지 않음).
+허브에도 날씨 공개 API(「일별 기상 정보」·「기상관측소 정보」, 제주특별자치도 제공)가 있으나 현 제출본은 연동 전이며, 강우 효과 기능은 `python scripts/fetch_weather.py` 로 받습니다(없으면 `weather_effect`만 비활성, 기간이 다른 합성 날씨는 실데이터에 섞지 않음).
 
 | 경로 | 명령 | 비고 |
 |---|---|---|

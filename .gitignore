@@ -9,3 +9,6 @@ outputs/*
 !outputs/samples/
 .pytest_cache/
 dist/
+# 대회 제공 데이터목록(외부 배포 금지)
+*데이터목록*
+*데이터 목록*
