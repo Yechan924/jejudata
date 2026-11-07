@@ -12,7 +12,10 @@
 
 ## 화면
 <!-- screens:start -->
-`python scripts/capture_screens.py` 로 캡처한 화면이 `docs/screens/` 에 들어가면 여기에 자동 삽입됩니다 (`python scripts/make_submission.py`). 구성: 사이드바(적재 데이터·CSV 업로드·예시 질문·오프라인 토글) → 질문 → 🧭 실행 계획 → 4단 답변 → 이어서 물어보기 → 지도·차트·근거 표·방법/한계·실행 로그·LLM 전송 내용 탭 → HTML 리포트/PNG 다운로드.
+![첫 화면](docs/screens/01_home.png)
+![답변·실행 계획·이어서 물어보기](docs/screens/02_answer.png)
+![지도](docs/screens/03_map.png)
+![LLM 전송 내용](docs/screens/06_llm_transfer.png)
 <!-- screens:end -->
 
 ## 왜 이 주제인가
