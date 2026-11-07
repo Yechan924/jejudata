@@ -8,6 +8,7 @@
 "주말에 가장 붐비는 관광지는?"  →  혼잡 순위(지도) → 1위 관광지 주변 정류소 승차 수요 → 해설
 "효율이 낮은 버스 노선은?"      →  노선별 승객/km/일 · 저이용 시간대 → 해설
 "비 오면 어디가 한산해지나?"    →  강우일/비강우일 이용 변화율 순위 → 해설
+(질문 전 첫 화면)              →  Agent가 먼저 훑은 혼잡 상위 5곳 지도 + 오늘의 발견 3건(급증·급감·최근 추세) → 카드 클릭으로 세부 분석
 ```
 
 ## 화면
@@ -76,7 +77,8 @@ python scripts/check_data.py                             # data/raw 실데이터
 python scripts/fetch_weather.py --kma-csv OBS_ASOS_DD.csv  # 기상청 CSV → data/raw 날씨 (또는 --open-meteo --from 2025-09-01 --to 2025-09-30)
 python scripts/ollama_check.py                           # 센터 PC 오프라인 LLM(Ollama) 서버·모델·도구호출 점검
 python scripts/llm_smoke.py --limit 5                    # LLM 모드 실키 검증 (docs/LLM_EVAL.md 생성)
-pytest -q                                                # 테스트 44개 (API 키 불필요, 합성 데이터로 격리 실행)
+python scripts/reproduce.py                              # 원클릭 재현: 동봉 축약본으로 18문항 실행 → 골든 지문 비교 → outputs/samples/ (--pytest 로 테스트까지)
+pytest -q                                                # 테스트 84개 (API 키 불필요; 골든 회귀 20개는 동봉 축약본, 나머지는 합성 데이터로 격리 실행)
 ```
 
 ## 구조
@@ -92,16 +94,17 @@ pytest -q                                                # 테스트 44개 (API 
 | `jeju_agent/insight.py` | **자동 점검**(데이터 출처·기간·게이트·표본을 코드가 확인해 한계로 기록) · **이어서 물어보기**(결과 기반 후속 질문) · 실행 계획 문장 |
 | `jeju_agent/llm_mock.py` | 시나리오 LLM — API 키 없이 LLM 모드 전체 경로를 테스트 |
 | `jeju_agent/data/synthetic.py` | 명세서 스키마 그대로의 개발용 합성 데이터 |
-| `jeju_agent/tools/` | 13개 분석 도구: `congestion_rank`, `place_profile`, `list_places`, `bus_station_rank`, `bus_route_efficiency`, `hourly_profile`, `place_access`, `weather_effect`, **`congestion_forecast`(주말 혼잡 예측)**, **`monthly_brief`(월간 브리핑)**, **`compare_periods`(전반/후반·평일/주말·두 기간 비교)**, `run_sql`, `describe_data` |
+| `jeju_agent/tools/` | 14개 분석 도구: `congestion_rank`, `place_profile`, `list_places`, `bus_station_rank`, `bus_route_efficiency`, `hourly_profile`, `place_access`, `weather_effect`, **`congestion_forecast`(주말 혼잡 예측)**, **`monthly_brief`(월간 브리핑)**, **`compare_periods`(전반/후반·평일/주말·두 기간 비교)**, **`explore_anomalies`(자율 탐색 — 질문 없이 급증·급감·최근 추세 발견)**, `run_sql`, `describe_data` |
+| `jeju_agent/golden.py` + `tests/golden/` | **골든 회귀셋**: 18문항의 (도구 순서·행 수·첫 행 숫자·첫 사실) 지문을 동봉 축약본 기준으로 고정, `scripts/reproduce.py` 가 비교·갱신 |
 | `jeju_agent/verify.py` | LLM 답변의 숫자가 근거표에 있는지 검증, 불일치 시 템플릿 해설로 대체 |
 | `jeju_agent/charts.py` | PNG 차트(반출 정책: 그림파일만) — 리포트 내장·다운로드 |
 | `jeju_agent/gate.py` + `config/export_rules.yaml` | 반출 게이트 |
 | `jeju_agent/llm.py` | Anthropic / OpenAI / Ollama(네이티브 /api/chat, num_ctx 지정) 도구호출 (requests만 사용) |
 | `jeju_agent/planner_rules.py` | LLM 없이 질문→도구 계획, 템플릿 답변 |
-| `jeju_agent/agent.py` | 오케스트레이션, 로그, 폴백, **LLM 부가 단계**(답변-근거 대조 자기 점검 `review`, 결과 기반 후속 질문 `followups` — `LLM_EXTRAS`) |
+| `jeju_agent/agent.py` | 오케스트레이션, 로그, 폴백, **LLM 부가 단계**(답변-근거 대조 자기 점검 `review`, 결과 기반 후속 질문 `followups` — `LLM_EXTRAS`), **`discover()`**(첫 화면 자율 탐색: 혼잡 상위 5 + 오늘의 발견) |
 | `jeju_agent/report.py` | 단일 HTML 리포트 |
-| `app.py` | Streamlit UI (🧭 실행 계획·4단 답변·이어서 물어보기·지도·차트·근거표·방법/한계·실행 로그·**LLM 전송 내용 미리보기**·리포트/PNG 다운로드·올린 자료 삭제·대화 맥락) |
-| `scripts/` | `fetch_hub.py`(허브 공개 API 수집) · `fetch_weather.py`(날씨 5-02·5-01 수집·변환) · `check_data.py`(실데이터 점검) · `ollama_check.py`(로컬 LLM 점검) · `llm_smoke.py`(LLM 검증표) · `capture_screens.py`(스크린샷) · `make_submission.py`(ZIP·PDF 생성) |
+| `app.py` | Streamlit UI (**첫 화면: 혼잡 상위 5곳 지도·오늘의 발견 카드·시작 질문** → 🧭 실행 계획·4단 답변·이어서 물어보기·지도·차트·근거표·방법/한계·실행 로그·**LLM 전송 내용 미리보기**·리포트/PNG 다운로드·올린 자료 삭제·대화 맥락) |
+| `scripts/` | `fetch_hub.py`(허브 공개 API 수집) · `fetch_weather.py`(날씨 5-02·5-01 수집·변환) · `check_data.py`(실데이터 점검) · `ollama_check.py`(로컬 LLM 점검) · `llm_smoke.py`(LLM 검증표) · **`reproduce.py`(원클릭 재현·골든 비교)** · `capture_screens.py`(스크린샷) · `make_submission.py`(ZIP·PDF 생성) |
 
 ## 신뢰성 장치 (심사 포인트)
 - **실행 계획 노출**: Agent가 어떤 데이터를 어떤 순서로 왜 봤는지(LLM 모드는 모델이 쓴 계획 문장, 오프라인은 규칙 선택 근거)를 답변 위 🧭 패널과 리포트에 남긴다.
@@ -111,8 +114,10 @@ pytest -q                                                # 테스트 44개 (API 
 - **반출 게이트 = 센터 공식 기준**: 제주빅데이터센터 데이터 반출 정책(2026.09.01 개정)의 "단순집계 10 미만 불포함"에 맞춰 10 미만 셀 마스킹, 차트는 PNG로 반출.
 - **출처 표기**: 이용약관 제7조 문구를 화면·리포트·모든 답변에 표시.
 - **규정 근거 등급**: `docs/DATA_SPEC.md` §7에 [확인]/[확인 필요] 꼬리표로 적었다.
+- **골든 회귀 + 원클릭 재현**: `python scripts/reproduce.py` 한 번으로 동봉 축약본 기준 18문항을 다시 돌려 `tests/golden/demo_golden.json` 의 지문(도구 순서·행 수·첫 행 숫자·첫 사실)과 대조한다. 코드가 바뀌어 결과가 달라지면 어느 문항의 어느 숫자가 달라졌는지 표로 보여 주며(`pytest` 에도 포함), 운영진의 코드 실행 요청(규칙 5조)에 같은 명령으로 답할 수 있다.
 
 ## Agent의 판단·자율 범위
+- **질문 없이 먼저 움직임(자율 탐색)**: 첫 화면에서 Agent가 장소·정류소·노선의 일별 값을 평일/주말 중앙값과 비교해 급증(1.8배↑)·급감(0.55배↓)·최근 7일 추세(1.4배↑/0.7배↓)를 찾아 "오늘의 발견" 3건을 근거와 함께 보여 준다(`explore_anomalies`). 제공처 공백일·소표본은 제외하고, 발견 카드를 누르면 해당 장소·정류소·노선의 세부 분석 질문으로 이어진다. "눈에 띄는 게 있어?" 같은 열린 질문도 같은 도구로 답한다.
 - **스스로 결정**: 어떤 도구를 몇 번 쓸지(최대 6회), 예측·브리핑·기간 비교처럼 여러 데이터를 묶을지, 장소·노선명 해석, 기간 기본값, 오류 시 인자 수정 재시도, LLM 장애 시 오프라인 폴백.
 - **자기 점검·후속 제안(LLM 모드)**: 답변을 쓴 뒤 LLM이 자기 답변을 근거표와 대조해 과장·인과 표현을 지적하고(`review`, 자동 점검에 "LLM 자기 점검"으로 표시), 결과를 보고 다음 질문 3개를 제안합니다(`followups`). 둘 다 JSON 파싱 실패·장애 시 규칙 기반으로 대체되며 사이드바에서 끄고 켤 수 있습니다.
 - **하지 않음**: 원본 행 열람, 식별자 컬럼 출력, 쓰기 SQL, 도구 결과에 없는 수치 생성(프롬프트로 금지 + 모든 수치가 로그에 남음).
@@ -132,6 +137,7 @@ pytest -q                                                # 테스트 44개 (API 
 - 버스 효율은 배차 횟수가 없어 **승차 수요 기준**입니다. 현금 승차는 제외됩니다.
 - 날씨 효과·기간 비교는 공휴일·행사를 통제하지 않은 단순 비교(상관)입니다. Open-Meteo 날씨는 재분석 격자값(관측소 실측 아님)이므로 가능하면 기상청 CSV를 쓰세요.
 - 오프라인 모드는 정해진 질문 패턴만 이해합니다. 복합 질문은 LLM 모드를 권장합니다.
+- 자율 탐색의 '발견'은 평소와 다르다는 신호일 뿐 원인(행사·날씨·공사·수집 오류)은 데이터에 없습니다. 관측값 10명 미만은 수집 공백 가능성을 표시하고 우선순위를 낮춥니다.
 
 ## 사용한 AI·오픈소스
 - 개발 과정: Claude(Anthropic) 로 코드·문서 초안 작성 후 사람이 검토.
