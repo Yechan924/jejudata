@@ -77,6 +77,7 @@ python scripts/check_data.py                             # data/raw 실데이터
 python scripts/fetch_weather.py --kma-csv OBS_ASOS_DD.csv  # 기상청 CSV → data/raw 날씨 (또는 --open-meteo --from 2025-09-01 --to 2025-09-30)
 python scripts/ollama_check.py                           # 센터 PC 오프라인 LLM(Ollama) 서버·모델·도구호출 점검
 python scripts/llm_smoke.py --limit 5                    # LLM 모드 실키 검증 (docs/LLM_EVAL.md 생성)
+python scripts/validate_index.py                         # 혼잡지수 타당성 검증 → docs/VALIDATION.md (+ --visitors 입장객CSV)
 python scripts/reproduce.py                              # 원클릭 재현: 동봉 축약본으로 18문항 실행 → 골든 지문 비교 → outputs/samples/ (--pytest 로 테스트까지)
 pytest -q                                                # 테스트 84개 (API 키 불필요; 골든 회귀 20개는 동봉 축약본, 나머지는 합성 데이터로 격리 실행)
 ```
@@ -114,6 +115,7 @@ pytest -q                                                # 테스트 84개 (API 
 - **반출 게이트 = 센터 공식 기준**: 제주빅데이터센터 데이터 반출 정책(2026.09.01 개정)의 "단순집계 10 미만 불포함"에 맞춰 10 미만 셀 마스킹, 차트는 PNG로 반출.
 - **출처 표기**: 이용약관 제7조 문구를 화면·리포트·모든 답변에 표시.
 - **규정 근거 등급**: `docs/DATA_SPEC.md` §7에 [확인]/[확인 필요] 꼬리표로 적었다.
+- **혼잡지수 타당성 검증**: `python scripts/validate_index.py` → `docs/VALIDATION.md`. 와이파이 이용자(4-05)와 같은 장소 반경 1km 버스 승차(3-04)를 대조해 방향·순위·요일 쏠림의 일치도를 범주별로 수치화하고, 어디까지 믿고 어디서부터 믿지 말아야 하는지(관광지·해변 ○, 도심 상권 △)를 적었다. 입장객 데이터가 있으면 `--visitors` 로 외부 검증 추가.
 - **골든 회귀 + 원클릭 재현**: `python scripts/reproduce.py` 한 번으로 동봉 축약본 기준 18문항을 다시 돌려 `tests/golden/demo_golden.json` 의 지문(도구 순서·행 수·첫 행 숫자·첫 사실)과 대조한다. 코드가 바뀌어 결과가 달라지면 어느 문항의 어느 숫자가 달라졌는지 표로 보여 주며(`pytest` 에도 포함), 운영진의 코드 실행 요청(규칙 5조)에 같은 명령으로 답할 수 있다.
 
 ## Agent의 판단·자율 범위
