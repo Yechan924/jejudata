@@ -22,6 +22,14 @@
   버스 정류소 기본 정보          : stationId, stationName, latitude, longitude
   버스 노선 기본 정보            : routeId→bus_route_id, routeNumber→bus_route_number, routeLength→bus_route_length, stationCount→bus_station_count
   제주 공공와이파이 AP 정보      : apGroupName→ap_group_name, category, latitude, longitude (4-01)
+
+추가 데이터셋(허브 데이터목록 20261105 기준, API 토큰은 허브 상세 페이지 '요청 URL'의 /proxy/ 뒤 토큰을 .env 에 넣는다)
+  weather          일별 기상 정보(#756)          JEJUHUB_API_WEATHER=토큰         → data/raw/weather_daily/  (5-02 대체, 관측값)
+  weather_station  기상관측소 정보(#757)         JEJUHUB_API_WEATHER_STATION=토큰 → data/raw/weather_station/ (5-01)
+  dong_population  읍면동 단위 내국인 유동인구(#753) JEJUHUB_API_DONG_POPULATION=토큰 → data/raw/dong_population/ (혼잡지수 외부 검증·읍면동 비교)
+  이 셋은 응답 키를 바꾸지 않고 그대로 저장하며(로더가 별칭 규칙으로 명세서 컬럼에 맞춤), 날짜 파라미터 이름은 환경변수
+  JEJUHUB_DATEPARAM_<이름>=startDate,endDate 또는 =searchDate 로 바꿀 수 있다(기본: startDate,endDate).
+  먼저  python scripts/fetch_hub.py --probe dong_population --to 2025-09-01  로 응답 키·1행을 확인한 뒤 받는 것을 권장.
 """
 from __future__ import annotations
 
@@ -84,6 +92,32 @@ DATASETS = {
                 "categoryDetail": "category_detail", "addressDong": "address_dong", "addressDetail": "address_detail", "latitude": "latitude", "longitude": "longitude"},
     },
 }
+
+def _env_api(name: str) -> str | None:
+    return os.getenv(f"JEJUHUB_API_{name.upper()}", "").strip() or None
+
+
+def _env_dateparam(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
+    v = os.getenv(f"JEJUHUB_DATEPARAM_{name.upper()}", "").strip()
+    return tuple(x.strip() for x in v.split(",") if x.strip()) if v else default
+
+
+# 토큰이 .env 에 있을 때만 활성화되는 추가 데이터셋 (응답 키 그대로 저장: map=None)
+EXTRA_DATASETS = {
+    "weather": {
+        "api": _env_api("weather"), "hub_id": 756, "title": "일별 기상 정보", "env": "JEJUHUB_API_WEATHER",
+        "file": "weather_daily/일일 날씨 정보_허브API_{ym}.csv", "mode": "daily", "date_param": _env_dateparam("weather", ("startDate", "endDate")), "map": None,
+    },
+    "weather_station": {
+        "api": _env_api("weather_station"), "hub_id": 757, "title": "기상관측소 정보", "env": "JEJUHUB_API_WEATHER_STATION",
+        "file": "weather_station/날씨 관측소 정보_허브API.csv", "mode": "static", "date_param": (), "map": None,
+    },
+    "dong_population": {
+        "api": _env_api("dong_population"), "hub_id": 753, "title": "읍면동 단위 내국인 유동인구", "env": "JEJUHUB_API_DONG_POPULATION",
+        "file": "dong_population/읍면동 단위 내국인 유동인구_허브API_{ym}.csv", "mode": "daily", "date_param": _env_dateparam("dong_population", ("startDate", "endDate")), "map": None,
+    },
+}
+DATASETS.update(EXTRA_DATASETS)
 DEFAULT_ONLY = ["wifi", "bus_station", "bus_route", "station_info", "route_info", "ap_info"]
 STATE = RAW_DIR / ".hub_fetch_state.json"
 
@@ -131,8 +165,37 @@ def fetch_all(key: str, ds: dict, params: dict, calls: list[int]) -> list[dict]:
 
 
 def to_rows(ds: dict, data: list[dict]) -> list[dict]:
-    m = ds["map"]
+    m = ds.get("map")
+    if not m:   # 응답 키 그대로 (로더의 별칭 규칙이 명세서 컬럼으로 맞춘다)
+        return [dict(d) for d in data]
     return [{m[k]: v for k, v in d.items() if k in m} for d in data]
+
+
+def probe(key: str, name: str, d1: date) -> int:
+    """응답 키와 첫 행만 출력 — 추가 데이터셋의 컬럼·날짜 파라미터를 확인할 때."""
+    ds = DATASETS[name]
+    if not ds.get("api"):
+        print(f"{name}: 토큰이 없습니다. .env 에 {ds.get('env', 'JEJUHUB_API_' + name.upper())}=<허브 상세 페이지 요청 URL의 /proxy/ 뒤 토큰> 추가")
+        return 1
+    dp = ds["date_param"]
+    ymd = d1.strftime("%Y%m%d")
+    params = {} if not dp else ({dp[0]: ymd} if len(dp) == 1 else {dp[0]: ymd, dp[1]: ymd})
+    url = BASE.format(api=ds["api"], key=key)
+    r = requests.get(url, params={**params, "limit": 3, "number": 1}, timeout=60)
+    print(f"[{name}] {ds['title']} (허브 #{ds['hub_id']}) HTTP {r.status_code}  params={params}")
+    try:
+        j = r.json()
+    except ValueError:
+        print(r.text[:500]); return 1
+    data = j.get("data") or []
+    print(f"  totCnt={j.get('totCnt')} hasMore={j.get('hasMore')} rows={len(data)}")
+    if data:
+        print("  keys:", ", ".join(data[0].keys()))
+        print("  row1:", json.dumps(data[0], ensure_ascii=False)[:600])
+    else:
+        print("  응답 원문:", json.dumps(j, ensure_ascii=False)[:600])
+        print("  → 날짜 파라미터 이름이 다르면 .env 에 JEJUHUB_DATEPARAM_" + name.upper() + "=searchDate 처럼 지정")
+    return 0
 
 
 def write_csv(path: Path, rows: list[dict], append: bool) -> None:
@@ -160,6 +223,9 @@ def run(key: str, only: list[str], d0: date, d1: date, max_calls: int) -> None:
     calls = [0]
     for name in only:
         ds = DATASETS[name]
+        if not ds.get("api"):
+            print(f"\n[{name}] {ds['title']} — 토큰 없음: .env 에 {ds.get('env')}=<토큰> 추가 후 다시 실행 (건너뜀)")
+            continue
         done: set[str] = set(st.get(name, {}).get("dates", []))
         print(f"\n[{name}] {ds['title']} (허브 #{ds['hub_id']})")
         try:
@@ -225,6 +291,7 @@ def main() -> int:
     ap.add_argument("--only", default=",".join(DEFAULT_ONLY))
     ap.add_argument("--max-calls", type=int, default=900, help="이번 실행에서 쓸 최대 호출 수(일일 쿼터 1,000 보호)")
     ap.add_argument("--status", action="store_true")
+    ap.add_argument("--probe", help="데이터셋 이름 — 응답 키·첫 행만 확인 (예: --probe dong_population --to 2025-09-01)")
     a = ap.parse_args()
     if a.status:
         status()
@@ -233,6 +300,13 @@ def main() -> int:
     if not key:
         print("JEJUHUB_PROJECT_KEY 가 없습니다. .env 에 추가하세요 (허브 마이페이지 → 프로젝트 → 키).")
         return 1
+    if a.probe:
+        if a.probe not in DATASETS:
+            print(f"알 수 없는 데이터셋: {a.probe} (가능: {', '.join(DATASETS)})"); return 1
+        return probe(key, a.probe, date.fromisoformat(a.d1))
+    unknown = [x.strip() for x in a.only.split(",") if x.strip() and x.strip() not in DATASETS]
+    if unknown:
+        print(f"알 수 없는 데이터셋: {', '.join(unknown)} (가능: {', '.join(DATASETS)})")
     only = [x.strip() for x in a.only.split(",") if x.strip() in DATASETS]
     run(key, only, date.fromisoformat(a.d0), date.fromisoformat(a.d1), a.max_calls)
     return 0

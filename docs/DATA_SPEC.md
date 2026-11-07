@@ -20,7 +20,7 @@
 - 제주데이터허브(jejudatahub.net) → 제주빅데이터센터 메뉴 → 해당 데이터 CSV 다운로드 → `data/raw/` 복사 → `python scripts/check_data.py`로 점검. 단계별 절차·대안 데이터·센터 방문 요령은 `docs/DATA_ACQUISITION.md`.
 - 파일명은 데이터명(한글)·코드·영문키(`wifi_ap_usage` 등) 어느 것으로 시작해도 자동 인식. 여러 기간 파일은 `data/raw/wifi_ap_usage/*.csv` 처럼 폴더에 모아도 됨.
 
-- 날씨(5-02·5-01)는 허브에도 공개 API가 있다(「일별 기상 정보」·「기상관측소 정보」, 제주특별자치도 제공, 일 자동갱신; `fetch_hub.py` 연동 예정). 현 제출본은 `python scripts/fetch_weather.py` 로 받는다. (A) 기상청 기상자료개방포털(data.kma.go.kr) 종관기상관측(ASOS) 일자료 CSV를 `--kma-csv` 로 변환(관측값, 권장; 변환 없이 `data/raw/`에 넣어도 별칭으로 읽힘), (B) `--open-meteo` 로 Open-Meteo 과거 기상 API(키 없음, CC BY 4.0, ERA5 재분석 격자값), (C) `--kma-api` 로 기상청 API허브(인증키). 관측소는 제주(184)·고산(185)·성산(188)·서귀포(189) 4개이며 5-01이 없으면 `config/weather_stations_jeju.csv`(기상청 지점 정보)를 쓴다. 무강수일의 빈칸은 0mm로 둔다.
+- 날씨(5-02·5-01)는 허브 공개 API(「일별 기상 정보」#756·「기상관측소 정보」#757, 제주특별자치도 제공, 일 자동갱신)를 `python scripts/fetch_hub.py --only weather,weather_station` 으로 받는다(API 토큰은 `.env`의 `JEJUHUB_API_WEATHER`·`JEJUHUB_API_WEATHER_STATION`; 응답 키는 그대로 저장되고 로더 별칭 규칙이 5-02 컬럼으로 맞춘다). 동봉 축약본은 `python scripts/fetch_weather.py` 로 받은 Open-Meteo 자료다. (A) 기상청 기상자료개방포털(data.kma.go.kr) 종관기상관측(ASOS) 일자료 CSV를 `--kma-csv` 로 변환(관측값, 권장; 변환 없이 `data/raw/`에 넣어도 별칭으로 읽힘), (B) `--open-meteo` 로 Open-Meteo 과거 기상 API(키 없음, CC BY 4.0, ERA5 재분석 격자값), (C) `--kma-api` 로 기상청 API허브(인증키). 관측소는 제주(184)·고산(185)·성산(188)·서귀포(189) 4개이며 5-01이 없으면 `config/weather_stations_jeju.csv`(기상청 지점 정보)를 쓴다. 무강수일의 빈칸은 0mm로 둔다.
 
 ## 3. 전처리 (`jeju_agent/data/loader.py`)
 1. 인코딩 자동 판별(utf-8-sig → cp949 → euc-kr).
@@ -46,8 +46,19 @@
 ## 5. 반출 게이트 (`jeju_agent/gate.py`, `config/export_rules.yaml`)
 LLM·화면·리포트로 나가는 모든 표는 ① 식별자 컬럼 제거 ② 500행 상한 ③ 10명 미만 인원 셀 `<10` 마스킹(센터 반출 정책 2026.09.01 단순집계 기준, `EXPORT_MIN_CELL_COUNT`로 조정) ④ 원본 행 조회 차단(run_sql은 집계 쿼리만) 을 거친다. 비반출 데이터를 추가하더라도 같은 경로로만 결과가 나간다.
 
+## 5-1. 허브 공개 API 추가 데이터셋 (제주데이터허브 데이터목록 20261105 기준, 선택)
+| 스크립트 키 | 허브 데이터(목록 No.) | 제공 | 용도 | 저장 |
+|---|---|---|---|---|
+| `dong_population` | 읍면동 단위 내국인 유동인구 (#753, API, 일 갱신) | 제주특별자치도 디지털혁신과(통신사 기반 추정) | 혼잡지수 **외부 검증**(`validate_index.py` A1절) · 도구 `dong_population_compare`(읍면동별 유동인구 vs 와이파이, 표본 비율 ‰) | `data/raw/dong_population/` |
+| `weather` / `weather_station` | 일별 기상 정보 (#756) / 기상관측소 정보 (#757, API) | 제주특별자치도 | 5-02·5-01 **관측값** 대체 | `data/raw/weather_daily/`·`weather_station/` |
+
+- 세 데이터 모두 읍면동·관측소 단위 집계로 개인정보가 없고, 허브 이용약관에 따른 공개 API 결과물이다. 토큰은 허브 상세 페이지 '요청 URL'의 `/proxy/` 뒤 문자열을 `.env`에 넣는다(커밋 금지). 응답 키 확인: `python scripts/fetch_hub.py --probe dong_population --to 2025-09-01`.
+- 유동인구 ↔ 와이파이 연결: 4-01 AP 주소의 법정동(화북이동·아라일동·구좌읍 상도리 …)을 행정동(화북동·아라동·구좌읍)으로 바꾸는 변환표(`jeju_agent/tools/dong.py` `LEGAL_TO_ADMIN`)로 읍면동명을 맞춘다. 서귀동처럼 여러 행정동에 걸치는 법정동은 연결하지 않는다. 유동인구 쪽이 법정동이면 변환 없이 먼저 맞춰 본다.
+- 적재되지 않으면 모든 기능이 그대로 동작한다(관련 질문은 와이파이 기준 순위로 대체하고 계획에 그 사실을 표시).
+- 센터 보유 격자·시간대 단위 원천 유동인구·카드 데이터는 반출 불가이며, 허브 공개본은 읍면동·일 집계라는 점이 다르다.
+
 ## 6. 외부 데이터·오픈소스
-- 외부 데이터: 없음 (합성 데이터는 명세서 구조만 참고한 자체 생성물). 집에서 수집하는 허브 공개 API 6종도 제공처가 제주빅데이터센터이며 명세서 데이터의 집계본이다.
+- 외부 데이터: 없음 (합성 데이터는 명세서 구조만 참고한 자체 생성물). 집에서 수집하는 허브 공개 API 6종도 제공처가 제주빅데이터센터이며 명세서 데이터의 집계본이다. 선택 데이터 3종(§5-1)도 모두 제주데이터허브 공개 API다.
 - 오픈소스: pandas, numpy, DuckDB, Streamlit, Plotly, pydeck, PyYAML, python-dotenv, requests, pytest.
 - 외부 API: LLM(Anthropic / OpenAI, 선택). 원본 행은 전송하지 않으며 게이트 통과 집계표(최대 40행 텍스트)만 전송.
 

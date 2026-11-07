@@ -80,6 +80,16 @@ def main() -> int:
         p = db.provenance.get(k)
         print(f"  {'✓' if p and p.source == 'raw' else '·'} {schemas.dataset(k)['code']} {schemas.dataset(k)['name']}: {p.source if p else 'missing'}")
 
+    print("\n[선택 데이터 — 허브 공개 API, 있으면 기능 추가]")
+    for k in schemas.EXTRA_DATASETS:
+        p = db.provenance.get(k)
+        d = schemas.dataset(k)
+        if p and p.source == "raw":
+            cols_ok = all(c in db.table(k).columns and db.table(k)[c].notna().any() for c in REQUIRED_COLUMNS.get(k, []))
+            print(f"  ✓ {d['code']} {d['name']}: raw {p.rows:,}행 {p.date_min}~{p.date_max}" + ("" if cols_ok else "  ⚠️ 필수 컬럼이 비어 있음 — config/column_aliases.yaml 에 실제 응답 키 추가") + (f"  ({p.note})" if p.note else ""))
+        else:
+            print(f"  · {d['code']} {d['name']}: 없음 → python scripts/fetch_hub.py --only {k}  (혼잡지수 외부 검증·읍면동 비교 활성화)")
+
     print("\n결론:", "필수 2종 실데이터 적재 완료 — 샘플·기획서를 실데이터로 갱신하세요." if ok else "필수 데이터가 아직 실데이터가 아닙니다. docs/DATA_ACQUISITION.md 참고.")
     return 0 if (ok or not a.strict) else 1
 

@@ -4,9 +4,13 @@
 
 **검증 질문** — 이 서비스의 모든 혼잡 결과는 "공공 와이파이 접속자 수가 장소의 방문 규모를 따라간다"는 가정 위에 있다. 이 가정을 수집 주체·방식이 다른 독립 데이터로 확인한다.
 
-## A. 외부 기준 검증 — (미수행)
+## A1. 외부 기준 검증 — 읍면동 유동인구 (미수행)
 
-허브에서 관광지별 입장객·방문객 데이터를 확보하면 `python scripts/validate_index.py --visitors FILE.csv` 로 이 절이 채워진다.
+허브 공개 API「읍면동 단위 내국인 유동인구」를 `python scripts/fetch_hub.py --only dong_population` 으로 받아 `data/raw/dong_population/` 에 넣으면 이 절이 자동으로 채워진다(또는 `--dong-pop FILE.csv`).
+
+## A2. 외부 기준 검증 — 관광지 입장객 (미수행)
+
+허브의 관광지별 입장객·방문객 데이터(예: 관광지별 내국인 유입자 수)를 확보하면 `python scripts/validate_index.py --visitors FILE.csv` 로 이 절이 채워진다.
 
 ## B. 내부 교차 검증 — 같은 장소 반경 내 버스 승차(티머니) vs 와이파이 이용자
 

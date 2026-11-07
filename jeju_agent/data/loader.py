@@ -42,6 +42,7 @@ DOW_KO = {0: "월", 1: "화", 2: "수", 3: "목", 4: "금", 5: "토", 6: "일"}
 INFO_TABLES = {"bus_route": "bus_route_id", "bus_station": "bus_station_id", "weather_station": "observatory_code", "wifi_ap": "manage_no"}
 # 분석 도구가 실제로 의존하는 컬럼 (실데이터 점검용)
 REQUIRED_COLUMNS = {
+    "dong_population": ["base_date", "dong_name", "population"],
     "wifi_ap_usage": ["base_date", "ap_place", "ap_latitude", "ap_longitude"],   # user_id 또는 user_count 중 하나 (아래 ANY_OF)
     "bus_station_usage": ["base_date", "bus_station_id", "bus_station_name", "get_on_off_type", "user_count"],
     "bus_route_usage": ["base_date", "bus_route_name", "get_on_off_type", "user_count"],
@@ -121,7 +122,8 @@ class JejuDB:
     FILE_ALIASES = {"wifi_ap": ["와이파이 AP 현황", "와이파이AP현황", "공공와이파이 AP 정보"],
                     "bus_station": ["버스 정류소 기본 정보"], "bus_route": ["버스 노선 기본 정보"],
                     "bus_station_usage": ["일일 정류소별 버스 이용자 정보"], "bus_route_usage": ["일일 노선별 버스 이용자 정보"],
-                    "wifi_ap_usage": ["와이파이 AP그룹별 일일 사용량"]}
+                    "wifi_ap_usage": ["와이파이 AP그룹별 일일 사용량"],
+                    "dong_population": ["읍면동 단위 내국인 유동인구", "읍면동 유동인구", "읍면동단위내국인유동인구"]}
 
     @classmethod
     def _targets(cls, key: str) -> set[str]:
@@ -338,6 +340,10 @@ class JejuDB:
     def load_all(self, keys: list[str] | None = None) -> dict[str, Provenance]:
         for k in keys or schemas.CORE_DATASETS:
             self.load_dataset(k)
+        if keys is None:
+            for k in schemas.EXTRA_DATASETS:   # 실데이터(raw/demo)가 있을 때만 — 합성 데이터로는 만들지 않는다
+                if self.find_files(k, RAW_DIR) or (DEMO_DIR.exists() and self.find_files(k, DEMO_DIR)):
+                    self.load_dataset(k)
         self._reconcile_weather()
         self._enrich_bus_station_ids()
         self._enrich_wifi()

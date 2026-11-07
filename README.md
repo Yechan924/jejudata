@@ -34,6 +34,7 @@
 | 3-02 | 버스 노선별 이용 현황 | 노선 효율·저이용 시간대 |
 | 3-01 / 3-03 | 버스 노선·정류소 정보 | 노선거리·정류소 좌표 |
 | 5-02 / 5-01 | 일일 날씨·관측소 정보 | 강우 영향 |
+| 허브 #753 | 읍면동 단위 내국인 유동인구 (허브 공개 API, 선택) | 혼잡지수 외부 검증·읍면동별 유동인구 vs 와이파이 (`dong_population_compare`) |
 
 자세한 활용 내역·전처리·이용조건은 [docs/DATA_SPEC.md](docs/DATA_SPEC.md), **실데이터를 받아 넣는 절차는 [docs/DATA_ACQUISITION.md](docs/DATA_ACQUISITION.md)** 참고.
 
@@ -41,7 +42,9 @@
 >
 > **실데이터 경로 2가지** — 원본 4-05·3-04 CSV는 센터 분석실에서만 받을 수 있습니다("데이터검색" 메뉴는 분석실 전용). 집에서는 같은 제공처의 **허브 공개 API 6종**을 `python scripts/fetch_hub.py` 로 수집해 `data/raw/`에 넣으면 됩니다(2025년 최신, 10분). 국적·방문유형·시간대처럼 API에 없는 컬럼은 해당 기능만 비활성화되고, 센터 원본을 넣으면 자동 활성화됩니다. 넣은 뒤 `python scripts/check_data.py` 로 점검.
 >
-> **날씨(5-02·5-01)** 는 허브에도 공개 API가 있습니다(「일별 기상 정보」·「기상관측소 정보」, 제주특별자치도 제공, 일 자동갱신). 현 제출본은 `python scripts/fetch_weather.py` 로 받은 자료를 씁니다 — 기상청 기상자료개방포털 CSV 변환(관측값, 권장) / Open-Meteo(키 없음) / 기상청 API허브. 허브 API 연동(`fetch_hub.py` 확장)은 진행 중입니다. 2025-09 Open-Meteo 자료(4개 지점)는 `data/demo`에 동봉되어 강우 문항이 바로 동작합니다. 날씨가 없으면 강우 영향 기능만 비활성이며, 기간이 다른 합성 날씨는 실데이터에 섞지 않습니다.
+> **날씨(5-02·5-01)** 는 허브 공개 API(「일별 기상 정보」·「기상관측소 정보」, 제주특별자치도 제공)를 `python scripts/fetch_hub.py --only weather,weather_station` 으로 받을 수 있습니다(허브 상세 페이지의 API 토큰을 `.env`에 `JEJUHUB_API_WEATHER=…`로 지정). 또는 `python scripts/fetch_weather.py` — 기상청 기상자료개방포털 CSV 변환(관측값) / Open-Meteo(키 없음) / 기상청 API허브. 동봉 축약본은 2025-09 Open-Meteo 자료(4개 지점)라 강우 문항이 바로 동작합니다.
+>
+> **읍면동 유동인구(허브 #753, 선택)** — `python scripts/fetch_hub.py --only dong_population` (`.env`에 `JEJUHUB_API_DONG_POPULATION=…`). 넣으면 '읍면동별 유동인구' 질문이 열리고, `python scripts/validate_index.py` 가 혼잡지수를 통신사 유동인구와 대조하는 외부 검증(A1절)을 자동으로 추가합니다. 2025-09 Open-Meteo 자료(4개 지점)는 `data/demo`에 동봉되어 강우 문항이 바로 동작합니다. 날씨가 없으면 강우 영향 기능만 비활성이며, 기간이 다른 합성 날씨는 실데이터에 섞지 않습니다.
 
 ## 제출 문서
 - 기획서: [docs/AI_Agent_기획서_제주혼잡이동진단.pdf](docs/AI_Agent_기획서_제주혼잡이동진단.pdf) (원본 `docs/proposal.html`)
@@ -79,7 +82,7 @@ python scripts/ollama_check.py                           # 센터 PC 오프라�
 python scripts/llm_smoke.py --limit 5                    # LLM 모드 실키 검증 (docs/LLM_EVAL.md 생성)
 python scripts/validate_index.py                         # 혼잡지수 타당성 검증 → docs/VALIDATION.md (+ --visitors 입장객CSV)
 python scripts/reproduce.py                              # 원클릭 재현: 동봉 축약본으로 18문항 실행 → 골든 지문 비교 → outputs/samples/ (--pytest 로 테스트까지)
-pytest -q                                                # 테스트 84개 (API 키 불필요; 골든 회귀 20개는 동봉 축약본, 나머지는 합성 데이터로 격리 실행)
+pytest -q                                                # 테스트 89개 (API 키 불필요; 골든 회귀 20개는 동봉 축약본, 나머지는 합성 데이터로 격리 실행)
 ```
 
 ## 구조
@@ -115,7 +118,7 @@ pytest -q                                                # 테스트 84개 (API 
 - **반출 게이트 = 센터 공식 기준**: 제주빅데이터센터 데이터 반출 정책(2026.09.01 개정)의 "단순집계 10 미만 불포함"에 맞춰 10 미만 셀 마스킹, 차트는 PNG로 반출.
 - **출처 표기**: 이용약관 제7조 문구를 화면·리포트·모든 답변에 표시.
 - **규정 근거 등급**: `docs/DATA_SPEC.md` §7에 [확인]/[확인 필요] 꼬리표로 적었다.
-- **혼잡지수 타당성 검증**: `python scripts/validate_index.py` → `docs/VALIDATION.md`. 와이파이 이용자(4-05)와 같은 장소 반경 1km 버스 승차(3-04)를 대조해 방향·순위·요일 쏠림의 일치도를 범주별로 수치화하고, 어디까지 믿고 어디서부터 믿지 말아야 하는지(관광지·해변 ○, 도심 상권 △)를 적었다. 입장객 데이터가 있으면 `--visitors` 로 외부 검증 추가.
+- **혼잡지수 타당성 검증**: `python scripts/validate_index.py` → `docs/VALIDATION.md`. 와이파이 이용자(4-05)와 같은 장소 반경 1km 버스 승차(3-04)를 대조해 방향·순위·요일 쏠림의 일치도를 범주별로 수치화하고, 어디까지 믿고 어디서부터 믿지 말아야 하는지(관광지·해변 ○, 도심 상권 △)를 적었다. 허브 읍면동 유동인구(#753)가 `data/raw/dong_population/`에 있으면 **외부 검증 A1**(읍면동 간 순위 상관·일별 상관·주말 쏠림 일치·표본 비율)을 자동 수행하고, 관광지 입장객 CSV가 있으면 `--visitors` 로 A2를 추가한다.
 - **골든 회귀 + 원클릭 재현**: `python scripts/reproduce.py` 한 번으로 동봉 축약본 기준 18문항을 다시 돌려 `tests/golden/demo_golden.json` 의 지문(도구 순서·행 수·첫 행 숫자·첫 사실)과 대조한다. 코드가 바뀌어 결과가 달라지면 어느 문항의 어느 숫자가 달라졌는지 표로 보여 주며(`pytest` 에도 포함), 운영진의 코드 실행 요청(규칙 5조)에 같은 명령으로 답할 수 있다.
 
 ## Agent의 판단·자율 범위

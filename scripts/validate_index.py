@@ -2,9 +2,13 @@
 
   python scripts/validate_index.py                       # data/raw(또는 demo)로 검증 → docs/VALIDATION.md + docs/img/validation_*.png
   python scripts/validate_index.py --visitors FILE.csv   # (있으면) 허브 유료관광지 입장객·방문객 CSV 로 외부 검증까지
+  python scripts/validate_index.py --dong-pop FILE.csv   # 허브 읍면동 유동인구 CSV 를 직접 지정 (data/raw/dong_population/ 에 있으면 자동)
   python scripts/validate_index.py --radius 1.0          # 정류소 반경(km, 기본 1.0)
 
-검증 A — 외부 기준(선택): 관광지별 입장객(일별 또는 월별)과 같은 장소의 와이파이 이용자를 대조.
+검증 A1 — 외부 기준(자동, 데이터가 있을 때): 허브 공개 API「읍면동 단위 내국인 유동인구」(통신사 기반) vs 같은 읍면동·같은 날의 와이파이 이용자 합.
+  · 읍면동 간 순위 상관(Spearman), 읍면동별 일별 상관의 분포, 주말 쏠림 방향 일치율, 표본 비율(와이파이 ÷ 유동인구)의 읍면동 간 편차.
+  · 연결은 4-01 AP 주소(법정동)를 행정동으로 바꿔 이름 일치(jeju_agent/tools/dong.py).
+검증 A2 — 외부 기준(선택): 관광지별 입장객(일별 또는 월별)과 같은 장소의 와이파이 이용자를 대조.
   · 일별이면 장소별 시계열 상관(피어슨·스피어만), 월별이면 장소 간 횡단 상관(순위 상관).
   · 장소명 연결은 와이파이 장소명과 부분 일치(정규화) — 연결 결과 표를 함께 남긴다.
 검증 B — 내부 교차(항상): 같은 장소 반경 r km 안 버스 정류소 승차(3-04, 카드 태그)와 와이파이 이용자(4-05)를 대조.
@@ -30,6 +34,7 @@ sys.path.insert(0, str(ROOT))
 from jeju_agent.data.loader import JejuDB  # noqa: E402
 from jeju_agent.tools.base import df_to_md, haversine_km, wifi_users_agg  # noqa: E402
 from jeju_agent.tools.congestion import TOURIST_CATS, _coords  # noqa: E402
+from jeju_agent.tools.dong import compare_dong  # noqa: E402
 
 OUT_MD = ROOT / "docs" / "VALIDATION.md"
 IMG = ROOT / "docs" / "img"
@@ -155,7 +160,19 @@ def external_validation(db, path: Path):
     return out
 
 
-def plots(internal, external):
+def dong_validation(db, path: Path | None):
+    """허브 읍면동 유동인구 ↔ 와이파이. path 를 주면 그 CSV 를 적재해서 쓴다."""
+    if path is not None:
+        df = JejuDB.standardize(JejuDB.read_csv(path), "dong_population")
+        df = JejuDB._add_derived(df)
+        db.frames["dong_population"] = df
+        db._register("dong_population", df)
+    if not db.has("dong_population"):
+        return None
+    return compare_dong(db)
+
+
+def plots(internal, external, dong=None):
     try:
         from jeju_agent.charts import _setup   # 한글 폰트 설정 공용
         plt = _setup()
@@ -175,6 +192,19 @@ def plots(internal, external):
             ax[1].axvline(0, color="k", lw=.8); ax[1].set_xlabel("장소별 일별 상관 r (와이파이 vs 승차)"); ax[1].set_ylabel("장소 수")
             ax[1].set_title(f"날짜 간 (중앙값 r={internal['per']['r'].median():.2f})")
         fig.tight_layout(); p = IMG / "validation_internal.png"; fig.savefig(p, dpi=130); plt.close(fig); made.append(p)
+    if dong and "cross" in dong and len(dong["cross"]) >= 3:
+        c = dong["cross"]
+        fig, ax = plt.subplots(1, 2, figsize=(10, 4))
+        ax[0].scatter(c["population"], c["wifi"], s=22)
+        for r in c.itertuples():
+            ax[0].annotate(r.dong, (r.population, r.wifi), fontsize=7)
+        ax[0].set_xscale("log"); ax[0].set_yscale("log"); ax[0].set_xlabel("읍면동 유동인구 일평균(허브 공개 API)"); ax[0].set_ylabel("읍면동 와이파이 이용자 일평균(4-05)")
+        ax[0].set_title(f"읍면동 간 (n={len(c)}, Spearman ρ={dong.get('rho', float('nan')):.2f})")
+        if len(dong["per"]):
+            ax[1].hist(dong["per"]["r"], bins=12, color="#2b7bd9", alpha=.8)
+            ax[1].axvline(0, color="k", lw=.8); ax[1].set_xlabel("읍면동별 일별 상관 r (와이파이 vs 유동인구)"); ax[1].set_ylabel("읍면동 수")
+            ax[1].set_title(f"날짜 간 (중앙값 r={dong['per']['r'].median():.2f})")
+        fig.tight_layout(); p = IMG / "validation_dong.png"; fig.savefig(p, dpi=130); plt.close(fig); made.append(p)
     if external and "cross" in external and len(external["cross"]) >= 3:
         c = external["cross"]
         fig, ax = plt.subplots(figsize=(5, 4))
@@ -190,6 +220,7 @@ def plots(internal, external):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--visitors", help="허브 유료관광지 입장객/방문객 CSV")
+    ap.add_argument("--dong-pop", help="허브 읍면동 유동인구 CSV (data/raw/dong_population/ 에 있으면 생략)")
     ap.add_argument("--radius", type=float, default=1.0)
     a = ap.parse_args()
     db = JejuDB(); db.load_all()
@@ -197,13 +228,31 @@ def main() -> int:
     period = prov[prov.key == "wifi_ap_usage"]["period"].iloc[0]
     internal = internal_validation(db, a.radius)
     external = external_validation(db, Path(a.visitors)) if a.visitors else None
-    imgs = plots(internal, external)
+    dong = dong_validation(db, Path(a.dong_pop) if a.dong_pop else None)
+    imgs = plots(internal, external, dong)
 
     md = ["# 혼잡지수 타당성 검증", "",
           f"데이터: 와이파이 4-05 {period}, 버스 정류소 3-04 {prov[prov.key == 'bus_station_usage']['period'].iloc[0]} ({'동봉 축약본' if db._demo_used else 'data/raw'})",
           "", "**검증 질문** — 이 서비스의 모든 혼잡 결과는 \"공공 와이파이 접속자 수가 장소의 방문 규모를 따라간다\"는 가정 위에 있다. 이 가정을 수집 주체·방식이 다른 독립 데이터로 확인한다.", ""]
+    if dong is not None:
+        md += ["## A1. 외부 기준 검증 — 읍면동 유동인구(허브 공개 API, 통신사 기반) vs 와이파이 이용자", ""]
+        if "error" in dong:
+            md += [f"- ⚠️ {dong['error']}", ""]
+        else:
+            c = dong["cross"]
+            md += [f"- 데이터: 허브 「읍면동 단위 내국인 유동인구」 {dong['date_min']}~{dong['date_max']} ({dong['days']}일), 와이파이 장소의 {dong['linked_places']:.0%}가 읍면동에 연결되어 **{dong['n_dong']}개 읍면동** 비교",
+                   (f"- **읍면동 간**: 유동인구 일평균 vs 와이파이 일평균 — Spearman ρ = **{dong['rho']:.2f}**, log-log Pearson r = {dong['r_log']:.2f}" if "rho" in dong else "- 연결 읍면동이 3곳 미만이라 상관을 내지 못함"),
+                   (f"- **날짜 간**: 읍면동별 일별 상관(10일 이상 {len(dong['per'])}곳) — 중앙값 r = **{dong['per']['r'].median():.2f}**, 양의 상관 {int((dong['per']['r'] > 0).sum())}곳({(dong['per']['r'] > 0).mean():.0%})" if len(dong["per"]) else "- 날짜 간 상관을 낼 만한 읍면동이 없음"),
+                   (f"- **주말 쏠림**: ±10% 넘게 치우친 {dong['weekend_n']}곳에서 방향 일치 **{dong['weekend_agree']:.0%}**" if dong.get("weekend_n") else ""),
+                   f"- **표본 비율**(와이파이 ÷ 유동인구): 중앙값 {c['wifi_per_mille'].median():.1f}‰, 읍면동 간 {c['wifi_per_mille'].min():.1f}~{c['wifi_per_mille'].max():.1f}‰ — 비율이 고르지 않으면 혼잡지수는 절대 규모가 아닌 '순위·방향' 지표로만 읽어야 한다",
+                   "", "읍면동별 (유동인구 순):", "", df_to_md(c.round(1), 45), ""]
+            if (IMG / "validation_dong.png").exists():
+                md += ["![읍면동 유동인구 검증](img/validation_dong.png)", ""]
+            md += ["한계: 유동인구는 통신사 가입자 기반 추정치이고 와이파이는 AP가 있는 장소만 잰다. 법정동→행정동 변환표로 연결했으며 서귀동처럼 여러 행정동에 걸치는 법정동은 제외했다. 상관은 인과가 아니다.", ""]
+    else:
+        md += ["## A1. 외부 기준 검증 — 읍면동 유동인구 (미수행)", "", "허브 공개 API「읍면동 단위 내국인 유동인구」를 `python scripts/fetch_hub.py --only dong_population` 으로 받아 `data/raw/dong_population/` 에 넣으면 이 절이 자동으로 채워진다(또는 `--dong-pop FILE.csv`).", ""]
     if external:
-        md += ["## A. 외부 기준 검증 — 관광지 입장객 vs 와이파이 이용자", ""]
+        md += ["## A2. 외부 기준 검증 — 관광지 입장객 vs 와이파이 이용자", ""]
         if "error" in external:
             md += [f"- ⚠️ {external['error']}", ""]
         else:
@@ -218,7 +267,7 @@ def main() -> int:
             if (IMG / "validation_external.png").exists():
                 md += ["![외부 검증](img/validation_external.png)", ""]
     else:
-        md += ["## A. 외부 기준 검증 — (미수행)", "", "허브에서 관광지별 입장객·방문객 데이터를 확보하면 `python scripts/validate_index.py --visitors FILE.csv` 로 이 절이 채워진다.", ""]
+        md += ["## A2. 외부 기준 검증 — 관광지 입장객 (미수행)", "", "허브의 관광지별 입장객·방문객 데이터(예: 관광지별 내국인 유입자 수)를 확보하면 `python scripts/validate_index.py --visitors FILE.csv` 로 이 절이 채워진다.", ""]
     md += ["## B. 내부 교차 검증 — 같은 장소 반경 내 버스 승차(티머니) vs 와이파이 이용자", ""]
     if internal is None:
         md += ["- 좌표가 있는 관광지 장소와 반경 내 정류소를 찾지 못해 수행하지 못함.", ""]

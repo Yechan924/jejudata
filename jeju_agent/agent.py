@@ -92,7 +92,7 @@ class JejuAgent:
 
     def _caps(self) -> dict:
         """적재 데이터로 가능한 분석 능력 (집계본이면 국적·시간대 없음)."""
-        caps = {"nationality": True, "hour": True, "weather": self.db.has("weather_daily")}
+        caps = {"nationality": True, "hour": True, "weather": self.db.has("weather_daily"), "dong_population": self.db.has("dong_population")}
         if self.db.has("wifi_ap_usage"):
             u = self.db.table("wifi_ap_usage")
             caps["nationality"] = bool(u["nationality"].notna().any() and u["nationality"].nunique() > 1)
@@ -126,6 +126,8 @@ class JejuAgent:
         qn = question.replace(" ", "")
         if not caps["nationality"] and any(k in qn for k in ("외국인", "중국인", "해외")):
             plan_txt.append("적재 데이터에 국적 정보가 없어(허브 집계본) 전체 이용자 기준 순위로 대체")
+        if not caps["dong_population"] and "유동인구" in qn:
+            plan_txt.append("읍면동 유동인구(허브 공개 API)가 적재되지 않아 와이파이 기준 혼잡 순위로 대체 — `python scripts/fetch_hub.py --only dong_population` 으로 받을 수 있음")
         if not caps["hour"] and any(k in qn for k in ("몇시", "시간대", "출근", "퇴근")):
             plan_txt.append("적재 데이터에 시간대가 없어(허브 집계본) 일 단위 승차 순위로 대체")
         if not caps["weather"] and any(n == "weather_effect" for n, _ in planned):

@@ -46,6 +46,13 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
                   if any(n.split("(")[0] == r or n.split("(")[0].split("-")[0] == r for n in routes)), None)
     if any(k in q for k in ("어떤데이터", "무슨데이터", "데이터목록", "데이터있")):
         return [("describe_data", {})]
+    if any(k in q for k in ("유동인구", "읍면동별", "동네별", "어느동네", "어느읍면동")) and caps.get("dong_population", False):
+        args = {**period}
+        if any(k in q for k in ("비율", "대비", "표본")):
+            args["sort_by"] = "wifi_per_mille"
+        elif weekend:
+            args["sort_by"] = "pop_weekend_ratio"
+        return [("dong_population_compare", args)]
     if any(k in q for k in ("브리핑", "상황요약", "월간", "지난달어땠", "한달정리")):
         if "해변" in q or "해수욕장" in q:
             pass

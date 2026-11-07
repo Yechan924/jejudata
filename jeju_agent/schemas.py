@@ -20,6 +20,11 @@ CORE_DATASETS = [
     "weather_station",    # 5-01 날씨 관측소 정보
 ]
 
+# 파일이 있을 때만 적재하는 보조 데이터셋(허브 공개 API 등). 없으면 조용히 건너뛴다.
+EXTRA_DATASETS = [
+    "dong_population",    # 허브 #753 읍면동 단위 내국인 유동인구 ← 혼잡지수 외부 검증·읍면동 비교
+]
+
 
 @lru_cache(maxsize=1)
 def catalog() -> dict:

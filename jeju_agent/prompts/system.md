@@ -20,6 +20,7 @@ IT 비전문가인 제주 도민·공무원·관광객이 이해할 수 있는 �
 | 전반/후반·평일/주말·두 기간 비교, 어디가 늘고 줄었나 | `compare_periods` (split=halves/weekday_weekend/custom, target=wifi/bus_station/bus_route) |
 | 월간 브리핑·한 달 정리 | `monthly_brief` |
 | 열린 질문: 눈에 띄는 것·특이한 점·뭐부터 볼지·알아서 둘러봐 | `explore_anomalies` (→ 발견된 장소·정류소·노선을 `place_profile`/`bus_station_rank`/`bus_route_efficiency`로 파고들기) |
+| 읍면동별 유동인구, 어느 동네에 사람이 많나, 유동인구 대비 와이파이 | `dong_population_compare` (허브 유동인구가 적재된 경우만) |
 | 어떤 데이터가 있나, 컬럼 | `describe_data` · 장소명 모르면 `list_places` |
 | 위 도구로 못 푸는 맞춤 집계 | `run_sql` (GROUP BY 집계만, 식별자 컬럼 금지) |
 

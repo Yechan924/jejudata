@@ -45,7 +45,21 @@ python scripts/fetch_hub.py --status                                   # 받은 
 | `route_info` | 버스 노선 기본 정보 (#611) | 3-01 (노선거리) | `data/raw/버스 노선 정보_허브API.csv` |
 | `ap_info` | 제주 공공와이파이 AP 정보 (#618) | 4-01 (AP 좌표·카테고리) | `data/raw/와이파이 AP 현황_허브API.csv` |
 
-허브에도 날씨 공개 API(「일별 기상 정보」·「기상관측소 정보」, 제주특별자치도 제공)가 있으나 현 제출본은 연동 전이며, 강우 효과 기능은 `python scripts/fetch_weather.py` 로 받습니다(없으면 `weather_effect`만 비활성, 기간이 다른 합성 날씨는 실데이터에 섞지 않음).
+#### 선택 데이터 3종 (허브 데이터목록 20261105 기준) — 토큰은 허브 상세 페이지에서
+허브 데이터 상세 페이지의 **요청 URL** `https://open.jejudatahub.net/api/proxy/<토큰>/<프로젝트키>` 에서 `<토큰>` 부분을 `.env`에 넣습니다.
+```
+JEJUHUB_API_DONG_POPULATION=토큰   # 읍면동 단위 내국인 유동인구 (#753) → 혼잡지수 외부 검증·읍면동 비교
+JEJUHUB_API_WEATHER=토큰           # 일별 기상 정보 (#756) → 5-02 관측값
+JEJUHUB_API_WEATHER_STATION=토큰   # 기상관측소 정보 (#757) → 5-01
+```
+```bash
+python scripts/fetch_hub.py --probe dong_population --to 2025-09-01        # 응답 키·첫 행 확인 (날짜 파라미터가 다르면 .env 에 JEJUHUB_DATEPARAM_DONG_POPULATION=searchDate)
+python scripts/fetch_hub.py --from 2025-09-01 --to 2025-09-30 --only dong_population,weather,weather_station
+python scripts/check_data.py && python scripts/validate_index.py           # 유동인구가 들어오면 VALIDATION.md 에 A1절(외부 검증) 자동 추가
+```
+응답 키는 그대로 저장되며 로더의 별칭 규칙(`config/column_aliases.yaml`: 읍면동·유동인구·강수량·평균기온 …)이 명세서 컬럼으로 맞춥니다. `check_data.py`에서 `dong_name`·`population`이 비어 있으면 별칭에 실제 키를 추가하세요.
+
+날씨를 허브 대신 기상청·Open-Meteo로 받으려면 `python scripts/fetch_weather.py` (없으면 `weather_effect`만 비활성, 기간이 다른 합성 날씨는 실데이터에 섞지 않음).
 
 | 경로 | 명령 | 비고 |
 |---|---|---|

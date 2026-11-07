@@ -16,6 +16,7 @@ TOOL_KO = {
     "bus_station_rank": "정류소 승차 순위", "bus_route_efficiency": "노선 효율", "hourly_profile": "정류소 시간대 프로필",
     "place_access": "관광지 주변 정류소 접근성", "weather_effect": "강우 영향", "congestion_forecast": "주말 혼잡 예측", "compare_periods": "기간·요일 비교",
     "monthly_brief": "월간 브리핑", "explore_anomalies": "자율 탐색(오늘의 발견)", "run_sql": "맞춤 집계(SQL)", "describe_data": "데이터 설명",
+    "dong_population_compare": "읍면동 유동인구 대조",
 }
 
 

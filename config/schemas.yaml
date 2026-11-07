@@ -1514,3 +1514,41 @@ food_waste_seogwipo:
     type: STRING
     example: W6Y-140-01-1
     note: 태그 장비번호
+dong_population:
+  code: 허브-753
+  name: 읍면동 단위 내국인 유동인구
+  category: 인구
+  exportable: true
+  source: 제주데이터허브 공개 API (제주특별자치도 디지털혁신과 제공, 통신사 기반 추정)
+  description: "- 읍면동 단위 내국인 유동인구(일 단위, 성별·연령대별). 제주데이터허브 데이터목록 No.753, 공공데이터포털 '제주특별자치도_읍면동 단위 내국인 유동인구'와 동일.\n  - 센터 보유 격자·시간대 단위 원천 유동인구와 달리 읍면동·일 집계라 공개 API로 받을 수 있다.\n  - 수집: python scripts/fetch_hub.py --only dong_population"
+  columns:
+  - name: base_date
+    kor: 기준일자
+    type: STRING
+    example: '20250901'
+    note: 분석 기준일 (YYYYMMDD)
+  - name: city_name
+    kor: 시군구
+    type: STRING
+    example: 제주시
+    note: 시군구명
+  - name: dong_name
+    kor: 읍면동
+    type: STRING
+    example: 애월읍
+    note: 읍면동명 (행정동)
+  - name: gender
+    kor: 성별
+    type: STRING
+    example: 남
+    note: 성별 (전체 합계는 도구에서 합산)
+  - name: age
+    kor: 연령대
+    type: STRING
+    example: '30'
+    note: 연령대
+  - name: population
+    kor: 유동인구
+    type: FLOAT
+    example: '1234.5'
+    note: 유동인구(체류시간 가중 추정치, 통신사 기반)
