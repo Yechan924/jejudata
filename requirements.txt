@@ -10,3 +10,4 @@ streamlit>=1.36
 plotly>=5.20
 pydeck>=0.9
 pytest>=8.0
+openpyxl>=3.1      # XLSX 원본 읽기 (센터 원본이 엑셀일 때)
