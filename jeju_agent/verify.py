@@ -3,6 +3,7 @@
 원칙: 답변 속 숫자는 도구 결과에서 나와야 한다. 표에 없는 숫자가 있으면 그 사실을 기록하고,
 비율이 높으면 해설을 템플릿으로 대체한다(환각 방지의 구조적 보장).
 느슨한 규칙: 100 이하 정수(순위·개수·시각), 연도, 날짜 조각은 검사 제외. 단위 변환(천·만·%)을 허용한다.
+근거 풀에는 표의 숫자 셀뿐 아니라 문자열 셀 속 숫자, facts·caveats·method 의 숫자, 표 행 수, 도구 인자를 포함한다.
 """
 from __future__ import annotations
 
@@ -30,12 +31,22 @@ def _pool(results: list[ToolResult]) -> set[float]:
     vals: set[float] = set()
     for r in results:
         for c in r.table.columns:
-            s = pd.to_numeric(r.table[c], errors="coerce").dropna()
-            for v in s.tolist():
+            col = r.table[c]
+            s = pd.to_numeric(col, errors="coerce")
+            for v in s.dropna().tolist():
                 vals.add(round(float(v), 2))
-        for f in r.facts:
+            # 문자열 셀 속 숫자(예: 월간 브리핑의 "제주동문시장(10,765), …", 노선명 "182-5")
+            for txt in col[s.isna()].dropna().astype(str).tolist():
+                for m in _NUM.finditer(txt):
+                    vals.add(round(float(m.group(0).replace(",", "")), 2))
+        for f in list(r.facts) + list(r.caveats) + [r.method or "", r.title or ""]:   # 주의 문구·방법 설명의 숫자(제외 개수, 기준값)도 근거
             for m in _NUM.finditer(f):
                 vals.add(round(float(m.group(0).replace(",", "")), 2))
+        # 표 행 수와 도구 인자(top_n·min_daily 등)도 LLM이 인용할 수 있는 수
+        vals.add(float(len(r.table)))
+        for v in (r.params or {}).values():
+            if isinstance(v, (int, float)) and not isinstance(v, bool):
+                vals.add(round(float(v), 2))
     # 단위 변환 허용: ×100(비율→%), ÷1000, ÷10000
     extra = set()
     for v in list(vals):

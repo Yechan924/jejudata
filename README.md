@@ -43,7 +43,7 @@
 - 기획서: [docs/AI_Agent_기획서_제주혼잡이동진단.pdf](docs/AI_Agent_기획서_제주혼잡이동진단.pdf) (원본 `docs/proposal.html`)
 - 결과 설명자료: [docs/RESULT_REPORT.md](docs/RESULT_REPORT.md) · 사용자 매뉴얼: [docs/USER_MANUAL.md](docs/USER_MANUAL.md) · 데이터 활용 명세: [docs/DATA_SPEC.md](docs/DATA_SPEC.md)
 - 샘플 실행 결과: `outputs/samples/` (**허브 공개 API 실데이터 2025-09**, 오프라인 모드 16문항 `batch_offline.json`, LLM 모드 `batch_llm.json`(키로 실행 시), 리포트 예시)
-- 시연 대본·데모 배포·스크린샷: [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) · LLM 모드 검증표: `docs/LLM_EVAL.md` (`python scripts/llm_smoke.py` 로 생성)
+- 시연 대본·데모 배포·스크린샷: [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) · LLM 모드 검증표(11/7 Claude 실키 16문항): `docs/LLM_EVAL.md` (`python scripts/llm_smoke.py` 로 생성)
 
 ## 설치·실행 (5분)
 Windows(센터 PC): `install.bat`(처음 한 번) → `run.bat`. macOS/Linux: `./install.sh` → `./run.sh`.
