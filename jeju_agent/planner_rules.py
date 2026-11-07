@@ -11,7 +11,7 @@ from datetime import date
 from .tools.base import fuzzy_match
 
 MONTH = re.compile(r"(?:(20\d{2})\s*년\s*)?(1[0-2]|[1-9])\s*월")
-ROUTE = re.compile(r"\b(\d{3}(?:-\d)?)\s*(?:번)?\s*(?:노선|버스)?")
+ROUTE = re.compile(r"\b(\d{3}(?:-\d{1,2})?)\s*(?:번)?\s*(?:노선|버스)?")
 
 
 def parse_period(q: str, data_min: str, data_max: str) -> tuple[str | None, str | None]:
@@ -51,6 +51,15 @@ def plan(question: str, places: list[str], stations: list[str], routes: list[str
             pass
         m = MONTH.search(question)
         return [("monthly_brief", {"month": f"{int(m.group(1)) if m.group(1) else int(data_max[:4])}-{int(m.group(2)):02d}"} if m else {})]
+    if any(k in q for k in ("발견", "특이", "눈에띄", "이상한", "이상치", "알아서", "둘러봐", "탐색", "뭐부터", "뭘물어", "무엇을물어", "요약해줘", "한눈에")):
+        args = {"top_n": 5, **period}
+        if any(k in q for k in ("노선",)):
+            args["target"] = "bus_route"
+        elif bus_q:
+            args["target"] = "bus_station"
+        elif any(k in q for k in ("관광지", "장소", "와이파이")):
+            args["target"] = "wifi"
+        return [("explore_anomalies", args)]
     compare = any(k in q for k in ("비교", "달라졌", "달라지", "늘었", "줄었", "늘어난", "줄어든", "변화", "전후", "차이", "전반", "후반", "증가", "감소"))
     if compare and not any(k in q for k in ("효율", "비효율")):
         target = "bus_route" if any(k in q for k in ("노선",)) else ("bus_station" if bus_q else "wifi")
@@ -134,6 +143,7 @@ SUGGESTION_BY_TOOL = {
     "weather_effect": "비 오는 날 감소폭이 큰 야외 관광지는 실내 대체 코스 안내, 버스는 우천 시 수요 변화에 맞춘 배차가 가능합니다.",
     "congestion_forecast": "예측 상위 장소는 주말 전 분산 안내·주차 관리 계획을 세울 근거가 됩니다(예측은 과거 패턴 기반).",
     "monthly_brief": "월간 브리핑은 관광·교통 담당 부서의 정례 보고 초안으로 활용할 수 있습니다.",
+    "explore_anomalies": "급증한 곳은 원인(행사·단체 방문) 확인과 분산 안내, 급감·최근 한산은 수집 공백인지 실제 감소인지 현장 확인 뒤 운영·홍보 점검 대상입니다. 발견 항목을 눌러 세부 분석으로 이어가세요.",
     "compare_periods": "크게 늘어난 곳은 원인(행사·개통·계절) 확인과 선제 분산 안내, 크게 줄어든 곳은 운영·홍보 점검 대상입니다.",
 }
 

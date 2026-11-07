@@ -15,7 +15,7 @@ TOOL_KO = {
     "congestion_rank": "장소별 혼잡 순위", "place_profile": "장소 혼잡 프로필", "list_places": "장소 목록",
     "bus_station_rank": "정류소 승차 순위", "bus_route_efficiency": "노선 효율", "hourly_profile": "정류소 시간대 프로필",
     "place_access": "관광지 주변 정류소 접근성", "weather_effect": "강우 영향", "congestion_forecast": "주말 혼잡 예측", "compare_periods": "기간·요일 비교",
-    "monthly_brief": "월간 브리핑", "run_sql": "맞춤 집계(SQL)", "describe_data": "데이터 설명",
+    "monthly_brief": "월간 브리핑", "explore_anomalies": "자율 탐색(오늘의 발견)", "run_sql": "맞춤 집계(SQL)", "describe_data": "데이터 설명",
 }
 
 
@@ -51,6 +51,8 @@ def describe_step(name: str, args: dict) -> str:
         bits.append(f"{args['month']}월")
     if args.get("target") == "bus_station":
         bits.append("버스 기준")
+    if name == "explore_anomalies":
+        bits.append({"wifi": "장소", "bus_station": "정류소", "bus_route": "노선"}.get(args.get("target"), "장소·정류소·노선 전체"))
     return ko + (f" ({', '.join(bits)})" if bits else "")
 
 
@@ -178,6 +180,9 @@ def suggest_followups(question: str, results: list[ToolResult], db) -> list[str]
                 sug.append("평일과 주말 차이가 큰 곳은?")
             if r.params.get("target") != "bus_station":
                 sug.append("정류소 승차는 전반과 후반이 어떻게 달라졌어?")
+        elif r.name == "explore_anomalies":
+            qs = (getattr(r, "extra", None) or {}).get("questions") or []
+            sug += qs[:2] + ["9월 전반과 후반에 어디가 늘고 줄었어?"]
         elif r.name == "weather_effect":
             sug += ["주말에 가장 붐비는 관광지는?", "비 오는 날 버스 이용은 어떻게 바뀌어?" if r.params.get("target") != "bus_station" else "비 오면 어디가 한산해지나?"]
         elif r.name == "congestion_forecast":

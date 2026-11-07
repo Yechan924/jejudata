@@ -6,13 +6,14 @@
               python scripts/capture_screens.py --offline      # LLM 키가 있어도 오프라인 모드로 캡처
 
 저장되는 파일 (docs/screens/)
-  01_home.png        첫 화면(사이드바·예시 질문)
+  01_home.png        첫 화면(혼잡 상위 5곳 지도 · 오늘의 발견 · 질문 버튼)
   02_answer.png      답변 + 실행 계획 패널 + 이어서 물어보기
   03_map.png         지도 탭
   04_chart.png       차트 탭
   05_evidence.png    근거 표 탭
   06_llm_transfer.png LLM 전송 내용 탭
   07_followup.png    후속 질문 클릭 결과
+  08_discover.png    첫 화면 '오늘의 발견' 카드 → 자세히 보기 결과
 """
 from __future__ import annotations
 
@@ -70,6 +71,15 @@ def main() -> int:
             wait_ready(page, 120)   # 첫 실행은 데이터 적재(합성 생성 시 최대 1분)
             page.screenshot(path=str(OUT / "01_home.png"))
             print("01_home")
+
+            disc = page.locator("button", has_text="자세히 보기").first   # 첫 화면 '오늘의 발견' 카드 → 세부 분석
+            if disc.count():
+                disc.click()
+                wait_ready(page, 120)
+                page.screenshot(path=str(OUT / "08_discover.png"))
+                print("08_discover")
+                page.goto(url, wait_until="networkidle", timeout=120_000)
+                wait_ready(page, 120)
 
             page.get_by_role("button", name=QUESTION).first.click()
             wait_ready(page, 120)

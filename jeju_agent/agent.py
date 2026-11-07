@@ -153,6 +153,40 @@ class JejuAgent:
         res.plan, res.limitations, res.followups = plan_txt, lim, suggest_followups(question, results, self.db)
         return res
 
+    # ---------- 자율 탐색 (첫 화면 '오늘의 발견') ----------
+    def discover(self, top_n: int = 3, use_llm: bool = False) -> AgentResult:
+        """질문 없이 Agent가 먼저 움직인다: 혼잡 상위 5곳 + 평소와 다른 변화 top_n 건.
+        기본은 LLM 없이(빠르고 결정적) 템플릿 해설. use_llm=True 면 같은 결과를 LLM이 한 번 더 풀어 쓴다."""
+        t0 = time.time()
+        steps: list[StepLog] = []
+        results: list[ToolResult] = []
+        plan_txt = ["자율 탐색: 질문을 기다리지 않고 혼잡 상위 장소와 평소와 다른 변화를 먼저 찾았습니다 → 장소별 혼잡 순위 → 자율 탐색(오늘의 발견)"]
+        for name, args in (("congestion_rank", {"top_n": 5, "sort_by": "users"}), ("explore_anomalies", {"top_n": top_n})):
+            r = self._run_tool(name, args, steps)
+            if r is not None:
+                results.append(r)
+        dmin, dmax = self._data_range()
+        lim = auto_limitations(self.db, results, None, None)
+        question = "오늘의 발견 — 지금 데이터에서 눈에 띄는 것은?"
+        answer = template_answer(question, results, self.db.uses_synthetic(), lim) + "\n\n" + ATTRIBUTION
+        mode = "offline"
+        calls, usage, transcript = 0, {}, []
+        if use_llm and self.llm.available and results:
+            try:
+                msgs = [{"role": "user", "content": question + "\n\n아래 도구 결과만 근거로 답변 형식에 맞춰 쓰세요.\n\n" + "\n\n".join(r.to_llm_text() for r in results)}]
+                rep = self.llm.chat(self._system_prompt(), msgs, None)
+                calls, usage = 1, rep.usage or {}
+                transcript = [{"direction": "→LLM", "kind": "user", "content": msgs[0]["content"]}, {"direction": "←LLM", "kind": "answer", "content": rep.text}]
+                fin = self._finish(question, rep.text, results, steps, calls, usage, t0, transcript, plan_txt)
+                return fin
+            except Exception as e:  # noqa: BLE001
+                plan_txt.append(f"LLM 해설 실패({type(e).__name__}) → 템플릿 해설")
+        res = AgentResult(question, answer, results, steps, mode, calls, usage, round(time.time() - t0, 2), self.db.uses_synthetic())
+        res.plan, res.limitations = plan_txt, lim
+        res.followups = suggest_followups(question, results[-1:], self.db) if results else []
+        res.llm_transcript = transcript
+        return res
+
     # ---------- LLM 모드 ----------
     def run(self, question: str, history: list[dict] | None = None) -> AgentResult:
         if not self.llm.available:

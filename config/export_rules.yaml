@@ -1,6 +1,6 @@
 # 반출 게이트 규칙 — 센터 운영 기준에 맞춰 조정하세요.
 identifier_columns: [user_id, mac_address, user_card_id, driver_id, vhc_id, user_trans_id, manage_no]
-count_columns: [users, user_count, sessions, tourists, foreigners, total, vulnerable, senior, weekend_total]
+count_columns: [users, user_count, sessions, tourists, foreigners, total, vulnerable, senior, weekend_total, 관측값]
 min_cell_count: 10     # 이 값 미만의 인원 집계 셀은 "<10"으로 마스킹 — 제주빅데이터센터 데이터 반출 정책(2026.09.01 개정) 단순집계 기준
 # 참고: 본 서비스가 쓰는 9종은 반출 정책상 "공개 가능 표"라 이 기준의 직접 적용 대상은 아니지만, 비반출 데이터를 추가해도 같은 경로로 동작하도록 공식 기준에 맞춘다.
 max_rows: 500          # 화면/LLM/리포트로 나가는 표의 최대 행 수

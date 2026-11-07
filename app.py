@@ -30,6 +30,7 @@ except Exception:  # noqa: BLE001
 st.set_page_config(page_title="제주 혼잡·이동 진단 Agent", page_icon="🍊", layout="wide")
 
 EXAMPLES = [
+    "눈에 띄는 게 있어?",
     "주말에 가장 붐비는 관광지는 어디야?",
     "외국인 관광객이 많이 가는 곳은?",
     "성산일출봉은 언제 가장 붐비나?",
@@ -115,6 +116,37 @@ with st.sidebar:
         st.rerun()
 
 
+# ---------------- 지도 ----------------
+def render_map(points: list, height: int | None = None, caption: str = "원 크기 = 지표 값. 실제 위치는 와이파이 AP·정류소 좌표(명세서 기준)."):
+    pts = [p for p in points if p is not None and not p.empty]
+    if pts and pdk is not None:
+        mp = pd.concat(pts, ignore_index=True)
+        mp["lat"] = pd.to_numeric(mp["lat"], errors="coerce"); mp["lon"] = pd.to_numeric(mp["lon"], errors="coerce")
+        mp["value"] = pd.to_numeric(mp["value"], errors="coerce").fillna(0)
+        mp = mp.dropna(subset=["lat", "lon"])
+        if mp.empty:
+            st.info("이 결과에는 지도에 표시할 좌표가 없습니다."); return
+        vmax = max(abs(mp["value"]).max(), 1e-9)
+        mp["radius"] = 300 + 1500 * (abs(mp["value"]) / vmax)
+        mp["color_r"] = (120 + 135 * (mp["value"].clip(lower=0) / vmax)).astype(int)
+        layer = pdk.Layer("ScatterplotLayer", data=mp, get_position="[lon, lat]", get_radius="radius",
+                          get_fill_color="[color_r, 90, 60, 160]", pickable=True)
+        text = pdk.Layer("TextLayer", data=mp, get_position="[lon, lat]", get_text="label", get_size=12, get_color=[30, 30, 30], get_alignment_baseline="'bottom'")
+        view = pdk.ViewState(latitude=float(mp["lat"].mean()), longitude=float(mp["lon"].mean()), zoom=9.3)
+        deck = pdk.Deck(layers=[layer, text], initial_view_state=view, map_style=None, tooltip={"text": "{label}\n값: {value}"})
+        try:
+            st.pydeck_chart(deck, height=height) if height else st.pydeck_chart(deck)
+        except TypeError:   # 구버전 streamlit: height 인자 없음
+            st.pydeck_chart(deck)
+        if caption:
+            st.caption(caption)
+    elif pts:
+        mp = pd.concat(pts, ignore_index=True).rename(columns={"lat": "latitude", "lon": "longitude"})
+        st.map(mp.dropna(subset=["latitude", "longitude"]))
+    else:
+        st.info("이 결과에는 지도에 표시할 좌표가 없습니다.")
+
+
 # ---------------- 결과 렌더링 ----------------
 def render_result(res, key_prefix: str):
     if res.plan:
@@ -143,26 +175,7 @@ def render_result(res, key_prefix: str):
             st.info(n, icon="🔎")
     tabs = st.tabs(["🗺️ 지도", "📊 차트", "📋 근거 표", "🔍 방법·한계", "🧾 실행 로그", "📡 LLM 전송 내용"])
     with tabs[0]:
-        pts = [r.map_points for r in res.results if r.map_points is not None and not r.map_points.empty]
-        if pts and pdk is not None:
-            mp = pd.concat(pts, ignore_index=True)
-            mp["lat"] = pd.to_numeric(mp["lat"], errors="coerce"); mp["lon"] = pd.to_numeric(mp["lon"], errors="coerce")
-            mp["value"] = pd.to_numeric(mp["value"], errors="coerce").fillna(0)
-            mp = mp.dropna(subset=["lat", "lon"])
-            vmax = max(abs(mp["value"]).max(), 1e-9)
-            mp["radius"] = 300 + 1500 * (abs(mp["value"]) / vmax)
-            mp["color_r"] = (120 + 135 * (mp["value"].clip(lower=0) / vmax)).astype(int)
-            layer = pdk.Layer("ScatterplotLayer", data=mp, get_position="[lon, lat]", get_radius="radius",
-                              get_fill_color="[color_r, 90, 60, 160]", pickable=True)
-            text = pdk.Layer("TextLayer", data=mp, get_position="[lon, lat]", get_text="label", get_size=12, get_color=[30, 30, 30], get_alignment_baseline="'bottom'")
-            view = pdk.ViewState(latitude=float(mp["lat"].mean()), longitude=float(mp["lon"].mean()), zoom=9.3)
-            st.pydeck_chart(pdk.Deck(layers=[layer, text], initial_view_state=view, map_style=None, tooltip={"text": "{label}\n값: {value}"}))
-            st.caption("원 크기 = 지표 값. 실제 위치는 와이파이 AP·정류소 좌표(명세서 기준).")
-        elif pts:
-            mp = pd.concat(pts, ignore_index=True).rename(columns={"lat": "latitude", "lon": "longitude"})
-            st.map(mp.dropna(subset=["latitude", "longitude"]))
-        else:
-            st.info("이 결과에는 지도에 표시할 좌표가 없습니다.")
+        render_map([r.map_points for r in res.results], height=None)
     with tabs[1]:
         for i, r in enumerate(res.results):
             if not r.chart or px is None:
@@ -226,6 +239,65 @@ def render_result(res, key_prefix: str):
 st.markdown("### 제주 혼잡·이동 진단 Agent")
 st.caption("질문 한 줄 → 집계 → 지도·차트 → 쉬운 해설. 모든 결과는 집계값이며 개인정보를 포함하지 않습니다. 질문에 개인정보를 적지 마세요.")
 turns = st.session_state.setdefault("turns", [])
+
+
+@st.cache_resource(show_spinner="Agent가 데이터를 먼저 둘러보는 중…")
+def get_home(_version: int):
+    """첫 화면용 자율 탐색 — LLM 없이(빠르고 결정적) 혼잡 상위 5곳 + 오늘의 발견 3건."""
+    return JejuAgent(get_db(_version), LLM("offline")).discover(top_n=3)
+
+
+STARTERS = ["주말에 가장 붐비는 관광지는 어디야?", "효율이 낮은 버스 노선은?", "어르신이 많이 타는 정류소는?",
+            "비 오면 어디가 한산해지나?", "이번 주말 어디가 붐빌까?", "9월 월간 브리핑 보여줘"]
+
+
+def render_home():
+    """질문 전 첫 화면: 비전문가가 뭘 물어야 할지 몰라도 바로 쓸 수 있게 Agent가 먼저 보여 준다."""
+    try:
+        home = get_home(st.session_state.get("data_version", 0))
+    except Exception as e:  # noqa: BLE001
+        st.info(f"첫 화면 탐색을 건너뜁니다({type(e).__name__}). 아래 질문으로 시작하세요."); home = None
+    rank = next((r for r in (home.results if home else []) if r.name == "congestion_rank"), None)
+    disc = next((r for r in (home.results if home else []) if r.name == "explore_anomalies"), None)
+    dmin, dmax = agent._data_range()
+    st.markdown(f"#### 지금 제주는 <span style='font-size:0.8em;color:gray'>({dmin} ~ {dmax} 데이터, 질문 없이 Agent가 먼저 살펴본 결과)</span>", unsafe_allow_html=True)
+    left, right = st.columns([1.1, 1])
+    with left:
+        st.markdown("**🗺️ 이용자가 많은 장소 5곳** (공공 와이파이 일평균 이용자)")
+        if rank is not None and len(rank.table):
+            render_map([rank.map_points], height=330, caption="")
+            chips = st.columns(len(rank.table))
+            for j, row in enumerate(rank.table.itertuples()):
+                if chips[j].button(f"{row.rank}. {row.ap_place}", key=f"home_rank_{j}", help=f"일평균 {row.avg_daily_users:.0f}명", use_container_width=True):
+                    st.session_state["pending_q"] = f"{row.ap_place} 언제 가장 붐비나?"; st.rerun()
+        else:
+            st.caption("혼잡 순위를 만들 데이터가 부족합니다.")
+    with right:
+        st.markdown("**🔎 오늘의 발견** — 평소와 다른 변화 (평소 = 평일/주말별 중앙값)")
+        if disc is not None and len(disc.table):
+            qs = (getattr(disc, "extra", None) or {}).get("questions") or []
+            icons = {"급증": "📈", "급감": "📉", "최근 붐빔": "🔥", "최근 한산": "🧊"}
+            for j, row in enumerate(disc.table.itertuples()):
+                with st.container(border=True):
+                    st.markdown(f"{icons.get(row.유형, '•')} **{row.구분} · {row.대상}** — {row.유형} (평소의 {row.배율}배)")
+                    st.caption(row.설명)
+                    if j < len(qs) and st.button("자세히 보기 →", key=f"home_disc_{j}"):
+                        st.session_state["pending_q"] = qs[j]; st.rerun()
+            st.caption("원인(행사·날씨·수집 공백)은 데이터에 없으므로 현장 확인이 필요합니다. 더 보려면 '눈에 띄는 게 있어?'라고 물어보세요.")
+        else:
+            st.caption("기준에 걸리는 변화가 없습니다.")
+    st.markdown("**💬 이런 걸 물어보세요**")
+    cols = st.columns(3)
+    for j, q_ in enumerate(STARTERS):
+        if cols[j % 3].button(q_, key=f"home_q_{j}", use_container_width=True):
+            st.session_state["pending_q"] = q_; st.rerun()
+    if home is not None:
+        with st.expander("이 화면의 근거·방법·한계", expanded=False):
+            st.markdown(home.answer)
+
+
+if not turns and not st.session_state.get("pending_q"):
+    render_home()
 for i, t in enumerate(turns):
     with st.chat_message("user"):
         st.write(t["q"])
