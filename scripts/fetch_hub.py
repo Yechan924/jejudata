@@ -107,14 +107,20 @@ def fetch_all(key: str, ds: dict, params: dict, calls: list[int]) -> list[dict]:
     rows, page = [], 1
     while True:
         p = {**params, "limit": PAGE, "number": page}
-        for attempt in range(3):
-            r = requests.get(url, params=p, timeout=60)
+        for attempt in range(5):
+            try:
+                r = requests.get(url, params=p, timeout=60)
+            except (requests.ConnectionError, requests.Timeout):
+                if attempt == 4:
+                    raise
+                time.sleep(min(3 * 2 ** attempt, 30))
+                continue
             calls[0] += 1
             if r.status_code == 429 or "quota" in r.text.lower() or "쿼터" in r.text:
                 raise Quota(r.text[:200])
             if r.ok:
                 break
-            time.sleep(2 * (attempt + 1))
+            time.sleep(min(3 * 2 ** attempt, 30))
         else:
             raise RuntimeError(f"{ds['title']} HTTP {r.status_code}: {r.text[:200]}")
         j = r.json()
