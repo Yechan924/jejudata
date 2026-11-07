@@ -7,7 +7,7 @@
 
 저장되는 파일 (docs/screens/)
   01_home.png        첫 화면(혼잡 상위 5곳 지도 · 오늘의 발견 · 질문 버튼)
-  02_answer.png      답변 + 실행 계획 패널 + 이어서 물어보기
+  02_answer.png      답변 + '근거 보기' 패널 + 이어서 물어보기
   03_map.png         지도 탭
   04_chart.png       차트 탭
   05_evidence.png    근거 표 탭
@@ -27,6 +27,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "screens"
 QUESTION = "주말에 가장 붐비는 관광지는 어디야?"
+
+
+def scroll_top(page):
+    """chat_input 때문에 화면이 아래로 내려가 있으면 맨 위(제목·지도)로 올려서 찍는다."""
+    page.evaluate("document.querySelectorAll('[data-testid=stAppScrollToBottomContainer], section.stMain, section.main, "
+                  "[data-testid=stMain], [data-testid=stAppViewContainer]').forEach(el => el.scrollTo(0, 0))")
+    page.wait_for_timeout(500)
 
 
 def wait_ready(page, timeout=90):
@@ -67,8 +74,10 @@ def main() -> int:
         with sync_playwright() as p:
             b = p.chromium.launch()
             page = b.new_page(viewport={"width": 1440, "height": 900}, device_scale_factor=1.5)
-            page.goto(url, wait_until="networkidle", timeout=120_000)
+            # networkidle 은 지도 타일 스트리밍 때문에 끝나지 않을 수 있어 load + wait_ready 로 대기
+            page.goto(url, wait_until="load", timeout=120_000)
             wait_ready(page, 120)   # 첫 실행은 데이터 적재(합성 생성 시 최대 1분)
+            scroll_top(page)
             page.screenshot(path=str(OUT / "01_home.png"))
             print("01_home")
 
@@ -78,12 +87,12 @@ def main() -> int:
                 wait_ready(page, 120)
                 page.screenshot(path=str(OUT / "08_discover.png"))
                 print("08_discover")
-                page.goto(url, wait_until="networkidle", timeout=120_000)
+                page.goto(url, wait_until="load", timeout=120_000)
                 wait_ready(page, 120)
 
             page.get_by_role("button", name=QUESTION).first.click()
             wait_ready(page, 120)
-            page.locator("text=Agent 실행 계획").first.click()
+            page.locator("summary", has_text="근거 보기").first.click()   # 답변 아래 '근거 보기' 펼침
             page.wait_for_timeout(500)
             page.screenshot(path=str(OUT / "02_answer.png"), full_page=False)
             print("02_answer")
