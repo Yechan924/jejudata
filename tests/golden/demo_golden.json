@@ -1,0 +1,409 @@
+{
+ "주말에 가장 붐비는 관광지는 어디야?": {
+  "tools": [
+   "congestion_rank",
+   "place_access"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "congestion_rank",
+    "rows": 10,
+    "first": {
+     "ap_place": "19코스",
+     "avg_daily_users": 38.62,
+     "avg_congestion_index": 2.03,
+     "peak_congestion_index": 6.0,
+     "tourist_share": 0.0
+    },
+    "fact": "주말 기준 혼잡지수 1위는 19코스(평균 혼잡지수 2.03, 일평균 39명)"
+   },
+   {
+    "tool": "place_access",
+    "rows": 15,
+    "first": {
+     "bus_station_name": "함덕농협지소",
+     "dist_km": 0.76,
+     "daily_boardings": 131.6
+    },
+    "fact": "19코스 반경 1.5km 내 정류소 28개, 합산 일평균 승차 1,262명 (와이파이 일평균 이용자 39명)"
+   }
+  ]
+ },
+ "외국인 관광객이 많이 가는 곳은?": {
+  "tools": [
+   "congestion_rank",
+   "place_access"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "congestion_rank",
+    "rows": 10,
+    "first": {
+     "ap_place": "제주동문시장",
+     "avg_daily_users": 358.83,
+     "avg_congestion_index": 1.02,
+     "peak_congestion_index": 1.44,
+     "tourist_share": 0.0
+    },
+    "fact": "전체 기준 이용자 수 1위는 제주동문시장(평균 혼잡지수 1.02, 일평균 359명)"
+   },
+   {
+    "tool": "place_access",
+    "rows": 63,
+    "first": {
+     "bus_station_name": "동문로터리,동문시장",
+     "dist_km": 0.13,
+     "daily_boardings": 1121.9
+    },
+    "fact": "제주동문시장 반경 1.5km 내 정류소 109개, 합산 일평균 승차 11,776명 (와이파이 일평균 이용자 359명)"
+   }
+  ]
+ },
+ "성산일출봉은 언제 가장 붐비나?": {
+  "tools": [
+   "place_profile",
+   "place_access"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "place_profile",
+    "rows": 30,
+    "first": {
+     "date": "2025-09-01",
+     "dow": "월",
+     "congestion_index": 1.02
+    },
+    "fact": "성산일출봉: 기간 내 고유 이용자 3,349명, 평일 일평균 116명 vs 주말 100명 (주말/평일 0.87배)"
+   },
+   {
+    "tool": "place_access",
+    "rows": 9,
+    "first": {
+     "bus_station_name": "성산일출봉입구",
+     "dist_km": 0.26,
+     "daily_boardings": 186.1
+    },
+    "fact": "성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 474명 (와이파이 일평균 이용자 112명)"
+   }
+  ]
+ },
+ "성산일출봉 가는 버스 정류소는 얼마나 붐비나?": {
+  "tools": [
+   "place_access"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "place_access",
+    "rows": 9,
+    "first": {
+     "bus_station_name": "성산일출봉입구",
+     "dist_km": 0.26,
+     "daily_boardings": 186.1
+    },
+    "fact": "성산일출봉 반경 1.5km 내 정류소 14개, 합산 일평균 승차 474명 (와이파이 일평균 이용자 112명)"
+   }
+  ]
+ },
+ "해변 중에 주말에 가장 붐비는 곳은?": {
+  "tools": [
+   "congestion_rank",
+   "place_access"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "congestion_rank",
+    "rows": 10,
+    "first": {
+     "ap_place": "하효 쇠소깍 해변",
+     "avg_daily_users": 26.38,
+     "avg_congestion_index": 1.39,
+     "peak_congestion_index": 2.05,
+     "tourist_share": 0.0
+    },
+    "fact": "주말 기준 혼잡지수 1위는 하효 쇠소깍 해변(평균 혼잡지수 1.39, 일평균 26명)"
+   },
+   {
+    "tool": "place_access",
+    "rows": 15,
+    "first": {
+     "bus_station_name": "쇠소깍입구",
+     "dist_km": 0.54,
+     "daily_boardings": 51.1
+    },
+    "fact": "하효 쇠소깍 해변 반경 1.5km 내 정류소 28개, 합산 일평균 승차 265명 (와이파이 일평균 이용자 22명)"
+   }
+  ]
+ },
+ "비 오면 어디가 한산해지나?": {
+  "tools": [
+   "weather_effect"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "weather_effect",
+    "rows": 20,
+    "first": {
+     "ap_place": "탐라도서관",
+     "weekday_dry_avg": 40.9,
+     "weekday_rain_avg": 1.8,
+     "weekday_rain_effect": -0.96,
+     "weekend_dry_avg": 1.0
+    },
+    "fact": "비 올 때(≥3mm) 평일 기준 가장 크게 줄어드는 곳: 탐라도서관 (-96%, 맑은 날 40.9 → 비 오는 날 1.8)"
+   }
+  ]
+ },
+ "251번 노선 시간대별 이용 현황 알려줘": {
+  "tools": [
+   "bus_route_efficiency"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "bus_route_efficiency",
+    "rows": 26,
+    "first": {
+     "date": "2025-09-01",
+     "dow": "월"
+    },
+    "fact": "251-6(모슬포남항여객선터미널(운진항)~제주버스터미널(종점)): 일평균 승차 171명 (평일 191명, 주말 117명, 주말/평일 0.61배)"
+   }
+  ]
+ },
+ "효율이 낮은 버스 노선은?": {
+  "tools": [
+   "bus_route_efficiency"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "bus_route_efficiency",
+    "rows": 10,
+    "first": {
+     "bus_route_name": "295-4(성산항(출발지)~서귀포버스터미널)",
+     "daily_boardings": 20.5,
+     "boardings_per_km": 0.27,
+     "boardings_per_station": 0.2,
+     "bus_route_length": 76997.0
+    },
+    "fact": "효율 최저 노선 295-4(성산항(출발지)~서귀포버스터미널): 일평균 승차 20명, 0.27명/km/일"
+   }
+  ]
+ },
+ "어르신이 많이 타는 정류소는?": {
+  "tools": [
+   "bus_station_rank"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "bus_station_rank",
+    "rows": 10,
+    "first": {
+     "bus_station_name": "서귀포향토오일시장",
+     "daily_boardings": 54.5,
+     "vulnerable_share": 0.79,
+     "senior_share": 0.0,
+     "weekend_ratio": 1.78
+    },
+    "fact": "vulnerable_share 기준 1위 서귀포향토오일시장: 일평균 승차 54명, 교통약자 비중 79%, 주말/평일 1.78배"
+   }
+  ]
+ },
+ "한라병원 정류소는 몇 시에 가장 붐비나?": {
+  "tools": [
+   "bus_station_rank"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "bus_station_rank",
+    "rows": 2,
+    "first": {
+     "bus_station_name": "한라병원",
+     "daily_boardings": 1547.3,
+     "vulnerable_share": 0.4,
+     "senior_share": 0.0,
+     "weekend_ratio": 0.69
+    },
+    "fact": "boardings 기준 1위 한라병원: 일평균 승차 1,547명, 교통약자 비중 40%, 주말/평일 0.69배"
+   }
+  ]
+ },
+ "9월에 가장 붐빈 관광지는?": {
+  "tools": [
+   "congestion_rank",
+   "place_access"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "congestion_rank",
+    "rows": 10,
+    "first": {
+     "ap_place": "19코스",
+     "avg_daily_users": 39.47,
+     "avg_congestion_index": 2.08,
+     "peak_congestion_index": 6.16,
+     "tourist_share": 0.0
+    },
+    "fact": "전체 기준 혼잡지수 1위는 19코스(평균 혼잡지수 2.08, 일평균 39명)"
+   },
+   {
+    "tool": "place_access",
+    "rows": 15,
+    "first": {
+     "bus_station_name": "함덕농협지소",
+     "dist_km": 0.76,
+     "daily_boardings": 131.6
+    },
+    "fact": "19코스 반경 1.5km 내 정류소 28개, 합산 일평균 승차 1,262명 (와이파이 일평균 이용자 39명)"
+   }
+  ]
+ },
+ "9월 전반과 후반에 어디가 늘고 줄었어?": {
+  "tools": [
+   "compare_periods"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "compare_periods",
+    "rows": 20,
+    "first": {
+     "장소": "서귀포의료원",
+     "전반_일평균": 31.0,
+     "후반_일평균": 46.3,
+     "증감": 15.3,
+     "변화율": 0.49
+    },
+    "fact": "전반(2025-09-01~2025-09-15) 대비 후반(2025-09-16~2025-09-30) 전체 일평균 10,643 → 10,818 (+2%)"
+   }
+  ]
+ },
+ "평일과 주말 차이가 큰 정류소는?": {
+  "tools": [
+   "compare_periods"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "compare_periods",
+    "rows": 20,
+    "first": {
+     "정류소": "렛츠런파크",
+     "평일_일평균": 82.7,
+     "주말_일평균": 261.8,
+     "증감": 179.0,
+     "변화율": 2.17
+    },
+    "fact": "평일(2025-09-01~2025-09-18 평일) 대비 주말(2025-09-01~2025-09-18 주말) 전체 일평균 85,201 → 65,186 (-23%)"
+   }
+  ]
+ },
+ "이번 주말 어디가 붐빌까?": {
+  "tools": [
+   "congestion_forecast"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "congestion_forecast",
+    "rows": 10,
+    "first": {
+     "ap_place": "제주항국제여객터미널",
+     "trend_factor": 0.7,
+     "predicted_congestion_index": 4.17
+    },
+    "fact": "2025-10-04(토) 예상 혼잡 1위 제주항국제여객터미널: 예상 이용자 138명(최근 같은 요일 17~382명), 예상 혼잡지수 4.17"
+   }
+  ]
+ },
+ "9월 월간 브리핑 보여줘": {
+  "tools": [
+   "monthly_brief"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "monthly_brief",
+    "rows": 5,
+    "first": {
+     "지표": "와이파이 이용자(장소×일 합)"
+    },
+    "fact": "2025-09 와이파이 이용자(장소×일 합) 1,217,670명"
+   }
+  ]
+ },
+ "어떤 데이터가 있어?": {
+  "tools": [
+   "describe_data"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "describe_data",
+    "rows": 9,
+    "first": {},
+    "fact": "9개 데이터셋 적재, 엔진 sqlite"
+   }
+  ]
+ },
+ "눈에 띄는 게 있어?": {
+  "tools": [
+   "explore_anomalies"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "explore_anomalies",
+    "rows": 5,
+    "first": {
+     "대상": "477-1(제주대학교~제주대학교)",
+     "관측값": 72.0,
+     "평소": 452.0,
+     "배율": 0.16
+    },
+    "fact": "노선 '477-1(제주대학교~제주대학교)' 급감: 2025-09-05(평일) 72명으로 평소의 16% 수준"
+   }
+  ]
+ },
+ "__discover__": {
+  "tools": [
+   "congestion_rank",
+   "explore_anomalies"
+  ],
+  "ok": true,
+  "results": [
+   {
+    "tool": "congestion_rank",
+    "rows": 5,
+    "first": {
+     "ap_place": "제주동문시장",
+     "avg_daily_users": 358.83,
+     "avg_congestion_index": 1.02,
+     "peak_congestion_index": 1.44,
+     "tourist_share": 0.0
+    },
+    "fact": "전체 기준 이용자 수 1위는 제주동문시장(평균 혼잡지수 1.02, 일평균 359명)"
+   },
+   {
+    "tool": "explore_anomalies",
+    "rows": 3,
+    "first": {
+     "대상": "477-1(제주대학교~제주대학교)",
+     "관측값": 72.0,
+     "평소": 452.0,
+     "배율": 0.16
+    },
+    "fact": "노선 '477-1(제주대학교~제주대학교)' 급감: 2025-09-05(평일) 72명으로 평소의 16% 수준"
+   }
+  ]
+ }
+}
