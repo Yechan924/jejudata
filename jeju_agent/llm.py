@@ -17,7 +17,7 @@ import requests
 
 from .config import LLM_MODEL, LLM_PROVIDER, LLM_RETRIES, LLM_TIMEOUT, OLLAMA_BASE_URL, OLLAMA_NUM_CTX
 
-DEFAULT_MODELS = {"anthropic": "claude-sonnet-5-5", "openai": "gpt-4o-mini", "ollama": "qwen2.5:7b"}
+DEFAULT_MODELS = {"anthropic": "claude-sonnet-5", "openai": "gpt-4o-mini", "ollama": "qwen2.5:7b"}
 
 
 @dataclass
@@ -120,7 +120,7 @@ class LLM:
         return conv
 
     def _anthropic(self, system, messages, tools, max_tokens) -> LLMReply:
-        body = {"model": self.model, "max_tokens": max_tokens, "system": system, "messages": self._to_anthropic(messages), "temperature": 0}
+        body = {"model": self.model, "max_tokens": max_tokens, "system": system, "messages": self._to_anthropic(messages)}
         if tools:
             body["tools"] = [{"name": t["name"], "description": t["description"], "input_schema": t["parameters"]} for t in tools]
         data = self._post("https://api.anthropic.com/v1/messages", body, {

@@ -17,7 +17,7 @@
 
 ## 3. LLM 설정 (선택)
 `.env.example`을 `.env`로 복사하고 하나를 채웁니다.
-- `ANTHROPIC_API_KEY=...` (기본 모델 claude-sonnet-5-5) 또는 `OPENAI_API_KEY=...`
+- `ANTHROPIC_API_KEY=...` (기본 모델 claude-sonnet-5) 또는 `OPENAI_API_KEY=...`
 - 외부망이 없으면(센터 PC) Ollama 설치(https://ollama.com/download) → 터미널에서 `ollama pull qwen2.5:7b` → `python scripts/ollama_check.py`로 서버·모델·도구 호출을 점검 → `.env`에 `LLM_PROVIDER=ollama`. 7b는 질문당 30~90초, 빠르게 보려면 `LLM_MODEL=qwen2.5:3b`. 점검 스크립트가 ❌를 내면 그 줄의 안내대로 하세요(모델 없음 → pull, tools 미지원 → 다른 모델).
 - 아무것도 없으면 오프라인 규칙 모드로 동작합니다(사이드바 토글로 강제 가능).
 
