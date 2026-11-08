@@ -3,7 +3,8 @@
 왜: 이 서비스의 혼잡지수는 "와이파이 접속자 = 방문 규모"라는 가정 위에 있다. 통신사 유동인구는 그 가정을 확인할 수 있는
     가장 가까운 외부 기준이며, 허브 공개본은 읍면동·일 단위 집계라 집에서도 받을 수 있다(센터 원천 격자 데이터는 반출 불가).
 정의
-- 유동인구(읍면동, 날) = 허브 데이터의 성별·연령 전체 합계(컬럼이 있으면 합산, 없으면 그대로).
+- 허브 응답은 읍면동×성별×연령대 행마다 거주인구(resdPop)·근무인구(workPop)·방문자수(visitPop)를 준다.
+  유동인구(읍면동, 날) = 성별·연령 전체 합. 기본 지표는 **방문자수**(와이파이가 재는 '방문'에 대응), metric="total" 이면 세 값의 합.
 - 와이파이(읍면동, 날) = 그 읍면동에 주소를 둔 AP 장소의 일별 이용자 합(4-05 × 4-01 address_dong). 정류소·충전소 AP 제외.
 - 읍면동 연결: 4-01 주소의 법정동(화북이동·아라일동·구좌읍 상도리 …)을 행정동(화북동·아라동·구좌읍)으로 바꾼 뒤 이름 일치.
   유동인구 쪽이 법정동이면 변환 없이 먼저 맞춰 본다. 변환표는 LEGAL_TO_ADMIN (서귀동처럼 여러 행정동에 걸치는 법정동은 제외).
@@ -91,11 +92,23 @@ def wifi_by_dong(db, date_from=None, date_to=None, exclude_bus_stops: bool = Tru
     return out, float(linked)
 
 
-def population_by_dong(db, date_from=None, date_to=None) -> pd.DataFrame:
-    """허브 유동인구 → (dong, date, population). 성별·연령 컬럼이 있으면 합산."""
+METRIC_KO = {"visitor": "방문자수", "total": "거주+근무+방문 합계"}
+
+
+def population_by_dong(db, date_from=None, date_to=None, metric: str = "visitor") -> pd.DataFrame:
+    """허브 유동인구 → (dong, date, population). 성별·연령 행을 합산. metric: visitor(방문자수, 기본) | total(거주+근무+방문)."""
     p = period_filter(db.table(DATASET), date_from, date_to).copy()
-    p = p.dropna(subset=["dong_name", "population"])
     p["dong"] = p["dong_name"].astype(str).str.strip()
+    cols = [c for c in ("resident_pop", "worker_pop", "visitor_pop") if c in p.columns]
+    for c in cols:
+        p[c] = pd.to_numeric(p[c], errors="coerce")
+    if metric == "total" and cols:
+        p["population"] = p[cols].sum(axis=1, min_count=1)
+    elif "visitor_pop" in p.columns:
+        p["population"] = p["visitor_pop"]
+    elif "population" not in p.columns:
+        p["population"] = p[cols].sum(axis=1, min_count=1) if cols else np.nan
+    p = p.dropna(subset=["dong_name", "population"])
     return p.groupby(["dong", "date"], as_index=False).agg(population=("population", "sum"))
 
 
@@ -118,10 +131,10 @@ def _link_names(pop_dongs: list[str], wifi_dongs: list[str]) -> dict[str, str]:
     return out
 
 
-def compare_dong(db, date_from=None, date_to=None, min_days: int = 7) -> dict:
+def compare_dong(db, date_from=None, date_to=None, min_days: int = 7, metric: str = "visitor") -> dict:
     """읍면동 단위 유동인구 vs 와이파이 — 표·상관·연결 정보. 도구와 검증 스크립트가 공용."""
     w, linked = wifi_by_dong(db, date_from, date_to)
-    p = population_by_dong(db, date_from, date_to)
+    p = population_by_dong(db, date_from, date_to, metric)
     if w.empty or p.empty:
         return {"error": "와이파이 읍면동 연결 또는 유동인구 데이터가 비어 있습니다.", "linked_places": linked}
     nmap = _link_names(sorted(p["dong"].unique()), sorted(w["dong"].unique()))
@@ -146,7 +159,7 @@ def compare_dong(db, date_from=None, date_to=None, min_days: int = 7) -> dict:
                         "rho": float(g[["wifi", "population"]].corr(method="spearman").iloc[0, 1])})
     per = pd.DataFrame(per)
     out = {"cross": cross.sort_values("population", ascending=False).reset_index(drop=True), "per": per, "linked_places": linked,
-           "name_links": nmap, "n_dong": int(len(cross)), "days": int(m["date"].nunique()),
+           "name_links": nmap, "n_dong": int(len(cross)), "days": int(m["date"].nunique()), "metric": metric,
            "date_min": str(m["date"].min()), "date_max": str(m["date"].max())}
     if len(cross) >= 3:
         out["rho"] = float(cross[["population", "wifi"]].corr(method="spearman").iloc[0, 1])
@@ -168,12 +181,14 @@ def compare_dong(db, date_from=None, date_to=None, min_days: int = 7) -> dict:
         **PERIOD_PARAMS,
         "top_n": {"type": "integer", "description": "표시할 읍면동 수(기본 20)"},
         "sort_by": {"type": "string", "enum": ["population", "wifi", "wifi_per_mille", "pop_weekend_ratio"], "description": "정렬 기준(기본 population)"},
+        "metric": {"type": "string", "enum": ["visitor", "total"], "description": "유동인구 지표: visitor=방문자수(기본), total=거주+근무+방문 합계"},
     }},
 )
-def dong_population_compare(db, date_from=None, date_to=None, top_n=20, sort_by="population") -> ToolResult:
+def dong_population_compare(db, date_from=None, date_to=None, top_n=20, sort_by="population", metric="visitor") -> ToolResult:
     if not db.has(DATASET):
         raise ValueError("읍면동 유동인구 데이터(dong_population)가 적재되지 않았습니다. `python scripts/fetch_hub.py --only dong_population` 으로 허브 공개 API에서 받아 넣으세요.")
-    r = compare_dong(db, date_from, date_to)
+    metric = metric if metric in METRIC_KO else "visitor"
+    r = compare_dong(db, date_from, date_to, metric=metric)
     if "error" in r:
         raise ValueError(r["error"])
     t = r["cross"].copy()
@@ -183,7 +198,7 @@ def dong_population_compare(db, date_from=None, date_to=None, top_n=20, sort_by=
                                       "wifi_per_mille": "와이파이/유동인구(‰)", "pop_weekend_ratio": "유동인구 주말/평일", "wifi_weekend_ratio": "와이파이 주말/평일"})
     for c in ("유동인구 일평균", "와이파이 일평균"):
         t[c] = t[c].round(0)
-    facts = [f"기간 {r['date_min']}~{r['date_max']}, 연결된 읍면동 {r['n_dong']}곳 (와이파이 장소의 {r['linked_places']:.0%}가 읍면동에 연결)"]
+    facts = [f"기간 {r['date_min']}~{r['date_max']}, 연결된 읍면동 {r['n_dong']}곳 (와이파이 장소의 {r['linked_places']:.0%}가 읍면동에 연결), 유동인구 지표 = {METRIC_KO[metric]}"]
     top = r["cross"].iloc[0]
     facts.append(f"유동인구 1위 {top['dong']} 일평균 {top['population']:,.0f}명, 같은 동 와이파이 일평균 {top['wifi']:,.0f}명")
     if "rho" in r:
@@ -196,8 +211,8 @@ def dong_population_compare(db, date_from=None, date_to=None, top_n=20, sort_by=
     facts.append(f"와이파이/유동인구 비율 중앙값 {med:.1f}‰ (읍면동 간 {r['cross']['wifi_per_mille'].min():.1f}~{r['cross']['wifi_per_mille'].max():.1f}‰)")
     caveats = ["유동인구는 통신사 가입자 기반 추정치(읍면동·일 집계), 와이파이는 AP가 있는 장소만 잽니다. 비율이 읍면동마다 다르므로 와이파이 기반 혼잡은 '순위·방향' 지표로만 해석하세요.",
                "법정동→행정동 변환표로 연결했으며 서귀동처럼 여러 행정동에 걸치는 법정동은 제외했습니다. 상관은 인과가 아닙니다."]
-    chart = {"type": "bar", "x": "읍면동", "y": "유동인구 일평균", "title": "읍면동별 유동인구 일평균 (허브 공개 API)"}
+    chart = {"type": "bar", "x": "읍면동", "y": "유동인구 일평균", "title": f"읍면동별 유동인구({METRIC_KO[metric]}) 일평균 (허브 공개 API)"}
     return ToolResult("dong_population_compare", "읍면동별 유동인구 vs 와이파이 이용자", t.reset_index(drop=True), facts, caveats, chart=chart,
-                      method="허브 읍면동 유동인구(성별·연령 합) ↔ 4-05 와이파이 이용자를 4-01 주소(법정동→행정동)로 읍면동 합산, 같은 날짜로 결합. 정류소·충전소 AP 제외.",
-                      params={"date_from": date_from, "date_to": date_to, "top_n": top_n, "sort_by": sort_by},
+                      method=f"허브 읍면동 유동인구 {METRIC_KO[metric]}(성별·연령 합) ↔ 4-05 와이파이 이용자를 4-01 주소(법정동→행정동)로 읍면동 합산, 같은 날짜로 결합. 정류소·충전소 AP 제외.",
+                      params={"date_from": date_from, "date_to": date_to, "top_n": top_n, "sort_by": sort_by, "metric": metric},
                       datasets=[DATASET, "wifi_ap_usage", "wifi_ap"])

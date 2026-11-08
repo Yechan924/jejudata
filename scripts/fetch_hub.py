@@ -23,13 +23,13 @@
   버스 노선 기본 정보            : routeId→bus_route_id, routeNumber→bus_route_number, routeLength→bus_route_length, stationCount→bus_station_count
   제주 공공와이파이 AP 정보      : apGroupName→ap_group_name, category, latitude, longitude (4-01)
 
-추가 데이터셋(허브 데이터목록 20261105 기준, API 토큰은 허브 상세 페이지 '요청 URL'의 /proxy/ 뒤 토큰을 .env 에 넣는다)
-  weather          일별 기상 정보(#756)          JEJUHUB_API_WEATHER=토큰         → data/raw/weather_daily/  (5-02 대체, 관측값)
-  weather_station  기상관측소 정보(#757)         JEJUHUB_API_WEATHER_STATION=토큰 → data/raw/weather_station/ (5-01)
-  dong_population  읍면동 단위 내국인 유동인구(#753) JEJUHUB_API_DONG_POPULATION=토큰 → data/raw/dong_population/ (혼잡지수 외부 검증·읍면동 비교)
-  이 셋은 응답 키를 바꾸지 않고 그대로 저장하며(로더가 별칭 규칙으로 명세서 컬럼에 맞춤), 날짜 파라미터 이름은 환경변수
-  JEJUHUB_DATEPARAM_<이름>=startDate,endDate 또는 =searchDate 로 바꿀 수 있다(기본: startDate,endDate).
-  먼저  python scripts/fetch_hub.py --probe dong_population --to 2025-09-01  로 응답 키·1행을 확인한 뒤 받는 것을 권장.
+추가 데이터셋(허브 데이터목록 20261105 기준). API 토큰은 허브 상세 페이지(공개)의 요청 URL에 적힌 값이 기본으로 들어 있고 .env 로 바꿀 수 있다.
+  weather          일별 기상 정보 (허브 579)           searchDate=YYYYMMDD · observatoryName, averageTemperature, dailyRainfall, …  → data/raw/weather_daily/  (5-02, 기상청 AWS 관측값)
+  weather_station  기상관측소 정보 (허브 578)          observatoryCode, observatoryName, latitude, longitude …                      → data/raw/weather_station/ (5-01)
+  dong_population  읍면동 단위 내국인 유동인구 (허브 583) startDate,endDate · baseDate, city, emd, gender, ageGroup, resdPop, workPop, visitPop → data/raw/dong_population/
+  응답 키는 그대로 저장하고 로더 별칭(config/column_aliases.yaml)이 명세서 컬럼으로 맞춘다. 일별 기상은 관측소 코드가 없어 관측소 정보로 observatoryCode 를 붙인다.
+  날짜 파라미터 이름을 바꿔야 하면 JEJUHUB_DATEPARAM_<이름>=searchDate 또는 =startDate,endDate.
+  확인: python scripts/fetch_hub.py --probe dong_population --to 2025-09-01
 """
 from __future__ import annotations
 
@@ -104,16 +104,17 @@ def _env_dateparam(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
 
 # 토큰이 .env 에 있을 때만 활성화되는 추가 데이터셋 (응답 키 그대로 저장: map=None)
 EXTRA_DATASETS = {
-    "weather": {
-        "api": _env_api("weather"), "hub_id": 756, "title": "일별 기상 정보", "env": "JEJUHUB_API_WEATHER",
-        "file": "weather_daily/일일 날씨 정보_허브API_{ym}.csv", "mode": "daily", "date_param": _env_dateparam("weather", ("startDate", "endDate")), "map": None,
+    # API 토큰은 허브 상세 페이지(로그인 없이 공개)의 요청 URL에 적힌 값. .env 로 바꿀 수 있다.
+    "weather": {   # https://jejudatahub.net/data/view/data/579 — 관측소명(observatoryName)만 있고 코드가 없어 fetch 시 관측소 정보로 코드를 붙인다
+        "api": _env_api("weather") or "1aD5taat1attaa51Db1511b51ab9Da19", "hub_id": 579, "title": "일별 기상 정보", "env": "JEJUHUB_API_WEATHER",
+        "file": "weather_daily/일일 날씨 정보_허브API_{ym}.csv", "mode": "daily", "date_param": _env_dateparam("weather", ("searchDate",)), "map": None,
     },
-    "weather_station": {
-        "api": _env_api("weather_station"), "hub_id": 757, "title": "기상관측소 정보", "env": "JEJUHUB_API_WEATHER_STATION",
+    "weather_station": {   # https://jejudatahub.net/data/view/data/578 — observatoryCode, observatoryName, latitude/longitude(예시는 뒤바뀜, 로더가 보정)
+        "api": _env_api("weather_station") or "t1bab75a555a15715btaa7a5abaa1aab", "hub_id": 578, "title": "기상관측소 정보", "env": "JEJUHUB_API_WEATHER_STATION",
         "file": "weather_station/날씨 관측소 정보_허브API.csv", "mode": "static", "date_param": (), "map": None,
     },
-    "dong_population": {
-        "api": _env_api("dong_population"), "hub_id": 753, "title": "읍면동 단위 내국인 유동인구", "env": "JEJUHUB_API_DONG_POPULATION",
+    "dong_population": {   # https://jejudatahub.net/data/view/data/POPULATION/583 — baseDate, city, emd, gender, ageGroup, resdPop, workPop, visitPop
+        "api": _env_api("dong_population") or "Daaa1t3at3tt8a8DD3t55538t35Dab1t", "hub_id": 583, "title": "읍면동 단위 내국인 유동인구", "env": "JEJUHUB_API_DONG_POPULATION",
         "file": "dong_population/읍면동 단위 내국인 유동인구_허브API_{ym}.csv", "mode": "daily", "date_param": _env_dateparam("dong_population", ("startDate", "endDate")), "map": None,
     },
 }
@@ -211,6 +212,39 @@ def write_csv(path: Path, rows: list[dict], append: bool) -> None:
         w.writerows(rows)
 
 
+_STATION_CODES: dict[str, str] | None = None
+
+
+def station_code_map(key: str, calls: list[int]) -> dict[str, str]:
+    """관측소명 → 관측소코드. 저장된 관측소 파일이 있으면 그것을, 없으면 허브에서 받아 저장한다(일별 기상에 코드를 붙이기 위해)."""
+    global _STATION_CODES
+    if _STATION_CODES is not None:
+        return _STATION_CODES
+    ds = DATASETS["weather_station"]
+    path = RAW_DIR / ds["file"]
+    rows: list[dict] = []
+    if path.exists():
+        with open(path, encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.DictReader(f))
+    if not rows and ds.get("api"):
+        rows = to_rows(ds, fetch_all(key, ds, {}, calls))
+        write_csv(path, rows, append=False)
+        st = _state(); st["weather_station"] = {"done": True, "rows": len(rows), "at": datetime.now().isoformat(timespec="seconds")}; _save_state(st)
+        print(f"  (관측소 정보 {len(rows):,}행 먼저 저장 → {ds['file']})")
+    _STATION_CODES = {str(r.get("observatoryName", "")).strip(): str(r.get("observatoryCode", "")).strip() for r in rows if r.get("observatoryName") and r.get("observatoryCode")}
+    return _STATION_CODES
+
+
+def attach_station_code(rows: list[dict], codes: dict[str, str]) -> list[dict]:
+    out = []
+    for r in rows:
+        r = dict(r)
+        if not r.get("observatoryCode"):
+            r["observatoryCode"] = codes.get(str(r.get("observatoryName", "")).strip(), "")
+        out.append(r)
+    return out
+
+
 def daterange(d0: date, d1: date):
     d = d0
     while d <= d1:
@@ -257,6 +291,8 @@ def run(key: str, only: list[str], d0: date, d1: date, max_calls: int) -> None:
                     dp = ds["date_param"]
                     params = {dp[0]: ymd} if len(dp) == 1 else {dp[0]: ymd, dp[1]: ymd}
                     rows = to_rows(ds, fetch_all(key, ds, params, calls))
+                    if name == "weather":
+                        rows = attach_station_code(rows, station_code_map(key, calls))
                     write_csv(RAW_DIR / ds["file"].format(ym=d.strftime("%Y%m")), rows, append=True)
                     done.add(ymd)
                     n_days += 1
@@ -308,6 +344,8 @@ def main() -> int:
     if unknown:
         print(f"알 수 없는 데이터셋: {', '.join(unknown)} (가능: {', '.join(DATASETS)})")
     only = [x.strip() for x in a.only.split(",") if x.strip() in DATASETS]
+    if "weather" in only and "weather_station" in only:   # 일별 기상에 코드를 붙이려면 관측소 정보가 먼저
+        only.remove("weather_station"); only.insert(only.index("weather"), "weather_station")
     run(key, only, date.fromisoformat(a.d0), date.fromisoformat(a.d1), a.max_calls)
     return 0
 

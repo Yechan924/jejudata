@@ -1520,7 +1520,7 @@ dong_population:
   category: 인구
   exportable: true
   source: 제주데이터허브 공개 API (제주특별자치도 디지털혁신과 제공, 통신사 기반 추정)
-  description: "- 읍면동 단위 내국인 유동인구(일 단위, 성별·연령대별). 제주데이터허브 데이터목록 No.753, 공공데이터포털 '제주특별자치도_읍면동 단위 내국인 유동인구'와 동일.\n  - 센터 보유 격자·시간대 단위 원천 유동인구와 달리 읍면동·일 집계라 공개 API로 받을 수 있다.\n  - 수집: python scripts/fetch_hub.py --only dong_population"
+  description: "- 읍면동 단위 내국인 유동인구(일 단위, 시군구·읍면동·성별·연령대별 거주인구·근무인구·방문자수). 제주데이터허브 데이터목록 No.753(허브 데이터 ID 583), 공공데이터포털 '제주특별자치도_읍면동 단위 내국인 유동인구'와 동일.\n  - 센터 보유 격자·시간대 단위 원천 유동인구와 달리 읍면동·일 집계라 공개 API로 받을 수 있다.\n  - 수집: python scripts/fetch_hub.py --only dong_population"
   columns:
   - name: base_date
     kor: 기준일자
@@ -1536,7 +1536,7 @@ dong_population:
     kor: 읍면동
     type: STRING
     example: 애월읍
-    note: 읍면동명 (행정동)
+    note: 읍면동명 (행정동, API 키 emd)
   - name: gender
     kor: 성별
     type: STRING
@@ -1547,8 +1547,18 @@ dong_population:
     type: STRING
     example: '30'
     note: 연령대
-  - name: population
-    kor: 유동인구
+  - name: resident_pop
+    kor: 거주인구
     type: FLOAT
-    example: '1234.5'
-    note: 유동인구(체류시간 가중 추정치, 통신사 기반)
+    example: '18964'
+    note: 거주인구 (API 키 resdPop)
+  - name: worker_pop
+    kor: 근무인구
+    type: FLOAT
+    example: '658'
+    note: 근무인구 (API 키 workPop)
+  - name: visitor_pop
+    kor: 방문자수
+    type: FLOAT
+    example: '11910'
+    note: 방문자수 (API 키 visitPop) — 와이파이 대조의 기본 지표

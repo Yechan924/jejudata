@@ -42,7 +42,7 @@ DOW_KO = {0: "월", 1: "화", 2: "수", 3: "목", 4: "금", 5: "토", 6: "일"}
 INFO_TABLES = {"bus_route": "bus_route_id", "bus_station": "bus_station_id", "weather_station": "observatory_code", "wifi_ap": "manage_no"}
 # 분석 도구가 실제로 의존하는 컬럼 (실데이터 점검용)
 REQUIRED_COLUMNS = {
-    "dong_population": ["base_date", "dong_name", "population"],
+    "dong_population": ["base_date", "dong_name", "visitor_pop"],
     "wifi_ap_usage": ["base_date", "ap_place", "ap_latitude", "ap_longitude"],   # user_id 또는 user_count 중 하나 (아래 ANY_OF)
     "bus_station_usage": ["base_date", "bus_station_id", "bus_station_name", "get_on_off_type", "user_count"],
     "bus_route_usage": ["base_date", "bus_route_name", "get_on_off_type", "user_count"],
@@ -378,6 +378,17 @@ class JejuDB:
                 self.provenance[k] = Provenance(k, "missing", note=note)
         pw = self.provenance.get("weather_daily")
         ps = self.provenance.get("weather_station")
+        # 허브 「일별 기상 정보」는 관측소명만 주고 코드가 없다 → 「기상관측소 정보」(observatoryCode↔observatoryName)로 코드를 채운다
+        if pw and pw.source == "raw" and self.has("weather_daily") and self.has("weather_station"):
+            w, st = self.frames["weather_daily"], self.frames["weather_station"]
+            name_col = next((c for c in ("observatory_name", "observatoryName") if c in w.columns), None)
+            if name_col and "observatory_code" in w.columns and w["observatory_code"].isna().mean() > 0.5 and "observatory_name" in st.columns:
+                code_by_name = st.dropna(subset=["observatory_name", "observatory_code"]).drop_duplicates("observatory_name").set_index("observatory_name")["observatory_code"].astype(str)
+                filled = w[name_col].astype(str).str.strip().map(code_by_name)
+                w["observatory_code"] = w["observatory_code"].where(w["observatory_code"].notna(), filled)
+                self.frames["weather_daily"] = w
+                self._register("weather_daily", w)
+                pw.note = (pw.note + " / " if pw.note else "") + f"관측소 코드를 관측소명으로 채움({int(filled.notna().sum())}/{len(w)}행)"
         if pw and pw.source == "raw" and (ps is None or ps.source != "raw"):
             p = CONFIG_DIR / "weather_stations_jeju.csv"
             if p.exists():

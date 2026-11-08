@@ -45,19 +45,23 @@ python scripts/fetch_hub.py --status                                   # 받은 
 | `route_info` | 버스 노선 기본 정보 (#611) | 3-01 (노선거리) | `data/raw/버스 노선 정보_허브API.csv` |
 | `ap_info` | 제주 공공와이파이 AP 정보 (#618) | 4-01 (AP 좌표·카테고리) | `data/raw/와이파이 AP 현황_허브API.csv` |
 
-#### 선택 데이터 3종 (허브 데이터목록 20261105 기준) — 토큰은 허브 상세 페이지에서
-허브 데이터 상세 페이지의 **요청 URL** `https://open.jejudatahub.net/api/proxy/<토큰>/<프로젝트키>` 에서 `<토큰>` 부분을 `.env`에 넣습니다.
-```
-JEJUHUB_API_DONG_POPULATION=토큰   # 읍면동 단위 내국인 유동인구 (#753) → 혼잡지수 외부 검증·읍면동 비교
-JEJUHUB_API_WEATHER=토큰           # 일별 기상 정보 (#756) → 5-02 관측값
-JEJUHUB_API_WEATHER_STATION=토큰   # 기상관측소 정보 (#757) → 5-01
-```
+#### 선택 데이터 3종 (허브 데이터목록 20261105 기준) — 같은 프로젝트 키로 받습니다
+새 키 발급은 없습니다. 허브에 로그인해 아래 세 데이터의 상세 페이지에서 **"프로젝트 담기"**만 눌러 기존 프로젝트에 추가한 뒤 실행하세요(API 토큰은 상세 페이지에 공개된 값이 스크립트에 들어 있어 `.env`에 더 넣을 것이 없습니다).
+
+| 스크립트 키 | 허브 데이터 (제공: 제주특별자치도) | 요청 변수 | 응답 키 | 저장 |
+|---|---|---|---|---|
+| `dong_population` | [읍면동 단위 내국인 유동인구](https://jejudatahub.net/data/view/data/POPULATION/583) | `startDate`,`endDate` (+city, emd, gender, ageGroup) | baseDate, city, emd, gender, ageGroup, **resdPop·workPop·visitPop** | `data/raw/dong_population/…_YYYYMM.csv` |
+| `weather` | [일별 기상 정보](https://jejudatahub.net/data/view/data/579) | `searchDate` (+observatoryName) | observatoryName, baseDate, averageTemperature, dailyRainfall, 최저·최고기온, 풍속 … (코드 없음 → 스크립트가 관측소 정보로 `observatoryCode` 추가) | `data/raw/weather_daily/…_YYYYMM.csv` |
+| `weather_station` | [기상관측소 정보](https://jejudatahub.net/data/view/data/578) | (없음) | observatoryCode, observatoryName, latitude, longitude(예시는 뒤바뀜 → 로더 보정), seaLevelAltitude … | `data/raw/weather_station/…csv` |
+
 ```bash
-python scripts/fetch_hub.py --probe dong_population --to 2025-09-01        # 응답 키·첫 행 확인 (날짜 파라미터가 다르면 .env 에 JEJUHUB_DATEPARAM_DONG_POPULATION=searchDate)
-python scripts/fetch_hub.py --from 2025-09-01 --to 2025-09-30 --only dong_population,weather,weather_station
+python scripts/fetch_hub.py --probe dong_population --to 2025-09-01        # 응답 키·첫 행 확인
+python scripts/fetch_hub.py --from 2025-09-01 --to 2025-09-30 --only dong_population,weather_station,weather
 python scripts/check_data.py && python scripts/validate_index.py           # 유동인구가 들어오면 VALIDATION.md 에 A1절(외부 검증) 자동 추가
 ```
-응답 키는 그대로 저장되며 로더의 별칭 규칙(`config/column_aliases.yaml`: 읍면동·유동인구·강수량·평균기온 …)이 명세서 컬럼으로 맞춥니다. `check_data.py`에서 `dong_name`·`population`이 비어 있으면 별칭에 실제 키를 추가하세요.
+- 쿼터: 유동인구는 하루치가 읍면동(43)×성별(2)×연령대(~9) ≈ 770행 → 8회, 한 달 ≈ 240회. 일별 기상은 하루 1회(관측소 ~30곳), 관측소 정보 1회. 기존 정류소 수집과 쿼터가 분리되어 있습니다.
+- 응답 키는 그대로 저장되며 로더 별칭(`config/column_aliases.yaml`)이 명세서 컬럼으로 맞춥니다(emd→dong_name, visitPop→visitor_pop, dailyRainfall→daily_rainfall …). 토큰이 바뀌면 `.env`에 `JEJUHUB_API_DONG_POPULATION=` 등으로 덮어쓸 수 있습니다.
+- 허브 일별 기상은 기상청 AWS 관측소 약 30곳(중문·산천단·대흘·강정·우도·마라도·한림·구좌·성판악·표선 …)이라 기존 ASOS 4개 지점보다 촘촘합니다. 강우 효과 도구는 장소마다 가장 가까운 관측소를 자동으로 고릅니다.
 
 날씨를 허브 대신 기상청·Open-Meteo로 받으려면 `python scripts/fetch_weather.py` (없으면 `weather_effect`만 비활성, 기간이 다른 합성 날씨는 실데이터에 섞지 않음).
 

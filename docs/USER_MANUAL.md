@@ -13,7 +13,7 @@
 - 파일명은 한글 데이터명·코드·영문키 중 무엇으로 시작해도 됩니다. 기간별 파일 여러 개는 `data/raw/wifi_ap_usage/` 같은 폴더에 모아 두세요. CSV·XLSX 모두 되고, 헤더가 명세서와 조금 달라도(정류장명·승차인원수 등) 자동으로 맞춥니다.
 - 넣은 뒤 `python scripts/check_data.py`로 인식·헤더 매핑·기간을 확인하세요. 자세한 절차와 대안 데이터는 `docs/DATA_ACQUISITION.md`.
 - 날씨(강우 영향 질문용)는 `python scripts/fetch_weather.py --kma-csv <기상청 CSV>`(기상자료개방포털 ASOS 일자료) 또는 `--open-meteo --from 2025-09-01 --to 2025-09-30`(키 없음)으로 받습니다. 없으면 "비 오면…" 질문에 수집 방법을 안내하는 답이 나옵니다.
-- (선택) 허브 공개 API **읍면동 단위 내국인 유동인구**를 `python scripts/fetch_hub.py --only dong_population` 으로 받아 넣으면 "읍면동별 유동인구는?" 같은 질문이 열립니다(`.env`에 허브 상세 페이지의 API 토큰 `JEJUHUB_API_DONG_POPULATION=…` 필요, 절차는 `docs/DATA_ACQUISITION.md` 1-A). 날씨도 같은 방법(`--only weather,weather_station`)으로 허브에서 받을 수 있습니다.
+- (선택) 허브 공개 API **읍면동 단위 내국인 유동인구**를 `python scripts/fetch_hub.py --only dong_population` 으로 받아 넣으면 "읍면동별 유동인구는?" 같은 질문이 열립니다(기존 프로젝트 키 그대로, 허브에서 해당 데이터를 프로젝트에 담기만 하면 됨; 절차는 `docs/DATA_ACQUISITION.md` 1-A). 날씨도 같은 방법(`--only weather,weather_station`)으로 허브에서 받을 수 있습니다.
 - 실데이터가 없으면 `python -m jeju_agent.data.synthetic` 으로 개발용 합성 데이터를 만들 수 있습니다(모든 화면에 경고 표시).
 
 ## 3. LLM 설정 (선택)
