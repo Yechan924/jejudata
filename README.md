@@ -42,7 +42,7 @@
 >
 > **실데이터 경로 2가지** — 원본 4-05·3-04 CSV는 센터 분석실에서만 받을 수 있습니다("데이터검색" 메뉴는 분석실 전용). 집에서는 같은 제공처의 **허브 공개 API 6종**을 `python scripts/fetch_hub.py` 로 수집해 `data/raw/`에 넣으면 됩니다(2025년 최신, 10분). 국적·방문유형·시간대처럼 API에 없는 컬럼은 해당 기능만 비활성화되고, 센터 원본을 넣으면 자동 활성화됩니다. 넣은 뒤 `python scripts/check_data.py` 로 점검.
 >
-> **날씨(5-02·5-01)** 는 허브 공개 API(「일별 기상 정보」·「기상관측소 정보」, 제주특별자치도 제공)를 `python scripts/fetch_hub.py --only weather,weather_station` 으로 받을 수 있습니다(기존 프로젝트 키 그대로, 허브에서 해당 데이터를 프로젝트에 담기만 하면 됨). 또는 `python scripts/fetch_weather.py` — 기상청 기상자료개방포털 CSV 변환(관측값) / Open-Meteo(키 없음) / 기상청 API허브. 동봉 축약본은 2025-09 Open-Meteo 자료(4개 지점)라 강우 문항이 바로 동작합니다.
+> **날씨(5-02·5-01)** — 허브 공개 API(「일별 기상 정보」·「기상관측소 정보」)는 `python scripts/fetch_hub.py --only weather_station,weather` 로 받을 수 있지만, **2025-01까지만 적재되어 있고 그 이후는 비어 있습니다**(2026-11-09 API 미리보기로 확인). 분석 기간 2025-09은 `python scripts/fetch_weather.py` — 기상청 기상자료개방포털 CSV 변환(관측값) / Open-Meteo(키 없음) / 기상청 API허브 — 로 받습니다. 동봉 축약본은 2025-09 Open-Meteo 자료(4개 지점)라 강우 문항이 바로 동작합니다.
 >
 > **읍면동 유동인구(허브 #753, 선택)** — `python scripts/fetch_hub.py --only dong_population` (시군구·읍면동·성별·연령대별 거주·근무·방문자수, 일 단위). 넣으면 '읍면동별 유동인구' 질문이 열리고, `python scripts/validate_index.py` 가 혼잡지수를 통신사 유동인구와 대조하는 외부 검증(A1절)을 자동으로 추가합니다. 2025-09 Open-Meteo 자료(4개 지점)는 `data/demo`에 동봉되어 강우 문항이 바로 동작합니다. 날씨가 없으면 강우 영향 기능만 비활성이며, 기간이 다른 합성 날씨는 실데이터에 섞지 않습니다.
 

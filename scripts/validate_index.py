@@ -74,20 +74,25 @@ def internal_validation(db, radius: float, min_daily: int = 20):
     w = wifi_daily(db)
     w = w[w["category"].isin(TOURIST_CATS) & ~w["ap_place"].astype(str).str.match(r"^(버스정류소|전기차충전소)_")]
     places = w.groupby("ap_place", as_index=False).agg(lat=("lat", "first"), lon=("lon", "first"), wifi_mean=("wifi", "mean"), days=("date", "nunique"))
-    places = places[(places["wifi_mean"] >= min_daily) & (places["days"] >= 14)]
+    places = places[(places["wifi_mean"] >= min_daily) & (places["days"] >= 7)]
     bus = bus_daily_near(db, places, radius)
     m = w.merge(bus, on=["ap_place", "date"], how="inner")
     if m.empty:
         return None
+    # 겹치는 기간이 짧으면(정류소 데이터가 월 후반만 있는 PC 등) 요구 일수를 겹침 일수의 70%로 낮춘다(최소 7일)
+    overlap = int(m["date"].nunique())
+    min_days = max(7, min(14, int(overlap * 0.7)))
     # B1 장소 간
     cross = m.groupby("ap_place", as_index=False).agg(wifi_mean=("wifi", "mean"), bus_mean=("bus", "mean"), n_stations=("n_stations", "first"), days=("date", "nunique"))
-    cross = cross[cross["days"] >= 14]
+    cross = cross[cross["days"] >= min_days]
+    if len(cross) < 3:
+        return None
     b1_s = cross[["wifi_mean", "bus_mean"]].corr(method="spearman").iloc[0, 1]
     b1_p = np.corrcoef(np.log1p(cross["wifi_mean"]), np.log1p(cross["bus_mean"]))[0, 1]
     # B2 날짜 간 (장소별)
     per = []
     for nm, g in m.groupby("ap_place"):
-        if g["date"].nunique() >= 14 and g["wifi"].std() > 0 and g["bus"].std() > 0:
+        if g["date"].nunique() >= min_days and g["wifi"].std() > 0 and g["bus"].std() > 0:
             per.append({"ap_place": nm, "days": g["date"].nunique(), "r": float(np.corrcoef(g["wifi"], g["bus"])[0, 1]),
                         "rho": float(g[["wifi", "bus"]].corr(method="spearman").iloc[0, 1])})
     per = pd.DataFrame(per)
@@ -113,7 +118,7 @@ def internal_validation(db, radius: float, min_daily: int = 20):
                      "B3 일치": f"{((v_['wifi_lean'] > 1) == (v_['bus_lean'] > 1)).mean():.0%} ({len(v_)}곳)" if len(v_) >= 3 else None})
     by_cat = pd.DataFrame(rows).sort_values("장소", ascending=False)
     return {"cross": cross, "b1_spearman": b1_s, "b1_pearson_log": b1_p, "per": per, "weekend": pv, "agree": agree, "n_places": len(cross), "radius": radius,
-            "by_cat": by_cat, "med_w": med_w, "med_b": med_b}
+            "by_cat": by_cat, "med_w": med_w, "med_b": med_b, "overlap_days": overlap, "min_days": min_days}
 
 
 def external_validation(db, path: Path):
@@ -172,6 +177,12 @@ def dong_validation(db, path: Path | None):
     return compare_dong(db)
 
 
+def _loglog(ax, x, y):
+    """양수가 있을 때만 로그축 (빈 데이터·0만 있으면 matplotlib 이 예외를 던진다)."""
+    if len(x) and (np.asarray(x, dtype=float) > 0).any() and (np.asarray(y, dtype=float) > 0).any():
+        ax.set_xscale("log"); ax.set_yscale("log")
+
+
 def plots(internal, external, dong=None):
     try:
         from jeju_agent.charts import _setup   # 한글 폰트 설정 공용
@@ -180,11 +191,11 @@ def plots(internal, external, dong=None):
         return []
     IMG.mkdir(parents=True, exist_ok=True)
     made = []
-    if internal:
+    if internal and len(internal["cross"]) >= 3:
         c = internal["cross"]
         fig, ax = plt.subplots(1, 2, figsize=(10, 4))
         ax[0].scatter(c["bus_mean"], c["wifi_mean"], s=18, alpha=.7)
-        ax[0].set_xscale("log"); ax[0].set_yscale("log")
+        _loglog(ax[0], c["bus_mean"], c["wifi_mean"])
         ax[0].set_xlabel(f"반경 {internal['radius']}km 정류소 일평균 승차(3-04)"); ax[0].set_ylabel("와이파이 일평균 이용자(4-05)")
         ax[0].set_title(f"장소 간 (n={len(c)}, Spearman ρ={internal['b1_spearman']:.2f})")
         if len(internal["per"]):
@@ -198,7 +209,7 @@ def plots(internal, external, dong=None):
         ax[0].scatter(c["population"], c["wifi"], s=22)
         for r in c.itertuples():
             ax[0].annotate(r.dong, (r.population, r.wifi), fontsize=7)
-        ax[0].set_xscale("log"); ax[0].set_yscale("log"); ax[0].set_xlabel("읍면동 유동인구 일평균(허브 공개 API)"); ax[0].set_ylabel("읍면동 와이파이 이용자 일평균(4-05)")
+        _loglog(ax[0], c["population"], c["wifi"]); ax[0].set_xlabel("읍면동 유동인구 일평균(허브 공개 API)"); ax[0].set_ylabel("읍면동 와이파이 이용자 일평균(4-05)")
         ax[0].set_title(f"읍면동 간 (n={len(c)}, Spearman ρ={dong.get('rho', float('nan')):.2f})")
         if len(dong["per"]):
             ax[1].hist(dong["per"]["r"], bins=12, color="#2b7bd9", alpha=.8)
@@ -211,7 +222,7 @@ def plots(internal, external, dong=None):
         ax.scatter(c["visitors"], c["wifi"], s=22)
         for r in c.itertuples():
             ax.annotate(r.ap_place, (r.visitors, r.wifi), fontsize=7)
-        ax.set_xscale("log"); ax.set_yscale("log"); ax.set_xlabel("입장객(외부 기준)"); ax.set_ylabel("와이파이 이용자")
+        _loglog(ax, c["visitors"], c["wifi"]); ax.set_xlabel("입장객(외부 기준)"); ax.set_ylabel("와이파이 이용자")
         ax.set_title(f"외부 검증 (n={len(c)}, ρ={external.get('rho', float('nan')):.2f})")
         fig.tight_layout(); p = IMG / "validation_external.png"; fig.savefig(p, dpi=130); plt.close(fig); made.append(p)
     return made
@@ -270,12 +281,12 @@ def main() -> int:
         md += ["## A2. 외부 기준 검증 — 관광지 입장객 (미수행)", "", "허브의 관광지별 입장객·방문객 데이터(예: 관광지별 내국인 유입자 수)를 확보하면 `python scripts/validate_index.py --visitors FILE.csv` 로 이 절이 채워진다.", ""]
     md += ["## B. 내부 교차 검증 — 같은 장소 반경 내 버스 승차(티머니) vs 와이파이 이용자", ""]
     if internal is None:
-        md += ["- 좌표가 있는 관광지 장소와 반경 내 정류소를 찾지 못해 수행하지 못함.", ""]
+        md += ["- 좌표가 있는 관광지 장소와 반경 내 정류소가 같은 날짜에 7일 이상 겹치는 경우를 3곳 이상 찾지 못해 수행하지 못함(4-05·3-04 기간이 겹치는지 `python scripts/check_data.py`로 확인).", ""]
     else:
         per = internal["per"]
-        md += [f"- 대상: 관광 범주(관광지·해변·시장·올레·숲길·공원 등) 장소 중 일평균 20명·관측 14일 이상이고 반경 {internal['radius']}km 안에 정류소가 있는 **{internal['n_places']}곳**",
+        md += [f"- 대상: 관광 범주(관광지·해변·시장·올레·숲길·공원 등) 장소 중 일평균 20명·관측 {internal['min_days']}일 이상(겹치는 기간 {internal['overlap_days']}일)이고 반경 {internal['radius']}km 안에 정류소가 있는 **{internal['n_places']}곳**",
                f"- **B1 장소 간**: 기간 평균 와이파이 이용자 vs 반경 내 일평균 승차 — Spearman ρ = **{internal['b1_spearman']:.2f}**, log-log Pearson r = {internal['b1_pearson_log']:.2f}",
-               (f"- **B2 날짜 간**: 장소별 일별 상관(14일 이상 {len(per)}곳) — 중앙값 r = **{per['r'].median():.2f}**, 양의 상관 {int((per['r'] > 0).sum())}곳({(per['r'] > 0).mean():.0%}), r ≥ 0.3 인 곳 {int((per['r'] >= 0.3).sum())}곳" if len(per) else "- B2: 장소별 일별 상관을 낼 만한 장소가 없음"),
+               (f"- **B2 날짜 간**: 장소별 일별 상관({internal['min_days']}일 이상 {len(per)}곳) — 중앙값 r = **{per['r'].median():.2f}**, 양의 상관 {int((per['r'] > 0).sum())}곳({(per['r'] > 0).mean():.0%}), r ≥ 0.3 인 곳 {int((per['r'] >= 0.3).sum())}곳" if len(per) else "- B2: 장소별 일별 상관을 낼 만한 장소가 없음"),
                (f"- **B3 요일 패턴**: 주말/평일 비율의 전체 중앙값은 와이파이 {internal['med_w']:.2f}, 버스 {internal['med_b']:.2f}(버스는 통근 때문에 주말에 줄어듦). 그 중앙값 대비 ±15% 넘게 치우친 {len(internal['weekend'])}곳에서 두 데이터의 쏠림 방향(주말형/평일형)이 일치한 비율 **{internal['agree']:.0%}**" if len(internal["weekend"]) else "- B3: 요일 쏠림이 뚜렷한 장소 없음"),
                "", "범주별:", "", df_to_md(internal["by_cat"].fillna("-"), 20),
                "", "읽는 법: B1이 높으면 '붐비는 장소 순위'가, B2가 높으면 '언제 붐비나(일별 추이)'가, B3가 높으면 '주말 쏠림' 결론이 독립 데이터로 뒷받침된다. "

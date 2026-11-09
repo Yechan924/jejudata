@@ -56,12 +56,12 @@ python scripts/fetch_hub.py --status                                   # 받은 
 
 ```bash
 python scripts/fetch_hub.py --probe dong_population --to 2025-09-01        # 응답 키·첫 행 확인
-python scripts/fetch_hub.py --from 2025-09-01 --to 2025-09-30 --only dong_population,weather_station,weather
+python scripts/fetch_hub.py --from 2025-09-01 --to 2025-09-30 --only dong_population,weather_station   # weather 는 2025-01 이전 기간에만
 python scripts/check_data.py && python scripts/validate_index.py           # 유동인구가 들어오면 VALIDATION.md 에 A1절(외부 검증) 자동 추가
 ```
 - 쿼터: 유동인구는 하루치가 읍면동(43)×성별(2)×연령대(~9) ≈ 770행 → 8회, 한 달 ≈ 240회. 일별 기상은 하루 1회(관측소 ~30곳), 관측소 정보 1회. 기존 정류소 수집과 쿼터가 분리되어 있습니다.
 - 응답 키는 그대로 저장되며 로더 별칭(`config/column_aliases.yaml`)이 명세서 컬럼으로 맞춥니다(emd→dong_name, visitPop→visitor_pop, dailyRainfall→daily_rainfall …). 토큰이 바뀌면 `.env`에 `JEJUHUB_API_DONG_POPULATION=` 등으로 덮어쓸 수 있습니다.
-- 허브 일별 기상은 기상청 AWS 관측소 약 30곳(중문·산천단·대흘·강정·우도·마라도·한림·구좌·성판악·표선 …)이라 기존 ASOS 4개 지점보다 촘촘합니다. 강우 효과 도구는 장소마다 가장 가까운 관측소를 자동으로 고릅니다.
+- 허브 일별 기상은 기상청 AWS 관측소 42곳이라 ASOS 4개 지점보다 촘촘하지만, **2025-01까지만 적재되어 있고 2025-06 이후는 0행**입니다(2026-11-09 API 미리보기로 확인; 0행인 날은 스크립트가 '받음'으로 기록하지 않음). 2025-09 분석에는 아래 `fetch_weather.py` 경로를 쓰세요. 관측소 정보(좌표)는 허브 것을 그대로 씁니다.
 
 날씨를 허브 대신 기상청·Open-Meteo로 받으려면 `python scripts/fetch_weather.py` (없으면 `weather_effect`만 비활성, 기간이 다른 합성 날씨는 실데이터에 섞지 않음).
 

@@ -20,7 +20,7 @@
 - 제주데이터허브(jejudatahub.net) → 제주빅데이터센터 메뉴 → 해당 데이터 CSV 다운로드 → `data/raw/` 복사 → `python scripts/check_data.py`로 점검. 단계별 절차·대안 데이터·센터 방문 요령은 `docs/DATA_ACQUISITION.md`.
 - 파일명은 데이터명(한글)·코드·영문키(`wifi_ap_usage` 등) 어느 것으로 시작해도 자동 인식. 여러 기간 파일은 `data/raw/wifi_ap_usage/*.csv` 처럼 폴더에 모아도 됨.
 
-- 날씨(5-02·5-01)는 허브 공개 API(「일별 기상 정보」#756·「기상관측소 정보」#757, 제주특별자치도 제공, 일 자동갱신)를 `python scripts/fetch_hub.py --only weather,weather_station` 으로 받는다(API 토큰은 `.env`의 `JEJUHUB_API_WEATHER`·`JEJUHUB_API_WEATHER_STATION`; 응답 키는 그대로 저장되고 로더 별칭 규칙이 5-02 컬럼으로 맞춘다). 동봉 축약본은 `python scripts/fetch_weather.py` 로 받은 Open-Meteo 자료다. (A) 기상청 기상자료개방포털(data.kma.go.kr) 종관기상관측(ASOS) 일자료 CSV를 `--kma-csv` 로 변환(관측값, 권장; 변환 없이 `data/raw/`에 넣어도 별칭으로 읽힘), (B) `--open-meteo` 로 Open-Meteo 과거 기상 API(키 없음, CC BY 4.0, ERA5 재분석 격자값), (C) `--kma-api` 로 기상청 API허브(인증키). 관측소는 제주(184)·고산(185)·성산(188)·서귀포(189) 4개이며 5-01이 없으면 `config/weather_stations_jeju.csv`(기상청 지점 정보)를 쓴다. 무강수일의 빈칸은 0mm로 둔다.
+- 날씨(5-02·5-01)는 허브 공개 API(「일별 기상 정보」허브 579·「기상관측소 정보」578)를 `python scripts/fetch_hub.py --only weather_station,weather` 로 받을 수 있으나 **일별 기상은 2025-01까지만 있고 2025-06 이후는 비어 있다**(2026-11-09 확인). 분석 기간(2025-09)은 `python scripts/fetch_weather.py` 로 받으며, 동봉 축약본은 Open-Meteo 자료다. 관측소 정보(42곳, 좌표)는 허브에서 받아 쓴다. (A) 기상청 기상자료개방포털(data.kma.go.kr) 종관기상관측(ASOS) 일자료 CSV를 `--kma-csv` 로 변환(관측값, 권장; 변환 없이 `data/raw/`에 넣어도 별칭으로 읽힘), (B) `--open-meteo` 로 Open-Meteo 과거 기상 API(키 없음, CC BY 4.0, ERA5 재분석 격자값), (C) `--kma-api` 로 기상청 API허브(인증키). 관측소는 제주(184)·고산(185)·성산(188)·서귀포(189) 4개이며 5-01이 없으면 `config/weather_stations_jeju.csv`(기상청 지점 정보)를 쓴다. 무강수일의 빈칸은 0mm로 둔다.
 
 ## 3. 전처리 (`jeju_agent/data/loader.py`)
 1. 인코딩 자동 판별(utf-8-sig → cp949 → euc-kr).
@@ -50,7 +50,7 @@ LLM·화면·리포트로 나가는 모든 표는 ① 식별자 컬럼 제거 �
 | 스크립트 키 | 허브 데이터(목록 No.) | 제공 | 용도 | 저장 |
 |---|---|---|---|---|
 | `dong_population` | 읍면동 단위 내국인 유동인구 (목록 #753 = 허브 583, API, 일 갱신) — 시군구·읍면동·성별·연령대별 **거주인구·근무인구·방문자수** | 제주특별자치도(통신사 기반 추정) | 혼잡지수 **외부 검증**(`validate_index.py` A1절) · 도구 `dong_population_compare`(읍면동별 방문자수 vs 와이파이, 표본 비율 ‰; `metric=total`이면 세 값 합) | `data/raw/dong_population/` |
-| `weather` / `weather_station` | 일별 기상 정보 (목록 #756 = 허브 579) / 기상관측소 정보 (#757 = 허브 578, API) — 기상청 AWS 약 30곳 | 제주특별자치도 | 5-02·5-01 **관측값** 대체(일별 기상에는 관측소 코드가 없어 관측소 정보로 채움) | `data/raw/weather_daily/`·`weather_station/` |
+| `weather` / `weather_station` | 일별 기상 정보 (목록 #756 = 허브 579) / 기상관측소 정보 (#757 = 허브 578, API) — 기상청 AWS 42곳 | 제주특별자치도 | 5-01 관측소 좌표 사용. 일별 기상은 **2025-01까지만 제공**되어 2025-09 분석에는 못 쓰고(그 전 기간 분석 시 관측값 대체; 코드가 없어 관측소 정보로 채움) | `data/raw/weather_daily/`·`weather_station/` |
 
 - 세 데이터 모두 읍면동·관측소 단위 집계로 개인정보가 없고, 허브 이용약관에 따른 공개 API 결과물이다. API 토큰은 상세 페이지에 공개된 값이며 프로젝트 키(`.env`, 커밋 금지)와 함께 호출한다. 응답 키 확인: `python scripts/fetch_hub.py --probe dong_population --to 2025-09-01`.
 - 유동인구 지표: 기본은 **방문자수(visitPop)** — 와이파이가 재는 '방문'에 대응. 거주+근무+방문 합계는 `metric=total`.

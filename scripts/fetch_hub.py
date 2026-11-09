@@ -281,6 +281,7 @@ def run(key: str, only: list[str], d0: date, d1: date, max_calls: int) -> None:
                 print(f"  {len(rows):,}행 저장 (기준일 {d1}) → {ds['file']}")
             else:
                 n_days = 0
+                empty_days: list[str] = []
                 for d in daterange(d0, d1):
                     ymd = d.strftime("%Y%m%d")
                     if ymd in done:
@@ -294,12 +295,18 @@ def run(key: str, only: list[str], d0: date, d1: date, max_calls: int) -> None:
                     if name == "weather":
                         rows = attach_station_code(rows, station_code_map(key, calls))
                     write_csv(RAW_DIR / ds["file"].format(ym=d.strftime("%Y%m")), rows, append=True)
-                    done.add(ymd)
-                    n_days += 1
+                    if rows:
+                        done.add(ymd)
+                        n_days += 1
+                    else:
+                        empty_days.append(ymd)   # 0행은 '받음'으로 기록하지 않는다 → 다음 실행에서 다시 시도
                     st[name] = {"dates": sorted(done)}
                     _save_state(st)
                     print(f"  {d} {len(rows):>6,}행  (누적 호출 {calls[0]})")
-                print(f"  {n_days}일 추가, 저장된 날짜 {len(done)}일")
+                print(f"  {n_days}일 추가, 저장된 날짜 {len(done)}일" + (f", 0행 {len(empty_days)}일(제공처 공백 또는 미제공 기간 — 저장 안 함)" if empty_days else ""))
+                if empty_days and n_days == 0:
+                    print(f"  ⚠️ 요청 기간 전체가 0행입니다. 허브 상세 페이지 'API 미리보기'로 그 날짜에 데이터가 있는지 확인하세요"
+                          + (" (일별 기상 정보는 2025-01 까지는 있고 2025-06 이후는 비어 있음을 확인함 — 2025-09 분석에는 fetch_weather.py 사용)" if name == "weather" else ""))
         except Quota as e:
             print(f"  ⚠️ 쿼터 초과로 중단: {e}\n  내일 같은 명령을 다시 실행하면 이어서 받습니다.")
             _save_state(st)
@@ -328,9 +335,19 @@ def main() -> int:
     ap.add_argument("--max-calls", type=int, default=900, help="이번 실행에서 쓸 최대 호출 수(일일 쿼터 1,000 보호)")
     ap.add_argument("--status", action="store_true")
     ap.add_argument("--probe", help="데이터셋 이름 — 응답 키·첫 행만 확인 (예: --probe dong_population --to 2025-09-01)")
+    ap.add_argument("--reset", help="데이터셋 이름(쉼표 구분) — 수집 상태를 지워 다시 받게 함 (파일은 직접 지우세요)")
     a = ap.parse_args()
     if a.status:
         status()
+        return 0
+    if a.reset:
+        st = _state()
+        for n in [x.strip() for x in a.reset.split(",") if x.strip()]:
+            if st.pop(n, None) is not None:
+                print(f"{n}: 수집 상태 초기화 (data/raw 의 해당 CSV 는 직접 삭제 후 다시 받으세요)")
+            else:
+                print(f"{n}: 상태 없음")
+        _save_state(st)
         return 0
     key = os.getenv("JEJUHUB_PROJECT_KEY", "").strip()
     if not key:
