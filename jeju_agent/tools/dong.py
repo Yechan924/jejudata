@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 from .base import PERIOD_PARAMS, ToolResult, period_filter, register, wifi_users_agg
-from .congestion import infer_category
+from .congestion import TOURIST_CATS, _coords, infer_category
 
 DATASET = "dong_population"
 
@@ -71,12 +71,15 @@ def admin_dong(address_dong: str, city_hint: str | None = None) -> str | None:
     return None
 
 
-def wifi_by_dong(db, date_from=None, date_to=None, exclude_bus_stops: bool = True) -> tuple[pd.DataFrame, float]:
-    """(읍면동, 날짜, is_weekend, wifi, n_places) 와 연결률."""
+def wifi_by_dong(db, date_from=None, date_to=None, exclude_bus_stops: bool = True, tourist_only: bool = False) -> tuple[pd.DataFrame, float]:
+    """(읍면동, 날짜, is_weekend, wifi, n_places) 와 연결률. tourist_only 면 관광 범주(관광지·해변·시장·올레·공원 …) AP 장소만 — 관공서·도서관 등 평일형 공공시설을 뺀다."""
     u = period_filter(db.table("wifi_ap_usage"), date_from, date_to)
-    if exclude_bus_stops:
+    if exclude_bus_stops or tourist_only:
         cat = u["ap_category"].where(u["ap_category"].notna() & (u["ap_category"] != "미분류"), u["ap_place"].map(infer_category))
         u = u[~(cat.isin(["버스정류소", "전기차충전소"]) | u["ap_place"].astype(str).str.match(r"^(버스정류소|전기차충전소)_"))]
+    if tourist_only:
+        tcat = _coords(db).set_index("ap_place")["category"]
+        u = u[u["ap_place"].map(tcat).isin(TOURIST_CATS)]
     daily = u.groupby(["ap_place", "date", "is_weekend"], as_index=False).agg(wifi=wifi_users_agg(u))
     ap = db.table("wifi_ap") if db.has("wifi_ap") else None
     if ap is None or "address_dong" not in ap.columns or "ap_group_name" not in ap.columns:
@@ -131,9 +134,9 @@ def _link_names(pop_dongs: list[str], wifi_dongs: list[str]) -> dict[str, str]:
     return out
 
 
-def compare_dong(db, date_from=None, date_to=None, min_days: int = 7, metric: str = "visitor") -> dict:
+def compare_dong(db, date_from=None, date_to=None, min_days: int = 7, metric: str = "visitor", tourist_only: bool = False) -> dict:
     """읍면동 단위 유동인구 vs 와이파이 — 표·상관·연결 정보. 도구와 검증 스크립트가 공용."""
-    w, linked = wifi_by_dong(db, date_from, date_to)
+    w, linked = wifi_by_dong(db, date_from, date_to, tourist_only=tourist_only)
     p = population_by_dong(db, date_from, date_to, metric)
     if w.empty or p.empty:
         return {"error": "와이파이 읍면동 연결 또는 유동인구 데이터가 비어 있습니다.", "linked_places": linked}
@@ -159,7 +162,7 @@ def compare_dong(db, date_from=None, date_to=None, min_days: int = 7, metric: st
                         "rho": float(g[["wifi", "population"]].corr(method="spearman").iloc[0, 1])})
     per = pd.DataFrame(per)
     out = {"cross": cross.sort_values("population", ascending=False).reset_index(drop=True), "per": per, "linked_places": linked,
-           "name_links": nmap, "n_dong": int(len(cross)), "days": int(m["date"].nunique()), "metric": metric,
+           "name_links": nmap, "n_dong": int(len(cross)), "days": int(m["date"].nunique()), "metric": metric, "tourist_only": tourist_only,
            "date_min": str(m["date"].min()), "date_max": str(m["date"].max())}
     if len(cross) >= 3:
         out["rho"] = float(cross[["population", "wifi"]].corr(method="spearman").iloc[0, 1])
@@ -182,13 +185,15 @@ def compare_dong(db, date_from=None, date_to=None, min_days: int = 7, metric: st
         "top_n": {"type": "integer", "description": "표시할 읍면동 수(기본 20)"},
         "sort_by": {"type": "string", "enum": ["population", "wifi", "wifi_per_mille", "pop_weekend_ratio"], "description": "정렬 기준(기본 population)"},
         "metric": {"type": "string", "enum": ["visitor", "total"], "description": "유동인구 지표: visitor=방문자수(기본), total=거주+근무+방문 합계"},
+        "places": {"type": "string", "enum": ["all", "tourist"], "description": "와이파이 집계 대상: all=정류소·충전소 제외 전체 AP 장소(기본), tourist=관광 범주 장소만"},
     }},
 )
-def dong_population_compare(db, date_from=None, date_to=None, top_n=20, sort_by="population", metric="visitor") -> ToolResult:
+def dong_population_compare(db, date_from=None, date_to=None, top_n=20, sort_by="population", metric="visitor", places="all") -> ToolResult:
     if not db.has(DATASET):
         raise ValueError("읍면동 유동인구 데이터(dong_population)가 적재되지 않았습니다. `python scripts/fetch_hub.py --only dong_population` 으로 허브 공개 API에서 받아 넣으세요.")
     metric = metric if metric in METRIC_KO else "visitor"
-    r = compare_dong(db, date_from, date_to, metric=metric)
+    tourist = places == "tourist"
+    r = compare_dong(db, date_from, date_to, metric=metric, tourist_only=tourist)
     if "error" in r:
         raise ValueError(r["error"])
     t = r["cross"].copy()
@@ -198,7 +203,7 @@ def dong_population_compare(db, date_from=None, date_to=None, top_n=20, sort_by=
                                       "wifi_per_mille": "와이파이/유동인구(‰)", "pop_weekend_ratio": "유동인구 주말/평일", "wifi_weekend_ratio": "와이파이 주말/평일"})
     for c in ("유동인구 일평균", "와이파이 일평균"):
         t[c] = t[c].round(0)
-    facts = [f"기간 {r['date_min']}~{r['date_max']}, 연결된 읍면동 {r['n_dong']}곳 (와이파이 장소의 {r['linked_places']:.0%}가 읍면동에 연결), 유동인구 지표 = {METRIC_KO[metric]}"]
+    facts = [f"기간 {r['date_min']}~{r['date_max']}, 연결된 읍면동 {r['n_dong']}곳 (와이파이 장소의 {r['linked_places']:.0%}가 읍면동에 연결), 유동인구 지표 = {METRIC_KO[metric]}, 와이파이 = {'관광 범주 장소만' if tourist else '전체 AP 장소(정류소·충전소 제외)'}"]
     top = r["cross"].iloc[0]
     facts.append(f"유동인구 1위 {top['dong']} 일평균 {top['population']:,.0f}명, 같은 동 와이파이 일평균 {top['wifi']:,.0f}명")
     if "rho" in r:
@@ -214,5 +219,5 @@ def dong_population_compare(db, date_from=None, date_to=None, top_n=20, sort_by=
     chart = {"type": "bar", "x": "읍면동", "y": "유동인구 일평균", "title": f"읍면동별 유동인구({METRIC_KO[metric]}) 일평균 (허브 공개 API)"}
     return ToolResult("dong_population_compare", "읍면동별 유동인구 vs 와이파이 이용자", t.reset_index(drop=True), facts, caveats, chart=chart,
                       method=f"허브 읍면동 유동인구 {METRIC_KO[metric]}(성별·연령 합) ↔ 4-05 와이파이 이용자를 4-01 주소(법정동→행정동)로 읍면동 합산, 같은 날짜로 결합. 정류소·충전소 AP 제외.",
-                      params={"date_from": date_from, "date_to": date_to, "top_n": top_n, "sort_by": sort_by, "metric": metric},
+                      params={"date_from": date_from, "date_to": date_to, "top_n": top_n, "sort_by": sort_by, "metric": metric, "places": places},
                       datasets=[DATASET, "wifi_ap_usage", "wifi_ap"])

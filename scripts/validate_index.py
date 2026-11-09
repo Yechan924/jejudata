@@ -174,7 +174,9 @@ def dong_validation(db, path: Path | None):
         db._register("dong_population", df)
     if not db.has("dong_population"):
         return None
-    return compare_dong(db)
+    r = compare_dong(db)
+    r["tourist"] = compare_dong(db, tourist_only=True)   # 관광 범주 AP 만으로 다시 — 평일형 공공시설(관공서·도서관) 영향 분리
+    return r
 
 
 def _loglog(ax, x, y):
@@ -259,6 +261,15 @@ def main() -> int:
                    "", "읍면동별 (유동인구 순):", "", df_to_md(c.round(1), 45), ""]
             if (IMG / "validation_dong.png").exists():
                 md += ["![읍면동 유동인구 검증](img/validation_dong.png)", ""]
+            t = dong.get("tourist") or {}
+            if "cross" in t and len(t["cross"]) >= 3:
+                tp = t["per"]
+                md += ["**관광 범주 AP 장소만으로 다시 계산** (관공서·도서관·주민센터 같은 평일형 공공시설 AP를 빼고 관광지·해변·시장·올레·공원 등만):", "",
+                       f"- 읍면동 {t['n_dong']}곳 · 읍면동 간 Spearman ρ = **{t['rho']:.2f}** (log-log r {t['r_log']:.2f})"
+                       + (f" · 일별 상관 중앙값 r = **{tp['r'].median():.2f}**, 양의 상관 {(tp['r'] > 0).mean():.0%}" if len(tp) else "")
+                       + (f" · 주말 쏠림 방향 일치 **{t['weekend_agree']:.0%}** ({t['weekend_n']}곳)" if t.get("weekend_n") else ""),
+                       f"- 표본 비율 중앙값 {t['cross']['wifi_per_mille'].median():.1f}‰ ({t['cross']['wifi_per_mille'].min():.1f}~{t['cross']['wifi_per_mille'].max():.1f}‰)", ""]
+            md += ["읽는 법: 통신사 '방문자수'는 그 읍면동에 거주·근무하지 않는 사람의 체류를 세므로 **도민의 주말 나들이까지 포함**해 거의 모든 읍면동에서 주말에 늘어난다(비율 1.1~1.6). 공공 와이파이는 관공서·도서관·공원 등 평일형 시설 AP가 많아 읍면동 전체로 합치면 주말에 줄어든다. 따라서 전체 AP 기준의 주말 쏠림 불일치는 측정 대상의 차이이지 모순이 아니며, 관광 범주 AP만 보면 격차가 줄어드는지로 판단한다.", ""]
             md += ["한계: 유동인구는 통신사 가입자 기반 추정치이고 와이파이는 AP가 있는 장소만 잰다. 법정동→행정동 변환표로 연결했으며 서귀동처럼 여러 행정동에 걸치는 법정동은 제외했다. 상관은 인과가 아니다.", ""]
     else:
         md += ["## A1. 외부 기준 검증 — 읍면동 유동인구 (미수행)", "", "허브 공개 API「읍면동 단위 내국인 유동인구」를 `python scripts/fetch_hub.py --only dong_population` 으로 받아 `data/raw/dong_population/` 에 넣으면 이 절이 자동으로 채워진다(또는 `--dong-pop FILE.csv`).", ""]
