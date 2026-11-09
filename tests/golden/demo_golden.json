@@ -351,7 +351,7 @@
     "tool": "describe_data",
     "rows": 9,
     "first": {},
-    "fact": "9개 데이터셋 적재, 엔진 sqlite"
+    "fact": "핵심 데이터셋 8개 적재 (명세서 9종 중)"
    }
   ]
  },

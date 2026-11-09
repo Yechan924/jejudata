@@ -54,7 +54,13 @@ def describe_data(db, dataset: str | None = None) -> ToolResult:
             facts.append(f"출처: {p.source}, {p.rows:,}행, 기간 {p.date_min}~{p.date_max}")
         return ToolResult("describe_data", f"{d['name']} 컬럼 명세", df, facts, [], datasets=[dataset])
     df = db.summary()
-    facts = [f"{len(df)}개 데이터셋 적재, 엔진 {db.engine}"]
+    core = [k for k in schemas.CORE_DATASETS if db.has(k)]
+    extra = [k for k in schemas.EXTRA_DATASETS if db.has(k)]
+    # 첫 사실은 골든 회귀(재현 검증)에 쓰이므로 실행 환경(SQL 엔진)·선택 데이터 유무에 따라 달라지는 내용은 뒤 문장으로 뺀다
+    facts = [f"핵심 데이터셋 {len(core)}개 적재 (명세서 {len(schemas.CORE_DATASETS)}종 중)"]
+    if extra:
+        facts.append("선택 데이터 적재: " + ", ".join(schemas.dataset(k)["name"] for k in extra))
+    facts.append(f"SQL 엔진 {db.engine}")
     if db.uses_synthetic():
         facts.append("⚠️ 일부/전체가 개발용 합성 데이터입니다. 실제 결론에 사용하지 마세요.")
     return ToolResult("describe_data", "적재 데이터 요약", df, facts, [], datasets=list(db.frames))
